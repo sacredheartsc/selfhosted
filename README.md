@@ -59,7 +59,7 @@ configuration, and configure each service.
 | Role                                      | Description |
 --------------------------------------------|-------------|
 [proxmox\_instance](roles/proxmox_instance) | Automatically provisions a [Proxmox](https://www.proxmox.com/) VM with the given hardware and cloud-init configuration
-[common](roles/common)                      | Meta-role that pulls in common configuration roles (local repos, freeipa client, DNS/NTP, SSH keys, etc)
+[common](roles/common/meta/main.yml)        | Meta-role that pulls in common configuration roles (local repos, freeipa client, DNS/NTP, SSH keys, etc)
 [freeipa\_server](roles/freeipa_server)     | [FreeIPA](https://www.freeipa.org/) provides provides identity management, access control, certificate management, and single sign-on
 [yum\_mirror](roles/yum_mirror)             | Mirrors all package repositories locally
 [rsyslog\_server](roles/rsyslog_server)     | Centralized syslog storage using [Rsyslog](https://www.rsyslog.com/)
