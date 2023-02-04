@@ -84,7 +84,7 @@ Modular [Ansible roles](roles) are used to manage VMs and configure each service
 [syncthing](roles/syncthing)                | Per-user [Syncthing](https://syncthing.net/) instances that sync files to your NFS home directory
 [asterisk](roles/asterisk)                  | [Asterisk](https://www.asterisk.org/) PBX for VOIP phones
 [nsd](roles/nsd)                            | Authoritative DNS server
-[nagios](roles/nagios)                      | Monitors all hosts and services, automatically generated configuration
+[nagios\_server](roles/nagios_server)       | Monitors all hosts and services, automatically generated configuration
 [znc](roles/znc)                            | [ZNC](https://znc.in/) IRC bouncer
 [cups](roles/cups)                          | Centralized network printing
 [unifi](roles/unifi)                        | [UniFi](https://www.ui.com/) controller for managing Ubiquiti access points
