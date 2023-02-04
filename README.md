@@ -6,10 +6,13 @@ An Ansible framework for selfhosted infrastructure, based on
 
 ## What is this?
 
+`sacredheart-selfhosted` is a collection of Ansible roles based on multiple years
+of experience self-hosting my family's digital infrastructure.
+
 I believe that self-hosting our online services is the best way to recapture the
-original pioneer spirit of the Internet. `sacredheart-selfhosted` is a collection
-of Ansible roles based on multiple years of experience self-hosting my family's
-digital infrastructure.
+original pioneer spirit of the Internet. I use these Ansible playbooks to configure
+desktop workstations, manage virtual machines, and configure both internal and
+public-facing web services.
 
 Although this project is not intended to be a turn-key appliance, it should be
 easy to adapt it to your own environment with some basic sysadmin skills. I've
