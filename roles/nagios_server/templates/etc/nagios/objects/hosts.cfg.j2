@@ -4,7 +4,7 @@ define host {
   address              127.0.0.1
   use                  generic-host
   check_command        check_dummy
-  notification_period  24x7
+  check_period         24x7
   _fqdn                {{ ansible_fqdn }}
   _snmp_user           {{ hostvars[inventory_hostname].nagios_snmp_user }}
   _snmp_priv_pass      {{ hostvars[inventory_hostname].nagios_snmp_priv_pass }}

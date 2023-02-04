@@ -17,11 +17,11 @@ define host {
   process_perf_data              1
   retain_status_information      1
   retain_nonstatus_information   1
-  notification_period            24x7-except-reboot-window
+  notification_period            24x7
   notification_interval          0
   notification_options           d,u,r,f
   first_notification_delay       0
-  check_period                   24x7
+  check_period                   24x7-except-reboot-window
   check_interval                 5
   retry_interval                 1
   max_check_attempts             3
