@@ -7,12 +7,9 @@ An Ansible framework for selfhosted infrastructure, based on
 ## What is this?
 
 I believe that self-hosting our online services is the best way to recapture the
-original pioneer spirit of the Internet. By owning our own digital footprints, we
-can resist dragnet surveillance, stymie omniscient advertising networks, and curb
-technocratic censorship.
-
-`sacredheart-selfhosted` is a collection of Ansible roles based on multiple years
-of experience self-hosting my family's digital infrastructure from home.
+original pioneer spirit of the Internet. `sacredheart-selfhosted` is a collection
+of Ansible roles based on multiple years of experience self-hosting my family's
+digital infrastructure.
 
 Although this project is not intended to be a turn-key appliance, it should be
 easy to adapt it to your own environment with some basic sysadmin skills. I've
