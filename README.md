@@ -10,9 +10,9 @@ An Ansible framework for selfhosted infrastructure, based on
 of experience self-hosting my family's digital infrastructure.
 
 I believe that self-hosting our online services is the best way to recapture the
-original pioneer spirit of the Internet. I use these Ansible playbooks to configure
-desktop workstations, manage virtual machines, and configure both internal and
-public-facing web services.
+original pioneer spirit of the Internet. I use these Ansible playbooks to manage
+my entire digital footprint, including baremetal servers, virtual machines, and
+desktop workstations.
 
 Although this project is not intended to be a turn-key appliance, it should be
 easy to adapt it to your own environment with some basic sysadmin skills. I've
