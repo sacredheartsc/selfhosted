@@ -81,8 +81,8 @@ Modular [Ansible roles](roles) are used to manage VMs and configure each service
 [hastebin](roles/hastebin)                  | [Hastebin](https://github.com/toptal/haste-server) open source pastebin
 [psitransfer](roles/psitransfer)            | [PsiTransfer](https://github.com/psi-4ward/psitransfer) public file sharing
 [nfs\_server](roles/nfs_server)             | Configures ZFS datasets, NFS exports, SMB shares, ACLs, and autofs maps.
-[syncthing](roles/syncthing]                | Per-user [Syncthing](https://syncthing.net/) instances that sync files to your NFS home directory
-[asterisk](roles/asterisk]                  | [Asterisk](https://www.asterisk.org/) PBX for VOIP phones
+[syncthing](roles/syncthing)                | Per-user [Syncthing](https://syncthing.net/) instances that sync files to your NFS home directory
+[asterisk](roles/asterisk)                  | [Asterisk](https://www.asterisk.org/) PBX for VOIP phones
 [nsd](roles/nsd)                            | Authoritative DNS server
 [nagios](roles/nagios)                      | Monitors all hosts and services, automatically generated configuration
 [znc](roles/znc)                            | [ZNC](https://znc.in/) IRC bouncer
