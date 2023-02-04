@@ -44,9 +44,9 @@ from official repos or [EPEL](https://docs.fedoraproject.org/en-US/epel/),
 and managed using systemd. For services that lack official RPMs, the software is
 built locally from the upstream source repository during the playbook.
 
-All network services listen on the local IP of the virtual machine. If you want
-to expose a service to the internet, it is assumed that you will configure your
-firewall for 1:1 NAT.
+All network services listen on the local IP of the host. If you want to expose
+a service to the internet, it is assumed that you will configure your firewall
+for 1:1 NAT.
 
 There is no IPv6 support whatsoever. If my ISP ever rolls out IPv6, I'll look
 into it.
@@ -55,8 +55,8 @@ into it.
 
 Modular [Ansible roles](roles) are used to manage VMs and configure each service.
 
-| Role                                        | Description |
-----------------------------------------------|-------------|
+| Role                                      | Description |
+--------------------------------------------|-------------|
 [proxmox\_instance](roles/proxmox_instance) | Automatically provisions a [Proxmox](https://www.proxmox.com/) VM with the given hardware and cloud-init configuration
 [freeipa\_server](roles/freeipa_server)     | [FreeIPA](https://www.freeipa.org/) provides provides identity management, access control, certificate management, and Single Sign-On for all services via Kerberos/GSSAPI
 [yum\_mirror](roles/yum_mirror)             | Mirrors all package repositories locally
@@ -83,13 +83,15 @@ Modular [Ansible roles](roles) are used to manage VMs and configure each service
 [nsd](roles/nsd)                            | Authoritative DNS server
 [nagios\_server](roles/nagios_server)       | Monitors all hosts and services, automatically generated configuration
 [znc](roles/znc)                            | [ZNC](https://znc.in/) IRC bouncer
-[cups](roles/cups)                          | Centralized network printing
+[cups\_server](roles/cups)                  | Centralized network printing
 [unifi](roles/unifi)                        | [UniFi](https://www.ui.com/) controller for managing Ubiquiti access points
 [freeradius](roles/freeradius)              | WPA Enterprise authentication for WiFi using FreeIPA credentials or SSL certificates
 
 All services authenticate against the local FreeIPA domain. On a domain-joined
 workstation, Kerberos/GSSAPI is used for single sign-on.
 
+The [common.yml](playbooks/common.yml) playbook is a prerequisite for all services.
+It joins the host to FreeIPA, adds the local yum repos, configures DNS and NTP, etc.
 
 ## Todo
 
