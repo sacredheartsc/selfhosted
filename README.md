@@ -65,6 +65,7 @@ configuration, and configure each service.
 [common](roles/common/meta/main.yml)        | Meta-role that pulls in common configuration roles (local repos, freeipa client, DNS/NTP, SSH keys, etc)
 [freeipa\_server](roles/freeipa_server)     | [FreeIPA](https://www.freeipa.org/) provides provides identity management, access control, certificate management, and single sign-on
 [yum\_mirror](roles/yum_mirror)             | Mirrors all package repositories locally
+[dnf\_automatic](roles/dnf_automatic)       | Automatically updates packages and performs reboots and service restarts when necessary
 [rsyslog\_server](roles/rsyslog_server)     | Centralized syslog storage using [Rsyslog](https://www.rsyslog.com/)
 [postfix\_server](roles/postfix_server)     | Public-facing mail server using [Postfix](https://www.postfix.org/)
 [dovecot](roles/dovecot)                    | [Dovecot](https://www.dovecot.org/) IMAP server, with full text and attachment search
