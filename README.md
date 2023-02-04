@@ -83,7 +83,7 @@ Modular [Ansible roles](roles) are used to manage VMs and configure each service
 [nsd](roles/nsd)                            | Authoritative DNS server
 [nagios\_server](roles/nagios_server)       | Monitors all hosts and services, automatically generated configuration
 [znc](roles/znc)                            | [ZNC](https://znc.in/) IRC bouncer
-[cups\_server](roles/cups)                  | Centralized network printing
+[cups\_server](roles/cups_server)           | Centralized network printing
 [unifi](roles/unifi)                        | [UniFi](https://www.ui.com/) controller for managing Ubiquiti access points
 [freeradius](roles/freeradius)              | WPA Enterprise authentication for WiFi using FreeIPA credentials or SSL certificates
 
