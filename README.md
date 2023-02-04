@@ -39,7 +39,7 @@ touch your network infrastructure.
 
 ## Design
 
-`sacredheart-selfhosted` is designed for [Rocky Linux] (https://rockylinux.org/)
+`sacredheart-selfhosted` is designed for [Rocky Linux](https://rockylinux.org/)
 9. A small number of roles require Rocky Linux 8 due to package availability.
 
 There's no Docker, no containers, and no `curl | bash.` Everything is installed
