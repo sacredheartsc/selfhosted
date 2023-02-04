@@ -1,0 +1,119 @@
+admins = { {% for admin in prosody_admins %}"{{ admin }}"{% if loop.last %},{% endif %}{% endfor %} }
+
+network_backend = "event"
+
+plugin_paths = { "{{ prosody_module_dir }}" }
+
+modules_enabled = {
+  -- required modules
+    "roster";       -- Allow users to have a roster. Recommended ;)
+    "saslauth";     -- Authentication for clients and servers. Recommended if you want to log in.
+    "tls";          -- Add support for secure TLS on c2s/s2s connections
+    "dialback";     -- s2s dialback support
+    "disco";        -- Service discovery
+
+  -- optional modules
+    "csi";          -- Client state indication
+    "carbons";      -- Keep multiple clients in sync
+    "pep";          -- Enables users to publish their avatar, mood, activity, playing music and more
+    "private";      -- Private XML storage (for room bookmarks, etc.)
+    "blocklist";    -- Allow users to block communications with other users
+    "vcard4";       -- User profiles (stored in PEP)
+    "vcard_legacy"; -- Conversion between legacy vCard and PEP Avatar, vcard
+    "limits";       -- Enable bandwidth limiting for XMPP connections
+
+    "version";      -- Replies to server version requests
+    "uptime";       -- Report how long server has been running
+    "time";         -- Let others know the time here on this server
+    "ping";         -- Replies to XMPP pings with pongs
+    "mam";          -- Store messages in an archive and allow users to access it
+    "admin_adhoc";  -- Allows administration via an XMPP client that supports ad-hoc commands
+    "groups";       -- Shared roster support
+
+  -- community modules
+    "smacks";            -- Stream management / fast reconnects
+    "csi_battery_saver"; -- Mobile optimizations
+    "turn_external";     -- STUN/TURN server
+    "reload_modules";    -- Reload modules on config reload
+}
+
+reload_modules = { "groups", "tls" }
+pidfile = "/run/prosody/prosody.pid";
+
+allow_registration = false
+groups_file = "{{ prosody_groups_file }}"
+
+c2s_require_encryption = true
+s2s_require_encryption = true
+s2s_secure_auth        = false
+
+-- Enable rate limits for incoming client and server connections
+limits = {
+  c2s = {
+    rate = "10kb/s";
+  };
+  s2sin = {
+    rate = "30kb/s";
+  };
+}
+
+-- Authentication
+authentication = "ldap"
+ldap_server    = "{{ prosody_ldap_hosts | join(' ') }}"
+ldap_rootdn    = "uid={{ prosody_sysaccount_username }},{{ freeipa_sysaccount_basedn }}"
+ldap_password  = "{{ prosody_sysaccount_password }}"
+ldap_base      = "{{ freeipa_user_basedn }}"
+ldap_filter    = "(&(jid=$user@$host)(memberOf=cn={{ prosody_access_group }},{{ freeipa_group_basedn }}))"
+ldap_tls       = true
+
+-- Storage
+storage = "sql"
+sql = {
+  driver   = "PostgreSQL",
+  database = "{{ prosody_db_name }}",
+  username = "{{ prosody_user }}",
+  host     = "{{ prosody_db_host }}"
+}
+
+archive_expires_after = "{{ prosody_archive_expires_after }}"
+
+-- Logging
+log = {
+  info = "*console";
+}
+
+-- Certificates
+certificates = "/etc/pki/prosody"
+
+-- HTTP
+http_ports            = { {{ prosody_http_port }} }
+http_interfaces       = { "127.0.0.1", "::1" }
+https_interfaces      = { }
+https_ports           = { }
+http_external_url     = "https://{{ prosody_http_host }}/"
+https_external_url    = "https://{{ prosody_http_host }}/"
+http_max_content_size = {{ prosody_upload_file_size_limit }}
+trusted_proxies       = { "127.0.0.1", "::1" }
+
+Component "{{ prosody_http_host }}" "http_upload"
+
+http_upload_file_size_limit = {{ prosody_upload_file_size_limit }}
+http_upload_expire_after = {{ prosody_upload_expire_after }}
+http_upload_quota = {{ prosody_upload_quota }}
+
+-- Virtual hosts
+{% for vhost in prosody_vhosts %}
+VirtualHost "{{ vhost }}"
+disco_items = {
+  { "{{ prosody_http_host }}" },
+}
+turn_external_host = "{{ prosody_turn_host }}"
+turn_external_port = {{ prosody_turn_port }}
+turn_external_secret = "{{ prosody_turn_secret }}"
+
+{% endfor %}
+
+{% for vhost in prosody_conference_vhosts %}
+Component  "{{ vhost }}" "muc"
+  modules_enabled = { "muc_mam" }
+{% endfor %}

@@ -1,0 +1,8 @@
+dependencies:
+  - role: yum
+    yum_repositories: epel
+    tags: yum
+
+  - role: freeipa_system_account
+    system_account_username: '{{ mediawiki_sysaccount_username }}'
+    system_account_password: '{{ mediawiki_sysaccount_password }}'

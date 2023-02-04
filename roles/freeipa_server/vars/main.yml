@@ -1,0 +1,65 @@
+freeipa_packages:
+  - ipa-server
+  - ipa-server-trust-ad
+  - ipa-server-dns
+
+freeipa_backup_dir: /var/lib/ipa/backup
+
+# These services must be explicitly allowed if the default HBAC-allow-all policy
+# is not used. See https://pagure.io/freeipa/issue/7831
+freeipa_system_services:
+  - systemd-user
+  - sudo
+  - sudo-i
+  - polkit-1
+
+freeipa_automount_maps:
+  - auto.nfs
+  - auto.home
+  - auto.nfs_user
+  - auto.nfs_group
+  - auto.nfs_media
+
+freeipa_automount_keys:
+  - map: auto.master
+    key: /net
+    info: -hosts
+
+  - map: auto.master
+    key: /nfs
+    info: auto.nfs -browse
+
+  - map: auto.nfs
+    key: user
+    info: -fstype=autofs auto.nfs_user
+
+  - map: auto.nfs
+    key: group
+    info: -fstype=autofs auto.nfs_group
+
+  - map: auto.nfs
+    key: media
+    info: -fstype=autofs auto.nfs_media
+
+freeipa_log_files:
+  - path: /var/log/pki/pki-tomcat/ca/transactions
+    tag: ipa-ca
+
+  - path: /var/log/dirsrv/slapd-{{ freeipa_realm | replace('.', '-') }}/access
+    tag: slapd
+
+  - path: /var/log/dirsrv/slapd-{{ freeipa_realm | replace('.', '-') }}/audit
+    tag: slapd
+
+  - path: /var/log/dirsrv/slapd-{{ freeipa_realm | replace('.', '-') }}/errors
+    tag: slapd
+    severity: error
+
+  - path: /var/log/httpd/access_log
+    tag: httpd
+
+  - path: /var/log/httpd/error_log
+    tag: httpd
+    severity: error
+
+freeipa_custom_schema_dir: /usr/local/share/dirsrv/schema

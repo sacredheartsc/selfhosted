@@ -1,0 +1,4 @@
+archive_dest_path: /nfs/archive
+archive_user: s-archiver
+archive_on_calendar: '*-*-* 23:00:00'
+archive_retention_days: 365

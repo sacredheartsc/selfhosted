@@ -1,0 +1,5 @@
+php_packages:
+  '8':
+    - '@php:8.0'
+  '9':
+    - php

@@ -1,0 +1,20 @@
+znc_packages:
+  - znc
+  - cyrus-sasl
+  - cyrus-sasl-plain
+
+znc_home: /var/lib/znc/.znc
+znc_clone_user: cloneuser
+
+znc_hbac_hostgroup: znc_servers
+znc_hbac_service: znc
+
+znc_certificate_path: /etc/pki/tls/certs/znc.pem
+znc_certificate_key_path: /etc/pki/tls/private/znc.key
+znc_dhparams_path: /etc/pki/tls/certs/dhparams-znc.pem
+
+znc_archive_shell: >-
+  TIMESTAMP=$(date +%Y%m%d%H%M%S);
+  tar czf "znc-${TIMESTAMP}.tar.gz"
+  --transform "s|^\.|znc-${TIMESTAMP}|"
+  -C "{{ znc_home }}" .

@@ -1,0 +1,10 @@
+dnf_automatic_restart: no
+
+nagios_disks:
+  - regex: ^(/sys|/dev|/run|/rpool|/tank)
+    exclude: yes
+    description: disks
+
+  - regex: ^/tank
+    description: zfs
+    terse: yes

@@ -1,0 +1,24 @@
+teddit_version: main
+teddit_user: teddit
+teddit_port: 8080
+teddit_server_name: '{{ ansible_fqdn }}'
+
+teddit_update_on_calendar: weekly
+
+teddit_use_reddit_oauth: no
+teddit_theme: auto
+teddit_clean_homepage: yes
+teddit_flairs_enabled: no
+teddit_highlight_controversial: yes
+teddit_videos_muted: yes
+teddit_comments_sort: confidence
+teddit_show_upvotes: yes
+teddit_show_upvote_percentage: yes
+teddit_suggested_subreddits:
+  - All
+  - Saved
+
+teddit_redis_host: 127.0.0.1
+teddit_redis_password: ''
+teddit_redis_port: 6379
+teddit_cache_control_interval: 24

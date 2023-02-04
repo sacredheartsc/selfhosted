@@ -1,0 +1,11 @@
+certificate_sans: '{{ [ansible_fqdn] + cnames }}'
+certificate_type: RSA
+certificate_size: 2048
+
+certificate_owner: root
+certificate_mode: 0400
+certificate_service: HTTP
+
+certificate_hook_name: '{{ certificate_path | basename }}'
+
+certificate_resubmit: no

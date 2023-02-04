@@ -1,0 +1,32 @@
+- name: install packages
+  dnf:
+    name: '{{ prosody_le_slave_packages }}'
+    state: present
+
+- name: copy ssh privkey
+  copy:
+    content: '{{ prosody_le_ssh_privkey }}'
+    dest: '{{ prosody_le_ssh_privkey_path }}'
+    mode: 0600
+
+- name: generate script
+  template:
+    src: usr/local/sbin/prosody-letsencrypt-proxy.j2
+    dest: /usr/local/sbin/prosody-letsencrypt-proxy
+    mode: 0555
+
+- name: create systemd timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: prosody-letsencrypt-proxy
+    timer_description: Check for updated prosody certificates
+    timer_after: network.target
+    timer_on_calendar: daily
+    timer_exec: /usr/local/sbin/prosody-letsencrypt-proxy
+
+- name: retrieve certificates
+  systemd:
+    name: prosody-letsencrypt-proxy.service
+    state: started
+  changed_when: no

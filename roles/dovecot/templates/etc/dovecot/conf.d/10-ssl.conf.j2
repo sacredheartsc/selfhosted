@@ -1,0 +1,10 @@
+ssl = required
+
+ssl_cert = <{{ dovecot_certificate_path }}
+ssl_key = <{{ dovecot_certificate_key_path }}
+
+ssl_dh = <{{ dovecot_dhparams_path }}
+
+ssl_min_protocol = TLSv1.2
+
+ssl_cipher_list = {{ dovecot_ssl_cipher_list }}

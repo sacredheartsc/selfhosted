@@ -1,0 +1,56 @@
+#!/usr/libexec/platform-python
+
+# Copyright (c) 2023 stonewall@sacredheartsc.com
+# MIT License https://opensource.org/licenses/MIT
+#
+# Generates a shared roster file for Prosody from the given IPA group.
+
+import os
+import sys
+import ldap
+import ldap.sasl
+import ldap.filter
+import hashlib
+import subprocess
+
+LDAP_URI = '{{ freeipa_ldap_uri }}'
+USER_BASEDN = '{{ freeipa_user_basedn }}'
+GROUP_BASEDN = '{{ freeipa_group_basedn }}'
+
+PROSODY_GROUPS_FILE = '{{ prosody_groups_file }}'
+PROSODY_ACCESS_GROUP = '{{ prosody_access_group }}'
+
+ROSTER_GROUP_NAME = 'Internal'
+
+os.environ['GSS_USE_PROXY'] = 'yes'
+conn = ldap.initialize(LDAP_URI)
+conn.protocol_version = ldap.VERSION3
+conn.sasl_interactive_bind_s('', ldap.sasl.sasl({}, 'GSSAPI'))
+
+users = conn.search_s(
+  USER_BASEDN,
+  ldap.SCOPE_SUBTREE,
+  ldap.filter.filter_format('memberOf=cn=%s,%s', [PROSODY_ACCESS_GROUP, GROUP_BASEDN]),
+  ['jid', 'displayName'])
+
+if not users:
+  exit(1)
+
+with open(PROSODY_GROUPS_FILE, 'rb') as f:
+  hash_before = hashlib.md5(f.read()).hexdigest()
+  f.close()
+
+with open(PROSODY_GROUPS_FILE, 'w') as f:
+  print(f'[{ROSTER_GROUP_NAME}]', file=f)
+  for user in users:
+    jid = user[1]['jid'][0].decode('utf-8')
+    displayName = user[1]['displayName'][0].decode('utf-8')
+    print(f'{jid}={displayName}', file=f)
+  f.close()
+
+with open(PROSODY_GROUPS_FILE, 'rb') as f:
+  hash_after = hashlib.md5(f.read()).hexdigest()
+  f.close()
+
+if hash_before != hash_after:
+  subprocess.run(['prosodyctl', 'reload'])

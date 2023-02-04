@@ -1,0 +1,4 @@
+selinux_packages:
+  - selinux-policy-targeted
+  - audit
+  - setroubleshoot-server

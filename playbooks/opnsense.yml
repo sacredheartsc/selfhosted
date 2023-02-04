@@ -1,0 +1,17 @@
+- name: configure opnsense firewall
+  hosts: opnsense_firewalls
+  gather_facts: yes
+  vars:
+    unbound_max_negative_cache: 5
+  roles:
+    - freebsd_loader
+    - devd
+    - pxe_server
+  tasks:
+    - name: set unbound negative ttl
+      copy:
+        content: |
+          server:
+          cache-max-negative-ttl: {{ unbound_max_negative_cache }}
+        dest: /usr/local/etc/unbound.opnsense.d/custom.conf
+      tags: unbound

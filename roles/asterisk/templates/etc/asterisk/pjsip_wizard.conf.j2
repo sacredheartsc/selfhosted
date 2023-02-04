@@ -1,0 +1,57 @@
+;;;;;;;;;;;
+; Trunks
+;;;;;;;;;;;
+
+[trunk-defaults](!)
+type                     = wizard
+sends_auth               = yes
+sends_registrations      = yes
+endpoint/rtp_symmetric   = yes
+endpoint/rewrite_contact = yes
+endpoint/send_rpid       = yes
+endpoint/from_domain     = {{ asterisk_from_domain }}
+endpoint/allow           = !all,ulaw
+aor/qualify_frequency    = 30
+
+{% for trunk in asterisk_sip_trunks %}
+[{{ trunk.name }}](trunk-defaults)
+transport                 = transport-{{ trunk.transport | default('udp') }}
+remote_hosts              = {{ trunk.host if trunk.host is string else (trunk.host | join(',')) }}
+endpoint/context          = from-{{ trunk.name }}
+{% if trunk.codecs is defined %}
+endpoint/allow            = !all,{{ trunk.codecs if trunk.codecs is string else (trunk.codecs | join(',')) }}
+{% endif %}
+endpoint/media_encryption = {{ trunk.media_encryption | default('no') }}
+outbound_auth/username    = {{ trunk.username }}
+outbound_auth/password    = {{ trunk.password }}
+
+{% endfor %}
+
+
+;;;;;;;;;;;;;
+; Extensions
+;;;;;;;;;;;;;
+
+[extension-defaults](!)
+type                       = wizard
+accepts_registrations      = yes
+accepts_auth               = yes
+aor/remove_existing        = yes
+aor/qualify_frequency      = 30
+endpoint/allow             = !all,g722,ulaw
+endpoint/from_domain       = {{ asterisk_from_domain }}
+endpoint/subscribe_context = subscribe
+
+{% for ext in asterisk_sip_extensions %}
+[{{ ext.name }}](extension-defaults)
+{% if ext.codecs is defined %}
+endpoint/allow        = !all,{{ ext.codecs if ext.codecs is string else (ext.codecs | join(',')) }}
+{% endif %}
+endpoint/context      = {{ ext.context }}
+endpoint/mailboxes    = {{ ext.mailbox if ext.mailbox is string else (ext.mailbox | join(',')) }}
+endpoint/callerid     = {{ ext.cid_name }} <{{ ext.cid_number | default(ext.name) }}>
+inbound_auth/username = {{ ext.username | default(ext.name) }}
+inbound_auth/password = {{ ext.password }}
+aor/max_contacts      = {{ ext.max_contacts | default(1) }}
+
+{% endfor %}

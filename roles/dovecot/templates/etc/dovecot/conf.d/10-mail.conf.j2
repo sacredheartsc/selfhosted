@@ -1,0 +1,31 @@
+mail_location = mdbox:~/mdbox
+
+namespace inbox {
+  type = private
+  separator = /
+  inbox = yes
+  subscriptions = yes
+}
+
+namespace virtual {
+  location = virtual:/etc/dovecot/virtual:INDEX=~/.virtual:CONTROL=~/.virtual:VOLATILEDIR=~/.virtual:LAYOUT=fs
+
+  type = private
+  separator = /
+  prefix = Virtual/
+}
+
+mail_plugins = $mail_plugins quota virtual fts fts_solr
+
+mail_privileged_group = {{ dovecot_vmail_user }}
+
+first_valid_uid = {{ dovecot_vmail_user_result.uid }}
+last_valid_uid = {{ dovecot_vmail_user_result.uid }}
+
+first_valid_gid = {{ dovecot_vmail_user_result.group }}
+last_valid_gid = {{ dovecot_vmail_user_result.group }}
+
+# recommended configuration for quota:count
+protocol !indexer-worker {
+  mail_vsize_bg_after_count = 100
+}

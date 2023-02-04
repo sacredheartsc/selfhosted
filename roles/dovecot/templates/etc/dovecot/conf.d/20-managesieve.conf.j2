@@ -1,0 +1,11 @@
+protocols = $protocols sieve
+
+service managesieve-login {
+  inet_listener sieve {
+    port = 4190
+  }
+
+  inet_listener sieve_deprecated {
+    port = 0
+  }
+}

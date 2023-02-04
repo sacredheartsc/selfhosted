@@ -1,0 +1,15 @@
+Defaults	env_reset
+Defaults	secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+Defaults    mailto = "{{ proxmox_sudo_mailto }}"
+Defaults    mail_badpass
+Defaults    mail_no_host
+Defaults    mail_no_perms
+Defaults    mail_no_user
+
+root	ALL=(ALL:ALL) ALL
+
+# Allow members of group sudo to execute any command
+%sudo	ALL=(ALL:ALL) ALL
+
+@includedir /etc/sudoers.d

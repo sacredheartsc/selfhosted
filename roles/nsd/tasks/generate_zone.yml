@@ -1,0 +1,50 @@
+- name: stat current zone file
+  stat:
+    path: /etc/nsd/{{ zone.name }}.zone
+  register: current_zone_file
+
+- name: get current serial
+  command: dig @{{ zone.slave_nameservers | first | default('127.0.0.1') }} +short SOA {{ zone.name }}
+  register: zone_soa
+  changed_when: no
+
+- name: check if zone serial needs to be regenerated
+  block:
+    - name: create temporary zone file
+      copy:
+        content: |
+          {{ nsd_soa_block }}
+          {{ zone.content }}
+        dest: /tmp/.ansible-{{ zone.name }}.zone.tmp
+      vars:
+        serial: '{{ zone_soa.stdout.split()[2] | default(nsd_init_serial) }}'
+      changed_when: no
+
+    - name: stat temporary zone file
+      stat:
+        path: /tmp/.ansible-{{ zone.name }}.zone.tmp
+      register: temp_zone_file
+
+    - name: remove temporary zone file
+      file:
+        path: /tmp/.ansible-{{ zone.name }}.zone.tmp
+        state: absent
+      changed_when: no
+  when: current_zone_file.stat.exists
+
+- name: generate zone file
+  copy:
+    content: |
+      {{ nsd_soa_block }}
+      {{ zone.content }}
+    dest: /etc/nsd/{{ zone.name }}.zone
+  vars:
+    serial: >-
+      {{
+      nsd_init_serial if not zone_soa.stdout.split()[2]
+      else
+      (zone_soa.stdout.split()[2] | int) if ((not current_zone_file.stat.exists) or current_zone_file.stat.checksum == temp_zone_file.stat.checksum)
+      else
+      (zone_soa.stdout.split()[2] | int) + 1
+      }}
+  notify: reload nsd

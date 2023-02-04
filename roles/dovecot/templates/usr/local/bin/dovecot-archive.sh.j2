@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -Eeu -o pipefail
+
+VMAIL_USER={{ dovecot_vmail_user | quote }}
+{% raw %}
+TMPDIR=$(mktemp -d .dovecot-XXXXXX)
+trap 'rm -rf -- "$TMPDIR"' EXIT
+
+chown "$VMAIL_USER" "$TMPDIR"
+
+doveadm user '*' | xargs -r -I{} doveadm -o plugin/quota= backup -n inbox -f -u {} "mdbox:${TMPDIR}/{}/mdbox:LAYOUT=fs"
+
+TIMESTAMP=$(date +%Y%m%d%H%M%S)
+
+tar czf "mailboxes-${TIMESTAMP}.tar.gz"       \
+  --transform "s|^\.|mailboxes-${TIMESTAMP}|" \
+  -C "$TMPDIR" .
+{% endraw %}

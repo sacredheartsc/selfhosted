@@ -1,0 +1,5 @@
+freeipa_packages:
+  '8':
+    - '@idm:DL1/client'
+  '9':
+    - ipa-client

@@ -1,0 +1,11 @@
+apache_use_nfs: no
+apache_can_network_relay: yes
+apache_can_network_connect: no
+apache_can_network_connect_db: no
+apache_can_connect_ldap: no
+apache_can_sendmail: no
+apache_gssapi: no
+
+apache_sysaccount_username: apache
+
+apache_backup_dirs: []

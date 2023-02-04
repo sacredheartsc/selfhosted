@@ -1,0 +1,6 @@
+JVM_HEAP_SIZE="{{ solr_heap_size }}"
+
+SOLR_CONF_DIR=/etc/solr
+SOLR_OPTS="-Dsolr.autoSoftCommit.maxTime={{ solr_softcommit_ms }}"
+
+LOG4J_PROPS=/etc/solr/log4j2.xml

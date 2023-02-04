@@ -1,0 +1,37 @@
+[general]
+format={{ asterisk_voicemail_formats | join('|') }}
+
+serveremail={{ asterisk_mail_from }}
+attach=yes
+; Maximum number of messages per folder
+maxmsg={{ asterisk_voicemail_max_message_count }}
+; Maximum length of a voicemail message in seconds
+maxsecs={{ asterisk_voicemail_max_message_secs }}
+; Minimum length of a voicemail message in seconds for the message to be kept
+maxgreet={{ asterisk_voicemail_max_greeting_secs }}
+; How many milliseconds to skip forward/back when rew/ff in message playback
+skipms=3000
+; How many seconds of silence before we end the recording
+maxsilence=10
+; Silence threshold (what we consider silence: the lower, the more sensitive)
+silencethreshold=128
+; Max number of failed login attempts
+maxlogins={{ asterisk_voicemail_max_failed_logins }}
+
+emailsubject={{ asterisk_voicemail_email_subject }}
+emailbody={{ asterisk_voicemail_email_body }}
+emaildateformat={{ asterisk_voicemail_email_date_format }}
+
+tz=myzone
+locale={{ asterisk_locale }}
+minpassword={{ asterisk_voicemail_min_password }}
+
+[zonemessages]
+myzone={{ asterisk_timezone }}|'vm-received' Q 'digits/at' IMp
+
+{% for item in asterisk_voicemail_contexts | dict2items(key_name='context', value_name='mailboxes') %}
+[{{ item.context }}]
+{% for mailbox in item.mailboxes %}
+{{ mailbox.address }} => {{ mailbox.password }},{{ mailbox.name }},{{ mailbox.email if mailbox.email is string else (mailbox.email | join('|')) }},,,
+{% endfor %}
+{% endfor %}

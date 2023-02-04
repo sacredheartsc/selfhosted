@@ -1,0 +1,5 @@
+# username-port mappings
+syncthing_users: {}
+
+syncthing_fs_watcher_enabled: no  # inotify doesn't work on nfs.
+syncthing_rescan_interval_sec: 60

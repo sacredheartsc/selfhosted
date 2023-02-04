@@ -1,0 +1,3 @@
+hostname_fqdn: '{{ fqdn }}'
+hostname_short: '{{ inventory_hostname }}'
+hostname_ip: '{{ ip }}'

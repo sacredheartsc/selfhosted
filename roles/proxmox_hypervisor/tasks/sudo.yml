@@ -1,0 +1,5 @@
+- name: generate sudoers file
+  template:
+    src: etc/sudoers.j2
+    dest: /etc/sudoers
+    mode: 0440

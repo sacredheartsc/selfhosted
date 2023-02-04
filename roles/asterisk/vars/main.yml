@@ -1,0 +1,20 @@
+asterisk_packages:
+  - asterisk
+  - asterisk-pjsip
+  - asterisk-voicemail-plain
+
+asterisk_sound_tarballs:
+  g722:  https://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-g722-current.tar.gz
+  g729:  https://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-g729-current.tar.gz
+  gsm:   https://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-gsm-current.tar.gz
+  sln16: https://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-sln16-current.tar.gz
+  ulaw:  https://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-ulaw-current.tar.gz
+  wav:   https://downloads.asterisk.org/pub/telephony/sounds/asterisk-core-sounds-en-wav-current.tar.gz
+
+asterisk_certificate_path: /etc/asterisk/asterisk.crt
+asterisk_certificate_key_path: /etc/asterisk/asterisk.key
+asterisk_https_certificate_path: /etc/pki/tls/certs/asterisk-https.crt
+asterisk_https_certificate_key_path: /etc/pki/tls/private/asterisk-https.key
+asterisk_ca_file:  /etc/pki/tls/certs/ca-bundle.crt
+
+asterisk_data_dir: /var/spool/asterisk

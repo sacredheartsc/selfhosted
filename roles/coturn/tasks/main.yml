@@ -1,0 +1,25 @@
+- name: install packages
+  dnf:
+    name: '{{ coturn_packages }}'
+    state: present
+
+- name: generate coturn configuration
+  template:
+    src: etc/coturn/turnserver.conf.j2
+    dest: /etc/coturn/turnserver.conf
+    owner: root
+    group: coturn
+    mode: 0640
+  notify: restart coturn
+
+- name: open firewall ports
+  firewalld:
+    port: '{{ item }}'
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop:
+    - '{{ coturn_port }}/tcp'
+    - '{{ coturn_port }}/udp'
+    - '{{ coturn_min_port }}-{{ coturn_max_port }}/udp'
+  tags: firewalld

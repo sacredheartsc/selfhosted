@@ -1,0 +1,20 @@
+gathio_packages:
+  - mongodb-org
+  - nodejs
+  - git
+
+gathio_git_repo: https://github.com/lowercasename/gathio
+gathio_home: /var/lib/gathio
+gathio_install_dir: '{{ gathio_home }}/gathio'
+
+gathio_mongodb_selinux_policy_te: |
+  require {
+    type sysctl_fs_t;
+    type var_lib_nfs_t;
+    type mongod_t;
+    class dir search;
+  }
+
+  #============= mongod_t ==============
+  allow mongod_t sysctl_fs_t:dir search;
+  allow mongod_t var_lib_nfs_t:dir search;

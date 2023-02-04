@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+set -eu
+
+SRCDIR={{ ttrss_home | quote }}
+
+if (( $EUID != 0 )); then
+  echo 'must be superuser' 1>&2
+  exit 1
+fi
+
+cd "$SRCDIR"
+
+git fetch
+
+local_rev=$(git rev-parse HEAD)
+upstream_rev=$(git rev-parse '@{u}')
+
+echo "local: $local_rev"
+echo "upstream: $upstream_rev"
+
+if [ "$local_rev" != "$upstream_rev" ]; then
+  git reset --hard HEAD
+  systemctl restart ttrss
+else
+  echo "ttrss is already up to date"
+fi

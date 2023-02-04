@@ -1,0 +1,105 @@
+asterisk_external_ip: 203.0.113.62  # changeme
+asterisk_fqdn: pbx.example.com      # changeme
+asterisk_local_nets:
+  - '{{ vlans.voip.cidr }}'
+
+asterisk_password_salt: '{{ vault_asterisk_password_salt }}'
+
+asterisk_voicemail_contexts:  # changeme
+  default:
+    - address: 6000
+      password: 1234
+      name: Doe Family
+      email: doefamily@example.com
+
+asterisk_sip_trunks: '{{ vault_asterisk_sip_trunks }}'
+asterisk_sip_extensions: '{{ vault_asterisk_sip_extensions }}'
+asterisk_ari_users: '{{ vault_asterisk_ari_users }}'
+
+asterisk_queues:  # changeme
+  - name: house-phones
+    strategy: ringall
+    retry: 1
+    timeout: 30
+    members:
+      - 6001
+      - 6002
+      - 6003
+
+# changeme - dump your asterisk dialplan into this variable
+asterisk_dialplan: |
+  [globals]
+  AREA_CODE = 555
+
+  ; voicemail
+  VOICEMAIL_NUMBER       = *99
+  VOICEMAIL_CONTEXT      = default
+  VOICEMAIL_RING_TIMEOUT = 25
+
+  ; extension patterns
+  INTERCOM = 6000
+  HOUSE    = _6XXX
+
+  ; Queue for all local home phones
+  HOME_QUEUE = house-phones
+
+  ; All home phones use the same voicemail box.
+  HOME_MAILBOX = 6000
+
+  ; Caller ID for outgoing PSTN calls from the home phone line.
+  HOME_CID = John Doe <+15555555555>
+
+  [gosub-voicemail]
+  ; Dial the given channel, if no answer send to voicemail.
+  ; ${ARG1} - channel to dial
+  ; ${ARG2} - voicemail box
+  exten => s,1,Dial(${ARG1},${VOICEMAIL_RING_TIMEOUT})
+   same => n,Answer(500)
+   same => n,Voicemail(${ARG2},su)
+   same => n,Hangup()
+
+  [gosub-intercom]
+  exten => s,1,Set(PJSIP_HEADER(add,Alert-Info)=auto answer)
+   same => n,Return()
+
+  [subscribe]
+  exten => _XXXX,hint,PJSIP/${EXTEN}
+
+  [internal]
+  ; For INTERCOM, page all participants into 2-way conference
+  exten => ${INTERCOM},1,Set(CALLERID(all)=Intercom <${EXTEN}>
+   same => n,Page(${STRREPLACE(QUEUE_MEMBER_LIST(${HOME_QUEUE}),",","&")},db(gosub-intercom^s^1),10)
+
+  ; For HOME extensions, ring indefinitely.
+  exten => ${HOME},1,Dial(PJSIP/${EXTEN})
+   same => n,Hangup()
+
+  [from-upstream-provider]
+  ; Ring all house phones for incoming PSTN calls, if no answer send to voicemail.
+  exten => _X.,1,Queue(${HOME_QUEUE},nr,,,${VOICEMAIL_RING_TIMEOUT})
+   same => n,Answer(500)
+   same => n,Voicemail(${HOME_MAILBOX}@${VOICEMAIL_CONTEXT},su)
+   same => n,Hangup()
+
+  [from-house-phones]
+  include => internal
+  ; local voicemail access
+  exten => ${VOICEMAIL_NUMBER},1,Answer(500)
+   same => n,VoiceMailMain(${HOME_MAILBOX}@${VOICEMAIL_CONTEXT},s)
+   same => n,Hangup()
+  ; pstn - normalize all outgoing numbers to +1XXXXXXXXXX
+  exten => _+1NXXNXXXXXX,1,Set(CALLERID(all)=${HOME_CID})
+   same => n,Dial(PJSIP/${EXTEN}@upstream-provider)
+   same => n,Hangup()
+  exten => _1NXXNXXXXXX,1,Set(CALLERID(all)=${HOME_CID})
+   same => n,Dial(PJSIP/+${EXTEN}@upstream-provider)
+   same => n,Hangup()
+  exten => _NXXNXXXXXX,1,Set(CALLERID(all)=${HOME_CID})
+   same => n,Dial(PJSIP/+1${EXTEN}@upstream-provider)
+   same => n,Hangup()
+  exten => _NXXXXXX,1,Set(CALLERID(all)=${HOME_CID})
+   same => n,Dial(PJSIP/+1${AREA_CODE}${EXTEN}@upstream-provider)
+   same => n,Hangup()
+  exten => _N11,1,Set(CALLERID(all)=${HOME_CID})
+   same => n,Dial(PJSIP/${EXTEN}@upstream-provider)
+   same => n,Hangup()

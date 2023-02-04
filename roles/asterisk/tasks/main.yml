@@ -1,0 +1,81 @@
+- name: install packages
+  dnf:
+    name: '{{ asterisk_packages }}'
+    state: present
+
+- name: create systemd override directory
+  file:
+    path: /etc/systemd/system/asterisk.service.d
+    state: directory
+
+- name: create systemd unit override
+  copy:
+    src: etc/systemd/system/asterisk.service.d/override.conf
+    dest: /etc/systemd/system/asterisk.service.d/override.conf
+  notify: restart asterisk
+  register: asterisk_unit
+
+- name: reload systemd units
+  systemd:
+    daemon_reload: yes
+  when: asterisk_unit.changed
+
+- name: download sound files
+  unarchive:
+    src: '{{ item.url }}'
+    remote_src: yes
+    dest: /usr/share/asterisk/sounds
+    creates: '/usr/share/asterisk/sounds/hello-world.{{ item.codec }}'
+  loop: "{{ asterisk_sound_tarballs | dict2items(key_name='codec', value_name='url') }}"
+
+- name: request public TLS certificate
+  include_role:
+    name: certbot
+  vars:
+    certificate_sans: ['{{ asterisk_fqdn }}']
+    certificate_path: '{{ asterisk_certificate_path }}'
+    certificate_key_path: '{{ asterisk_certificate_key_path }}'
+    certificate_owner: asterisk
+    certificate_hook: systemctl reload asterisk
+
+- name: request internal HTTPS certificate
+  include_role:
+    name: getcert_request
+  vars:
+    certificate_sans: ['{{ ansible_fqdn }}']
+    certificate_path: '{{ asterisk_https_certificate_path }}'
+    certificate_key_path: '{{ asterisk_https_certificate_key_path }}'
+    certificate_owner: asterisk
+    certificate_hook: systemctl reload asterisk
+
+- name: generate config files
+  template:
+    src: '{{ item.src }}'
+    dest: /etc/asterisk/{{ item.path | splitext | first }}
+    owner: asterisk
+    group: asterisk
+    mode: 0640
+  loop: "{{ lookup('filetree', '../templates/etc/asterisk', wantlist=True) }}"
+  when: item.state == 'file'
+  notify: reload asterisk
+
+- name: open firewall ports
+  firewalld:
+    permanent: yes
+    immediate: yes
+    port: '{{ item }}'
+    state: enabled
+  loop:
+    - '{{ asterisk_https_port }}/tcp'
+    - '{{ asterisk_sip_port }}/tcp'
+    - '{{ asterisk_sip_port }}/udp'
+    - '{{ asterisk_sip_tls_port }}/tcp'
+    - '{{ asterisk_sip_tls_port }}/udp'
+    - '{{ asterisk_rtp_port_start }}-{{ asterisk_rtp_port_end }}/udp'
+  tags: firewalld
+
+- name: start asterisk
+  systemd:
+    name: asterisk
+    enabled: yes
+    state: started

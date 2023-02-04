@@ -1,0 +1,90 @@
+nagios_email: sysadmins@example.com
+nagios_ssh_privkey: '{{ vault_nagios_ssh_privkey }}'
+nagios_ssh_pubkey: ssh-ed25519 AAAAAAAAAAAAAAchangeme
+
+nagios_excluded_groups:
+  - linux_laptops
+  - cellphones
+
+nagios_snmp_user: nagios
+nagios_snmp_community: public
+nagios_snmp_priv_proto: AES
+nagios_snmp_auth_proto: SHA
+nagios_snmp_auth_pass: '{{ vault_nagios_snmp_auth_pass }}'
+nagios_snmp_priv_pass: '{{ vault_nagios_snmp_priv_pass }}'
+
+nagios_ping_count: 5
+nagios_ping_rtt_warn: 50.0
+nagios_ping_rtt_crit: 100.0
+nagios_ping_loss_warn: 20%
+nagios_ping_loss_crit: 40%
+
+nagios_temp_warn: 60
+nagios_temp_crit: 70
+
+nagios_power_draw_warn: 50%
+nagios_power_draw_crit: 75%
+
+nagios_load_1m_warn: 1.0
+nagios_load_5m_warn: 0.9
+nagios_load_15m_warn: 0.8
+nagios_load_1m_crit: 2.0
+nagios_load_5m_crit: 1.8
+nagios_load_15m_crit: 1.6
+
+nagios_mem_warn: 80%
+nagios_mem_crit: 90%
+
+nagios_swap_warn: 50%
+nagios_swap_crit: 80%
+
+nagios_interface_bandwidth_warn: 0
+nagios_interface_bandwidth_crit: 0
+nagios_interface_discard_warn: 10
+nagios_interface_discard_crit: 50
+nagios_interface_error_warn: 5
+nagios_interface_error_crit: 20
+
+nagios_interfaces:
+  - regex: ^(?!.*(lo[0-9]*|virbr[0-9]*|tap.*|vmbr.*|lagg[0-9]+_vlan))
+    description: interfaces
+    down_ok: no
+    bandwidth_warn: '{{ nagios_interface_bandwidth_warn }}'
+    bandwidth_crit: '{{ nagios_interface_bandwidth_crit }}'
+    discard_warn: '{{ nagios_interface_discard_warn }}'
+    discard_crit: '{{ nagios_interface_discard_crit }}'
+    error_warn: '{{ nagios_interface_error_warn }}'
+    error_crit: '{{ nagios_interface_error_crit }}'
+
+nagios_disk_warn: 80%
+nagios_disk_crit: 90%
+
+nagios_disks:
+  - regex: ^(/sys|/dev|/run|/rpool|/tank)
+    exclude: yes
+    description: disks
+    warn: '{{ nagios_disk_warn }}'
+    crit: '{{ nagios_disk_crit }}'
+
+nagios_certificate_warn: 28
+nagios_certificate_crit: 14
+
+nagios_smtp_warn: 0.5
+nagios_smtp_crit: 1.0
+nagios_mailq_warn: 5
+nagios_mailq_crit: 20
+
+nagios_imap_warn: 0.5
+nagios_imap_crit: 1.0
+
+nagios_http_warn: 0.5
+nagios_http_crit: 1.0
+
+nagios_check_dns:
+  - name: www.example.com
+    server: 8.8.8.8
+    expect: 203.0.113.42
+
+  - name: mx1.example.com
+    server: 8.8.8.8
+    expect: 203.0.113.43

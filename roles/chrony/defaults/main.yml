@@ -1,0 +1,1 @@
+chrony_ntp_servers: '{{ vlan.ntp_servers }}'

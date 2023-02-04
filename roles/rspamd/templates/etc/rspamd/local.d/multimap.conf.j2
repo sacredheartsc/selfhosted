@@ -1,0 +1,9 @@
+sender_from_whitelist_domain {
+  type = "header";
+  header = "from";
+  filter = "email:domain";
+  map = "file://$LOCAL_CONFDIR/maps.d/domain-whitelist.map";
+  symbol = "SENDER_FROM_WHITELIST_DOMAIN";
+  description = "Local sender domain whitelist";
+  score = -6.0;
+}

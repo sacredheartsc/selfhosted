@@ -1,0 +1,14 @@
+nfs_mountd_port: 20048
+
+nfs_exports: []
+smb_shares: []
+nfs_homedirs: []
+
+nfs_homedir_user_dataset: tank/user
+nfs_homedir_group_dataset: tank/group
+
+nfs_homedir_priv_quota: 50G
+nfs_homedir_pub_quota: 10G
+
+nfs_homedir_options: rw
+nfs_homedir_clients: []

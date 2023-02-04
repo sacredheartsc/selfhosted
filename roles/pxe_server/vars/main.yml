@@ -1,0 +1,23 @@
+pxe_images:
+  - name: rocky
+    description: Rocky Linux
+    version: 8.6
+    arch: x86_64
+    os: redhat
+    kernel: images/pxeboot/vmlinuz
+    initrd: images/pxeboot/initrd.img
+    url: https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8.6-x86_64-minimal.iso
+    sha256: a9ece0e810275e881abfd66bb0e59ac05d567a5ec0bc2f108b9a3e90bef5bf94
+    kickstart:
+      - name: rocky8-ks.cfg
+        description: Unattended Install
+
+  - name: rocky
+    description: Rocky Linux
+    version: 9.0
+    arch: x86_64
+    os: redhat
+    kernel: images/pxeboot/vmlinuz
+    initrd: images/pxeboot/initrd.img
+    url: http://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.0-20220805.0-x86_64-minimal.iso
+    sha256: b16bc85f4fd14facf3174cd0cf8434ee048d81e5470292f3e1cfff47af2463b7

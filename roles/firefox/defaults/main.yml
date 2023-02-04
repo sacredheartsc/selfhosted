@@ -1,0 +1,33 @@
+firefox_preferences: []
+firefox_extensions: []
+firefox_managed_bookmarks: []
+firefox_managed_bookmarks_top_level_name: Intranet
+
+firefox_homepage: 'about:home'
+
+firefox_spnego_domains: ['{{ domain }}']
+firefox_spnego_allow_non_fqdn: yes
+firefox_spnego_allow_proxies: yes
+
+firefox_disable_pocket: yes
+firefox_disable_snippets: yes
+firefox_disable_app_update: yes
+firefox_disable_captive_portal: yes
+firefox_disable_default_bookmarks: yes
+firefox_disable_feedback: yes
+firefox_disable_accounts: yes
+firefox_disable_studies: yes
+firefox_disable_telemetry: yes
+firefox_disable_default_browser_check: yes
+firefox_disable_user_messaging: yes
+firefox_disable_dns_over_https: yes
+firefox_disable_search_suggestions: yes
+firefox_disable_highlights: yes
+firefox_disable_safe_browsing: yes
+firefox_disable_top_sites: yes
+
+firefox_offer_to_save_logins_default: yes
+firefox_use_tracking_protection: no
+firefox_update_extensions: yes
+
+firefox_cookie_behavior: reject-tracker-and-partition-foreign

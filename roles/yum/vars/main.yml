@@ -1,0 +1,89 @@
+yum_gpg_path_prefix: /etc/pki/rpm-gpg/RPM-GPG-KEY-
+
+yum_add_repositories: "{% if 'epel' in yum_repositories or yum_repositories == 'epel' %}{{ ([yum_repositories] if yum_repositories is string else yum_repositories) + ['rocky-powertools' if ansible_distribution_major_version == '8' else 'rocky-crb'] }}{% else %}{{ [yum_repositories] if yum_repositories is string else yum_repositories }}{% endif %}"
+
+yum_repository_defs:
+  rocky-baseos:
+    name: Rocky Linux $releasever - BaseOS
+    baseurl: http://{{ yum_host }}/rocky/$releasever/BaseOS/$basearch
+    gpgkey: Rocky-$releasever
+    replaces: Rocky-BaseOS
+
+  rocky-appstream:
+    name: Rocky Linux $releasever - AppStream
+    baseurl: http://{{ yum_host}}/rocky/$releasever/AppStream/$basearch
+    gpgkey: Rocky-$releasever
+    replaces: Rocky-AppStream
+
+  rocky-extras:
+    name: Rocky Linux $releasever - Extras
+    baseurl: http://{{ yum_host }}/rocky/$releasever/extras/$basearch
+    gpgkey: Rocky-$releasever
+    replaces: Rocky-Extras
+
+  rocky-powertools:
+    name: Rocky Linux $releasever - PowerTools
+    baseurl: http://{{ yum_host }}/rocky/$releasever/PowerTools/$basearch
+    gpgkey: Rocky-$releasever
+    replaces: Rocky-PowerTools
+
+  rocky-crb:
+    name: Rocky Linux $releasever - CRB
+    baseurl: http://{{ yum_host }}/rocky/$releasever/CRB/$basearch
+    gpgkey: Rocky-$releasever
+    replaces: Rocky-CRB
+
+  epel:
+    name: Extra Packages for Enterprise Linux $releasever
+    baseurl: http://{{ yum_host }}/epel/$releasever/$basearch
+    gpgkey: EPEL-$releasever
+
+  zfs-kmod:
+    name: ZFS on Linux for Enterprise Linux $releasever
+    baseurl: http://{{ yum_host }}/zfsonlinux/$releasever/$basearch
+    gpgkey: zfsonlinux-$releasever
+
+  rpmfusion-free:
+    name: RPM Fusion for EL $releasever - Free
+    baseurl: http://{{ yum_host }}/rpmfusion/$releasever/free/$basearch
+    gpgkey: rpmfusion-free-el-$releasever
+
+  rpmfusion-nonfree:
+    name: RPM Fusion for EL $releasever - Nonfree
+    baseurl: http://{{ yum_host }}/rpmfusion/$releasever/nonfree/$basearch
+    gpgkey: rpmfusion-nonfree-el-$releasever
+
+  rpmfusion-free-tainted:
+    name: RPM Fusion for EL $releasever - Free Tainted
+    baseurl: http://{{ yum_host }}/rpmfusion/$releasever/free-tainted/$basearch
+    gpgkey: rpmfusion-free-el-$releasever
+
+  rpmfusion-nonfree-tainted:
+    name: RPM Fusion for EL $releasever - Nonfree Tainted
+    baseurl: http://{{ yum_host }}/rpmfusion/$releasever/nonfree-tainted/$basearch
+    gpgkey: rpmfusion-nonfree-el-$releasever
+
+  mongodb-4.0:
+    name: MongoDB 4.0 for EL $releasever
+    baseurl: http://{{ yum_host }}/mongodb/$releasever/4.0/$basearch
+    gpgkey: mongodb-4.0
+
+  mongodb-4.4:
+    name: MongoDB 4.4 for EL $releasever
+    baseurl: http://{{ yum_host }}/mongodb/$releasever/4.4/$basearch
+    gpgkey: mongodb-4.4
+
+  mongodb-6.0:
+    name: MongoDB 6.0 for EL $releasever
+    baseurl: http://{{ yum_host }}/mongodb/$releasever/6.0/$basearch
+    gpgkey: mongodb-6.0
+
+  crystal:
+    name: Crystal for EL $releasever
+    baseurl: http://{{ yum_host }}/crystal/$releasever/$basearch
+    gpgkey: crystal-$releasever
+
+  rspamd:
+    name: Rspamd for EL $releasever
+    baseurl: http://{{ yum_host }}/rspamd/$releasever/$basearch
+    gpgkey: rspamd-stable

@@ -1,0 +1,46 @@
+[general]
+persistentmembers       = yes
+autofill                = yes
+monitor-type            = MixMonitor
+shared_lastcall         = yes
+log_membername_as_agent = yes
+
+
+{% for queue in asterisk_queues %}
+[{{ queue.name }}]
+{% if queue.music_class is defined %}
+musicclass                  = {{ queue.music_class }}
+{% endif %}
+strategy                    = {{ queue.strategy }}
+{% if queue.context is defined %}
+context                     = {{ queue.context }}
+{% endif %}
+timeout                     = {{ queue.timeout | default(15) }}
+retry                       = {{ queue.retry | default(5) }}
+timeoutpriority             = app
+{% if queue.weight is defined %}
+weight                      = {{ queue.weight }}
+{% endif %}
+{% if queue.maxlen is defined %}
+maxlen                      = {{ queue.maxlen }}
+{% endif %}
+announce-frequency          = {{ queue.announce_frequency | default(0) }}
+min-announce-frequency      = {{ queue.min_announce_frequency | default(15) }}
+announce-holdtime           = {{ queue.announce_holdtime | default('no') }}
+announce-position           = {{ queue.announce_position | default('no') }}
+periodic-announce-frequency = {{ queue.periodic_announce_frequency | default(0) }}
+{% if queue.peridic_announce is defined %}
+periodic-announce           = {{ queue.periodic_announce if queue.periodic_announce is string else (queue.periodic_announce | join(',')) }}
+{% endif %}
+{% if queue.monitor_format is defined %}
+monitor-format              = {{ queue.monitor_format if queue.monitor_format is string else (queue.montior_format | join('|')) }}
+{% endif %}
+joinempty                   = {{ queue.join_empty | default('yes') }}
+leavewhenempty              = {{ queue.leave_when_empty | default('no') }}
+ringinuse                   = {{ 'yes' if (queue.ring_in_use | default(true)) else 'no' }}
+timeoutrestart              = yes
+{% for ext in queue.members %}
+member => PJSIP/{{ ext }},0,{{ asterisk_sip_extensions | selectattr('name', '==', ext) | map(attribute='cid_name') | first | default('') }},PJSIP/{{ ext }}
+{% endfor %}
+
+{% endfor %}

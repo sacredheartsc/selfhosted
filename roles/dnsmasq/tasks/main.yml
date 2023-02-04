@@ -1,0 +1,16 @@
+- name: install dnsmasq
+  dnf:
+    name: dnsmasq
+    state: present
+
+- name: configure NetworkManager to use dnsmasq
+  template:
+    src: etc/NetworkManager/conf.d/9A-dns.conf.j2
+    dest: /etc/NetworkManager/conf.d/9A-dns.conf
+  notify: restart NetworkManager
+
+- name: configure dnsmasq
+  template:
+    src: etc/NetworkManager/dnsmasq.d/00-dnsmasq.conf.j2
+    dest: /etc/NetworkManager/dnsmasq.d/00-dnsmasq.conf
+  notify: restart NetworkManager

@@ -1,0 +1,35 @@
+[Unit]
+Description=Vaultwarden Server
+Documentation=https://github.com/dani-garcia/vaultwarden
+Wants=gssproxy.service
+After=network-online.target nss-user-lookup.target gssproxy.service
+
+[Service]
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+DevicePolicy=closed
+ProtectSystem=strict
+ProtectHome=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+ReadWritePaths={{ vaultwarden_data_dir }}
+
+User={{ vaultwarden_user }}
+Group={{ vaultwarden_user }}
+
+Environment=DATA_FOLDER={{ vaultwarden_data_dir }}
+Environment=WEB_VAULT_FOLDER={{ vaultwarden_web_dir }}
+Environment=GSS_USE_PROXY=yes
+EnvironmentFile=/etc/sysconfig/vaultwarden
+
+ExecStart={{ vaultwarden_source_dir }}/target/release/vaultwarden
+
+[Install]
+WantedBy=multi-user.target

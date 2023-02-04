@@ -1,0 +1,8 @@
+cname:
+  - invidious
+  - nitter
+  - teddit
+
+invidious_server_name: invidious.{{ domain }}
+teddit_server_name: teddit.{{ domain }}
+nitter_server_name: nitter.{{ domain }}

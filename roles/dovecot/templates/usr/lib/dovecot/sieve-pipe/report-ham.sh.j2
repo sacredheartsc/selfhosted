@@ -1,0 +1,7 @@
+#!/bin/bash
+
+exec /usr/bin/rspamc                               \
+  --hostname={{ dovecot_rspamd_host | quote }}     \
+  --password={{ dovecot_rspamd_password | quote }} \
+  --key={{ dovecot_rspamd_pubkey | quote }}        \
+  learn_ham

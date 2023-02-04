@@ -1,0 +1,42 @@
+- name: create HBAC service
+  ipahbacsvc:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ nagios_hbac_service }}'
+    description: nagios web interface
+    state: present
+  run_once: yes
+
+- name: create nagios servers hostgroup
+  ipahostgroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ nagios_hbac_hostgroup }}'
+    description: Nagios Servers
+    host: "{{ groups[nagios_hbac_hostgroup] | map('regex_replace', '$', '.' ~ ansible_domain) }}"
+    state: present
+  run_once: yes
+
+- name: create access group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ nagios_access_group }}'
+    description: nagios Administrators
+    nonposix: yes
+    state: present
+  run_once: yes
+
+- name: create HBAC rule
+  ipahbacrule:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: allow_nagios_users_on_nagios_servers
+    description: Allow nagios admins on nagios servers
+    hostgroup:
+      - '{{ nagios_hbac_hostgroup }}'
+    group:
+      - '{{ nagios_access_group }}'
+    hbacsvc:
+      - '{{ nagios_hbac_service }}'
+  run_once: yes

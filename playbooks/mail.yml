@@ -1,0 +1,36 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: rspamd_servers,mail_servers,imap_servers
+
+- name: configure rspamd
+  hosts: rspamd_servers
+  tags: rspamd
+  roles:
+    - role: rspamd
+
+    - role: apache_vhost
+      apache_default_vhost: yes
+      apache_config: '{{ rspamd_apache_config }}'
+      tags: apache
+
+    - role: archive_job
+      archive_name: rspamd
+      archive_shell: '{{ rspamd_archive_shell }}'
+      tags: archive
+
+- name: configure Postfix
+  hosts: mail_servers
+  tags: postfix,smtp
+  roles:
+    - postfix_server
+
+- name: configure Dovecot
+  hosts: imap_servers
+  tags: dovecot,imap
+  roles:
+    - role: dovecot
+
+    - role: archive_job
+      archive_name: dovecot
+      archive_command: '{{ dovecot_archive_script }}'
+      tags: archive

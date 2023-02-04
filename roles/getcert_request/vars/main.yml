@@ -1,0 +1,1 @@
+certificate_post_save_script: /etc/pki/tls/certmonger-postsave-{{ certificate_hook_name }}.sh

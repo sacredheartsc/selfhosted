@@ -1,0 +1,5 @@
+{% for vendordevice in udev_pci_powersave_blacklist %}
+SUBSYSTEM=="pci", ATTR{vendor}=="0x{{ vendordevice | split(':') | first }}", ATTR{device}=="0x{{ vendordevice | split(':') | last }}", ATTR{power/control}="on", GOTO="pci_pm_end"
+{% endfor %}
+SUBSYSTEM=="pci", ATTR{power/control}="auto"
+LABEL="pci_pm_end"

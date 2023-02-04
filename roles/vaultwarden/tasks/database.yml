@@ -1,0 +1,18 @@
+- name: create database
+  postgresql_db:
+    name: '{{ vaultwarden_db_name }}'
+    state: present
+  delegate_to: "{{ postgresql_inventory_host }}"
+  become: yes
+  become_user: postgres
+  register: vaultwarden_db
+
+- name: create database user
+  postgresql_user:
+    name: '{{ vaultwarden_user }}'
+    db: '{{ vaultwarden_db_name }}'
+    priv: ALL
+    state: present
+  delegate_to: "{{ postgresql_inventory_host }}"
+  become: yes
+  become_user: postgres

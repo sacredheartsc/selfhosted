@@ -1,0 +1,15 @@
+<properties>
+  <server>
+    <params>
+      <returnStackTrace>false</returnStackTrace>
+      <forkedJvmArgs>
+        <arg>-Xmx{{ tika_heap_size }}</arg>
+        <arg>-Dlog4jconfigurationFile={{ tika_conf_dir }}/log4j2.xml</arg>
+      </forkedJvmArgs>
+      <endpoints>
+        <endpoint>tika</endpoint>
+        <endpoint>status</endpoint>
+      </endpoints>
+    </params>
+  </server>
+</properties>

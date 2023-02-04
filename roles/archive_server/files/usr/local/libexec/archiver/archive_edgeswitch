@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -Eeu -o pipefail
+
+HOST=$1
+USERNAME=$2
+PASSWORD=$3
+
+TIMESTAMP=$(date +%Y%m%d%H%M%S)
+COOKIE_JAR=$(mktemp -t archiver-XXXXXX)
+
+trap 'rm -f "$COOKIE_JAR"' EXIT
+
+curl -sSfk                                              \
+  -o /dev/null                                          \
+  -c "$COOKIE_JAR"                                      \
+  -H "Referer: https://${HOST}/htdocs/login/login.lsp"  \
+  --data-urlencode "username=${USERNAME}"               \
+  --data-urlencode "password=${PASSWORD}"               \
+  -d 'accept_eula=0&require_eula=0'                     \
+  "https://${HOST}/htdocs/login/login.lua"
+
+curl -sSfk                                                                                     \
+  -o /dev/null                                                                                 \
+  -c "$COOKIE_JAR"                                                                             \
+  -b "$COOKIE_JAR"                                                                             \
+  -H "Referer: https://${HOST}/htdocs/pages/base/file_upload_modal.lsp?filetypes=6&protocol=6" \
+  --data-urlencode 'file_type_sel[]=config'                                                    \
+  "https://${HOST}/htdocs/lua/ajax/file_upload_ajax.lua?protocol=6"
+
+curl -sSfk                                                                                               \
+  -o "config-${TIMESTAMP}.scr"                                                                           \
+  -c "$COOKIE_JAR"                                                                                       \
+  -b "$COOKIE_JAR"                                                                                       \
+  -H "Referer: https://${HOST}/htdocs/pages/base/file_upload_modal.lsp?filetypes=6&protocol=6"           \
+  "https://${HOST}/htdocs/pages/base/http_download_file.lua?filepath=/mnt/download/TempConfigScript.scr"

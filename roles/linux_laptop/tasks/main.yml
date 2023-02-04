@@ -1,0 +1,58 @@
+- import_tasks: freeipa.yml
+
+- name: request TLS certificate for wifi
+  include_role:
+    name: getcert_request
+  vars:
+    certificate_service: host
+    certificate_sans: ['{{ ansible_fqdn }}']
+    certificate_path: '{{ linux_laptop_wifi_certificate_path }}'
+    certificate_key_path: '{{ linux_laptop_wifi_certificate_key_path }}'
+    certificate_key_passphrase: '{{ linux_laptop_wifi_certificate_key_passphrase }}'
+
+- name: get connection uuid
+  shell: nmcli --get-values connection.uuid connection show {{ linux_laptop_wifi_ssid }} || uuidgen
+  register: linux_laptop_wifi_networkmanager_uuid
+  changed_when: no
+
+- name: generate wifi network script
+  template:
+    src: etc/sysconfig/network-scripts/ifcfg-ssid.j2
+    dest: /etc/sysconfig/network-scripts/ifcfg-{{ linux_laptop_wifi_ssid }}
+  register: linux_laptop_wifi_config
+
+- name: generate wifi keys file
+  template:
+    src: etc/sysconfig/network-scripts/keys-ssid.j2
+    dest: /etc/sysconfig/network-scripts/keys-{{ linux_laptop_wifi_ssid }}
+    mode: 0600
+
+- name: warn that wifi settings are not applied automatically
+  debug:
+    msg: >-
+      NOTE: WiFi has been configured in NetworkManager, but changes have not been
+      applied. Either restart NetworkManager or reboot the host.
+  when: linux_laptop_wifi_config.changed
+
+- name: disable nmi watchdog
+  sysctl:
+    name: kernel.nmi_watchdog
+    value: 0
+
+- name: bump vm.dirty_writeback_centisecs
+  sysctl:
+    name: vm.dirty_writeback_centisecs
+    value: '{{ linux_laptop_dirty_writeback_centisecs }}'
+
+- name: enable wifi powersaving
+  copy:
+    content: |
+      options iwlwifi power_save=1 uapsd_disable=0
+      options iwlmvm power_scheme=3
+    dest: /etc/modprobe.d/iwlwifi.conf
+
+- name: enable audio powersaving
+  copy:
+    content: |
+      options snd_hda_intel power_save=1
+    dest: /etc/modprobe.d/snd_hda_intel.conf

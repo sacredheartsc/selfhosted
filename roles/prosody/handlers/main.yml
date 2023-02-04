@@ -1,0 +1,4 @@
+- name: restart prosody
+  systemd:
+    name: prosody
+    state: restarted

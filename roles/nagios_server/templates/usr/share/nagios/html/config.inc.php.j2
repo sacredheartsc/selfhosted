@@ -1,0 +1,11 @@
+<?php
+$cfg['cgi_config_file']='/etc/nagios/cgi.cfg';
+$cfg['cgi_base_url']='/cgi-bin';
+
+// FILE LOCATION DEFAULTS
+$cfg['main_config_file']='/etc/nagios/nagios.cfg';
+$cfg['status_file']='{{ nagios_status_file }}';
+$cfg['state_retention_file']='{{ nagios_state_retention_file }}';
+
+require_once(dirname(__FILE__).'/includes/utils.inc.php');
+?>

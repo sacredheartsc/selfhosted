@@ -1,0 +1,37 @@
+#!/usr/libexec/platform-python
+
+import os
+import ldap
+import ldap.sasl
+import ldap.filter
+
+GITOLITE_ACCESS_GROUP = '{{ gitolite_access_group }}'
+GITOLITE_ADMIN_GROUP = '{{ gitolite_admin_group }}'
+GITOLITE_SHELL = '{{ gitolite_shell }}'
+
+LDAP_URI = '{{ freeipa_ldap_uri }}'
+USER_BASEDN = '{{ freeipa_user_basedn }}'
+GROUP_BASEDN = '{{ freeipa_group_basedn }}'
+
+GITOLITE_KEY_TEMPLATE = 'command="{shell} {uid}",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty {pubkey}'
+
+os.environ['GSS_USE_PROXY'] = 'yes'
+conn = ldap.initialize(LDAP_URI)
+conn.protocol_version = ldap.VERSION3
+conn.sasl_interactive_bind_s('', ldap.sasl.sasl({}, 'GSSAPI'))
+
+filter = ldap.filter.filter_format(
+  '(&(ipaSshPubKey=*)(|(memberOf=cn=%s,%s)(memberOf=cn=%s,%s)))',
+  [GITOLITE_ADMIN_GROUP, GROUP_BASEDN, GITOLITE_ACCESS_GROUP, GROUP_BASEDN])
+
+results = conn.search_s(
+  USER_BASEDN,
+  ldap.SCOPE_SUBTREE,
+  filter,
+  ['uid', 'ipaSshPubKey'])
+
+for (dn, attributes) in results:
+  uid = attributes['uid'][0].decode('utf-8')
+  for pubkey in [pk.decode('utf-8') for pk in attributes['ipaSshPubKey']]:
+    if pubkey.startswith('ssh-'):
+      print(GITOLITE_KEY_TEMPLATE.format(shell=GITOLITE_SHELL, uid=uid, pubkey=pubkey))

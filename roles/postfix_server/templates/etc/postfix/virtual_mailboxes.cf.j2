@@ -1,0 +1,7 @@
+version = 3
+bind = sasl
+sasl_mechs = gssapi
+server_host = {{ freeipa_hosts | join(" ") }}
+search_base = {{ freeipa_user_basedn }}
+query_filter = (&(krbprincipalname=%s)(memberof=cn={{ postfix_recipient_group }},{{ freeipa_group_basedn }}))
+result_attribute = krbprincipalname

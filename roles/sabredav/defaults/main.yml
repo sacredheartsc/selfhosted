@@ -1,0 +1,7 @@
+sabredav_version: master
+sabredav_user: s-sabredav
+sabredav_db_name: sabredav
+sabredav_db_host: '{{ postgresql_host }}'
+sabredav_imip_from: calendar-noreply@{{ email_domain }}
+sabredav_access_group: role-dav-access
+sabredav_kerberized_cidrs: '{{ kerberized_cidrs }}'

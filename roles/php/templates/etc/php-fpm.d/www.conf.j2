@@ -1,0 +1,40 @@
+[www]
+user = {{ php_fpm_user }}
+group = {{ php_fpm_group }}
+
+listen = /run/php-fpm/www.sock
+
+listen.acl_users = apache,nginx
+listen.allowed_clients = 127.0.0.1
+
+pm = dynamic
+
+pm.max_children = {{ php_fpm_max_children }}
+pm.start_servers = {{ php_fpm_start_servers }}
+pm.min_spare_servers = {{ php_fpm_min_spare_servers }}
+pm.max_spare_servers = {{ php_fpm_max_spare_servers }}
+
+php_value[session.save_handler] = files
+php_value[session.save_path]    = /var/lib/php/session
+php_value[soap.wsdl_cache_dir]  = /var/lib/php/wsdlcache
+php_value[opcache.file_cache]   = /var/lib/php/opcache
+
+{% for item in php_fpm_flags | dict2items %}
+php_flag[{{ item.key }}] = {{ item.value if item.value is string else ('on' if (item.value|bool) else 'off') }}
+{% endfor %}
+
+{% for item in php_fpm_admin_flags | dict2items %}
+php_admin_flag[{{ item.key }}] = {{ item.value if item.value is string else ('on' if (item.value|bool) else 'off') }}
+{% endfor %}
+
+{% for item in php_fpm_values | dict2items %}
+php_value[{{ item.key }}] = {{ item.value }}
+{% endfor %}
+
+{% for item in php_fpm_admin_values | dict2items %}
+php_admin_value[{{ item.key }}] = {{ item.value }}
+{% endfor %}
+
+{% for item in php_fpm_environment | dict2items %}
+env[{{ item.key }}] = {{ item.value }}
+{% endfor %}

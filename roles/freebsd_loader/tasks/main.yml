@@ -1,0 +1,14 @@
+- name: set loader.conf tunables
+  lineinfile:
+    create: yes
+    path: /boot/loader.conf.local
+    line: '{{ item.key }}="{{ item.value }}"'
+    regexp: '^{{ item.key | regex_escape() }}='
+    state: present
+  loop: '{{ freebsd_loader_config | dict2items }}'
+  register: loader_conf
+
+- name: warn that reboot is required for loader.conf changes
+  debug:
+    msg: 'NOTE: A reboot is required for loader.conf changes to take effect!'
+  when: loader_conf.changed

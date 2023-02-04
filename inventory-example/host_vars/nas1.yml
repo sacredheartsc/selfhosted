@@ -1,0 +1,128 @@
+# This file contains a few complex dictionaries used to set up ZFS datasets,
+# NFS exports, autofs mounts, and file permissions for network shares.
+#
+# changeme: everything in this file, probably.
+---
+# zpools for this host, and any pool-level properties you wish to set
+zfs_pools:
+  - name: tank
+    mountpoint: /tank
+    properties:
+      ashift: 12
+      autotrim: 'on'
+    vdevs:
+      - type: raidz2
+        devices:
+          - /dev/disk/by-id/scsi-SSEAGATE_SSSSSSSSSSSS_00000001
+          - /dev/disk/by-id/scsi-SSEAGATE_SSSSSSSSSSSS_00000002
+          - /dev/disk/by-id/scsi-SSEAGATE_SSSSSSSSSSSS_00000003
+          - /dev/disk/by-id/scsi-SSEAGATE_SSSSSSSSSSSS_00000004
+          - /dev/disk/by-id/scsi-SSEAGATE_SSSSSSSSSSSS_00000005
+          - /dev/disk/by-id/scsi-SSEAGATE_SSSSSSSSSSSS_00000006
+          - /dev/disk/by-id/scsi-SSEAGATE_SSSSSSSSSSSS_00000007
+          - /dev/disk/by-id/scsi-SSEAGATE_SSSSSSSSSSSS_00000008
+      - type: raidz2
+        devices:
+          - /dev/disk/by-id/scsi-SSEAGATE_SSSSSSSSSSSS_00000009
+          - /dev/disk/by-id/scsi-SSEAGATE_SSSSSSSSSSSS_00000010
+          - /dev/disk/by-id/scsi-SSEAGATE_SSSSSSSSSSSS_00000011
+          - /dev/disk/by-id/scsi-SSEAGATE_SSSSSSSSSSSS_00000012
+          - /dev/disk/by-id/scsi-SSEAGATE_SSSSSSSSSSSS_00000013
+          - /dev/disk/by-id/scsi-SSEAGATE_SSSSSSSSSSSS_00000014
+          - /dev/disk/by-id/scsi-SSEAGATE_SSSSSSSSSSSS_00000015
+          - /dev/disk/by-id/scsi-SSEAGATE_SSSSSSSSSSSS_00000016
+      - type: log
+        devices:
+          - /dev/disk/by-id/nvme-INTEL_IIIIIIIIIIIII_000000000000000001
+
+# ZFS datasets for this host, and any properties you wish to set.
+zfs_datasets:
+  - name: tank
+    properties:
+      compression: lz4
+      acltype: posix
+      xattr: sa
+      relatime: 'on'
+      com.sun:auto-snapshot:frequent: 'false'
+
+# For each NFS export on this host, specify the following:
+#   - dataset: zfs dataset
+#   - zfs_properties: zfs dataset properties
+#   - owner: unix owner of the directory
+#   - group: unix group owner of the directory
+#   - acl: list of POSIX ACLs for the directory
+#   - options: NFS export options
+#   - client: NFS client list
+#   - automount_map: autofs map name
+#   - autofs_key: autofs key name (default: basename)
+#   - smb_share: SMB share name if you want to share directory over CIFS
+nfs_exports:
+  - dataset: tank/archive
+    zfs_properties:
+      refquota: 500G
+    owner: s-archiver
+    group: sysadmins
+    mode: 02770
+    acl:
+      - entity: sysadmins
+        etype: group
+        permissions: rwX
+        default: yes
+    options: crossmnt
+    clients:
+      - client: archive1
+        options: sec=krb5p,rw
+    automount_map: auto.nfs
+
+  - dataset: tank/media/pictures
+    group: role-photo-admin
+    mode: 02770
+    acl:
+      - entity: role-photo-admin
+        etype: group
+        permissions: rwX
+        default: yes
+    options: rw,crossmnt
+    clients:
+      - client: '{{ vlans.trusted.cidr }}'
+        options: sec=krb5p
+      - client: syncthing1
+        options: sec=sys
+    automount_map: auto.nfs_media
+
+  - dataset: tank/media/music
+    group: role-music-admin
+    mode: 02770
+    acl:
+      - entity: role-music-admin
+        etype: group
+        permissions: rwX
+        default: yes
+
+      - entity: role-music-access
+        etype: group
+        permissions: rX
+        default: yes
+    options: rw,crossmnt
+    clients:
+      - client: '{{ vlans.trusted.cidr }}'
+        options: sec=krb5p
+      - client: syncthing1
+        options: sec=sys
+    automount_map: auto.nfs_media
+
+# This list contains all users whose homedirs should live on this host.
+# ZFS datasets, NFS exports, and autofs maps will be created automatically.
+nfs_homedirs:
+  - user: johndoe
+    priv_quota: 250G
+  - user: janedoe
+    priv_quota: 250G
+  - group: doefamily
+    priv_quota: 500G
+
+# List any SMB shares to create here.
+# All home directories automatically get an SMB share.
+smb_shares:
+  - name: media
+    path: /tank/media

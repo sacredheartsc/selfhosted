@@ -1,0 +1,14 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: znc_servers
+
+- name: configure znc
+  hosts: znc_servers
+  tags: znc
+  roles:
+    - role: znc
+
+    - role: archive_job
+      archive_name: znc
+      archive_shell: '{{ znc_archive_shell }}'
+      tags: archive

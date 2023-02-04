@@ -1,0 +1,13 @@
+[general]
+servername    = Asterisk
+enabled       = yes
+bindaddr      = 127.0.0.1
+bindport      = {{ asterisk_http_port }}
+enable_status = no
+tlsenable     = yes
+tlsbindaddr   = 0.0.0.0:{{ asterisk_https_port }}
+tlscertfile   = {{ asterisk_https_certificate_path }}
+tlsprivatekey = {{ asterisk_https_certificate_key_path }}
+tlsdisablev1  = yes
+tlsdisablev11 = yes
+tlsdisablev12 = no

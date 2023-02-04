@@ -1,0 +1,6 @@
+linux_desktop_access_group: role-linux-desktop-access
+linux_desktop_flatpak_update_on_calendar: daily
+linux_desktop_enable_wayland: yes
+linux_desktop_thumbnail_cache_size: 4096 # MB
+
+linux_desktop_enable_window_buttons: yes

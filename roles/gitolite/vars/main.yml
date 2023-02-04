@@ -1,0 +1,40 @@
+gitolite_packages:
+  - httpd
+  - gitolite3
+  - perl-Sys-Syslog
+
+gitolite_user: apache
+gitolite_home: /var/www/git
+
+gitolite_shell: /usr/share/gitolite3/gitolite-shell
+gitolite_cgi_script: /var/www/cgi-bin/gitolite-wrapper
+gitolite_groups_script: /usr/local/bin/gitolite-grouplist
+gitolite_authorizedkeys_script: /usr/local/bin/gitolite-authorizedkeys
+
+gitolite_keytab: /var/lib/gssproxy/clients/{{ gitolite_freeipa_user }}.keytab
+
+gitolite_selinux_policy_te: |
+  require {
+    type gssproxy_t;
+    type gssproxy_var_lib_t;
+    type sshd_t;
+    type httpd_t;
+    type httpd_unconfined_script_t;
+    class key { read view write };
+    class sock_file write;
+    class unix_stream_socket { connectto };
+  }
+
+  #============= sshd_t ==============
+  allow sshd_t gssproxy_t:unix_stream_socket connectto;
+  allow sshd_t gssproxy_var_lib_t:sock_file write;
+
+  #============= httpd_t ==============
+  allow httpd_t httpd_unconfined_script_t:key { read view };
+  allow httpd_t sshd_t:key { read view write };
+
+gitolite_archive_shell: >-
+  TIMESTAMP=$(date +%Y%m%d%H%M%S);
+  tar czf "gitolite-${TIMESTAMP}.tar.gz"
+  --transform "s|^\.|gitolite-${TIMESTAMP}|"
+  -C "{{ gitolite_home }}" .

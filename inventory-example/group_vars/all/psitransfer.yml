@@ -1,0 +1,7 @@
+psitransfer_upload_cidrs:
+  - '{{ vlans.trusted.cidr }}'
+  - '{{ vlans.vpn.cidr }}'
+psitransfer_admin_cidrs:
+  - '{{ vlans.trusted.cidr }}'
+  - '{{ vlans.vpn.cidr }}'
+psitransfer_admin_password: '{{ vault_psitransfer_admin_password }}'

@@ -1,0 +1,11 @@
+yum_default_repository_files:
+  '8':
+    - Rocky-BaseOS
+    - Rocky-AppStream
+    - Rocky-Extras
+    - Rocky-PowerTools
+  '9':
+    - rocky
+    - rocky-extras
+    - rocky-devel
+    - rocky-addons

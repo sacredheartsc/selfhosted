@@ -1,0 +1,18 @@
+echo "{{ image.description }} {{ image.version }} ({{ image.arch }})"
+{% if kickstart is defined %}
+echo "kickstart: {{ kickstart.name }}"
+{% endif %}
+
+echo "loading kernel..."
+linux (http,${net_default_server}:{{ pxe_http_port }})/{{ image.name }}/{{ image.version }}/{{ image.arch }}/{{ image.kernel }} \
+  ip=dhcp \
+  inst.repo=http://${net_default_server}:{{ pxe_http_port }}/{{ image.name }}/{{ image.version }}/{{ image.arch }}/ {%- if kickstart is defined %} \
+  inst.ks=http://${net_default_server}:{{ pxe_http_port }}/kickstart/{{ kickstart.name }}
+  {%- endif %}
+
+
+echo "loading initrd..."
+initrd (http,${net_default_server}:{{ pxe_http_port }})/{{ image.name }}/{{ image.version }}/{{ image.arch }}/{{ image.initrd }}
+
+echo "booting linux..."
+boot

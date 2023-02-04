@@ -1,0 +1,97 @@
+module(load="imklog")
+module(load="imuxsock" SysSock.name="/run/systemd/journal/syslog")
+module(load="imudp")
+module(load="imtcp")
+module(load="imfile")
+module(load="imrelp" tls.tlslib="openssl")
+
+global(
+  workDirectory="/var/lib/rsyslog"
+  parser.escapecontrolcharactertab="off"
+)
+
+module(load="builtin:omfile"
+  template="RSYSLOG_TraditionalFileFormat"
+  dirCreateMode="{{ rsyslog_dir_mode }}"
+  dirOwner="{{ rsyslog_owner }}"
+  dirGroup="{{ rsyslog_group }}"
+  fileCreateMode="{{ rsyslog_file_mode }}"
+  fileOwner="{{ rsyslog_owner }}"
+  fileGroup="{{ rsyslog_group }}")
+
+include(file="/etc/rsyslog.d/*.conf" mode="optional")
+
+template(name="RemoteLogSavePath" type="list") {
+  constant(value="{{ rsyslog_storage_dir }}/")
+  property(name="timegenerated" dateFormat="year")   constant(value="/")
+  property(name="timegenerated" dateFormat="month")  constant(value="/")
+  property(name="timegenerated" dateFormat="day")    constant(value="/")
+  property(name="fromhost" caseConversion="lower")   constant(value="/")
+  property(name="$.filename" caseConversion="lower")
+}
+
+template(name="HttpdAccessLog_FileFormat" type="string"
+  string="%HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n"
+)
+
+ruleset(name="RemoteLog") {
+  # default filename
+  set $.filename = "messages.log";
+
+  # drop any debug messages
+  if not prifilt("*.info") then {
+    stop
+  }
+
+  # program-specific overrides
+  if $syslogtag == {{ (rsyslog_log_by_tag + rsyslog_access_log_by_tag) | to_json }} then {
+    if $syslogtag == {{ rsyslog_log_by_tag | to_json }} then {
+      set $.filename = $syslogtag & ".log";
+    } else if prifilt("*.=info") then {
+      set $.filename = $syslogtag & "-access.log";
+    } else {
+      set $.filename = $syslogtag & "-error.log";
+    }
+
+    action(type="omfile"
+      template="HttpdAccessLog_FileFormat"
+      dynaFile="RemoteLogSavePath"
+      dynaFileCacheSize="1024"
+      asyncWriting="on"
+      flushOnTXEnd="off"
+      flushInterval="1"
+      ioBufferSize="64k")
+  } else {
+    action(type="omfile"
+      template="RSYSLOG_FileFormat"
+      dynaFile="RemoteLogSavePath"
+      dynaFileCacheSize="1024"
+      asyncWriting="on"
+      flushOnTXEnd="off"
+      flushInterval="1"
+      ioBufferSize="64k")
+  }
+}
+
+input(type="imtcp" port="{{ rsyslog_port }}" ruleset="RemoteLog")
+input(type="imudp" port="{{ rsyslog_port }}" ruleset="RemoteLog")
+input(type="imrelp" port="{{ rsyslog_relp_port }}" ruleset="RemoteLog")
+input(type="imrelp"
+      port="{{ rsyslog_relp_tls_port }}"
+      tls="on"
+      tls.caCert="{{ rsyslog_certificate_ca_path }}"
+      tls.myCert="{{ rsyslog_certificate_path }}"
+      tls.myPrivKey="{{ rsyslog_certificate_key_path }}"
+      tls.authMode="name"
+      tls.permittedPeer=["{{ rsyslog_permitted_peers | join('", "') }}"]
+      ruleset="RemoteLog")
+
+
+# EL defaults
+*.info;mail.none;authpriv.none;cron.none  /var/log/messages
+authpriv.*                                /var/log/secure
+mail.*                                    -/var/log/maillog
+cron.*                                    /var/log/cron
+*.emerg                                   :omusrmsg:*
+uucp,news.crit                            /var/log/spooler
+local7.*                                  /var/log/boot.log

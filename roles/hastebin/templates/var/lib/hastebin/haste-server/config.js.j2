@@ -1,0 +1,32 @@
+{
+  "host": "127.0.0.1",
+  "port": {{ hastebin_port }},
+  "keyLength": 10,
+  "maxLength": 400000,
+  "staticMaxAge": 86400,
+  "recompressStaticAssets": true,
+  "logging": [
+    {
+      "level": "verbose",
+      "type": "Console",
+      "colorize": false
+    }
+  ],
+  "keyGenerator": {
+    "type": "random"
+  },
+  "rateLimits": {
+    "categories": {
+      "normal": {
+        "totalRequests": 500,
+        "every": 60000
+      }
+    }
+  },
+  "storage": {
+    "type": "file",
+    "path": "{{ hastebin_data_dir }}"
+  },
+  "documents": {
+  }
+}

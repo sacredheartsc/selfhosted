@@ -1,0 +1,53 @@
+- name: install postgresql
+  dnf:
+    name: '{{ postgresql_packages }}'
+    state: present
+
+- name: initialize database
+  command:
+    cmd: postgresql-setup --initdb
+    creates: '{{ postgresql_data_dir }}/PG_VERSION'
+
+- import_tasks: freeipa.yml
+  tags: freeipa
+
+- name: request TLS certificate
+  include_role:
+    name: getcert_request
+  vars:
+    certificate_service: postgres
+    certificate_path: '{{ postgresql_certificate_path }}'
+    certificate_key_path: '{{ postgresql_certificate_key_path }}'
+    certificate_owner: postgres
+    certificate_hook: systemctl reload postgresql
+
+- name: generate dhparams
+  openssl_dhparam:
+    path: '{{ postgresql_dhparams_path }}'
+    size: 2048
+
+- name: generate postgresql configuration
+  template:
+    src: '{{ postgresql_data_dir[1:] }}/{{ item }}.j2'
+    dest: '{{ postgresql_data_dir }}/{{ item }}'
+    owner: postgres
+    group: postgres
+    mode: 0600
+  loop:
+    - postgresql.conf
+    - pg_hba.conf
+  notify: restart postgresql
+
+- name: enable postgresql service
+  systemd:
+    name: postgresql
+    enabled: yes
+    state: started
+
+- name: open firewall ports
+  firewalld:
+    service: postgresql
+    permanent: yes
+    immediate: yes
+    state: enabled
+  tags: firewalld

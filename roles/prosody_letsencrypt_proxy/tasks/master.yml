@@ -1,0 +1,47 @@
+- name: create user
+  user:
+    name: '{{ prosody_le_user }}'
+    home: '{{ prosody_le_home }}'
+    system: yes
+    create_home: no
+    shell: /sbin/nologin
+
+- name: create  home directory
+  file:
+    path: '{{ prosody_le_home }}'
+    owner: root
+    group: '{{ prosody_le_user }}'
+    mode: 0750
+    state: directory
+
+- name: create ssh authorized_keys directory
+  file:
+    path: '{{ prosody_le_authorized_keys_dir }}'
+    mode: 0755
+    state: directory
+
+- name: copy ssh public key
+  copy:
+    content: '{{ prosody_le_ssh_pubkey }}'
+    dest: '{{ prosody_le_authorized_keys_dir }}/{{ prosody_le_user }}'
+    mode: 0640
+    owner: root
+    group: '{{ prosody_le_user }}'
+
+- name: generate sshd configuration
+  template:
+    src: etc/ssh/sshd_config.d/99-prosody-le-proxy.conf
+    dest: /etc/ssh/sshd_config.d/99-prosody-le-proxy.conf
+  notify: restart sshd
+
+- name: retrieve certificates
+  include_role:
+    name: certbot
+  vars:
+    certificate_sans: ['{{ item }}']
+    certificate_path: '{{ prosody_le_home }}/{{ item }}.crt'
+    certificate_key_path: '{{ prosody_le_home }}/{{ item }}.key'
+    certificate_owner: 'root:{{ prosody_le_user }}'
+    certificate_mode: 0640
+    certificate_use_apache: yes
+  loop: '{{ prosody_le_domains }}'

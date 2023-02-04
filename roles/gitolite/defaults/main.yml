@@ -1,0 +1,7 @@
+gitolite_ssh_user: git
+gitolite_admin_group: role-git-admin
+gitolite_access_group: role-git-access
+gitolite_anon_user: nobody
+gitolite_freeipa_user: s-gitolite
+gitolite_uid: 1993
+gitolite_archive_on_calendar: weekly

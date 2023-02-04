@@ -1,0 +1,4 @@
+znc_irc_port: 6697
+znc_https_port: 8443
+znc_max_networks: 10
+znc_access_group: role-znc-access

@@ -1,0 +1,13 @@
+Include /etc/ssh/ssh_config.d/*.conf
+
+CanonicalizeHostname always
+CanonicalDomains {{ ssh_canonical_domains | join(' ') }}
+CanonicalizeMaxDots 0
+CanonicalizeFallbackLocal yes
+
+Host {{ ssh_canonical_domains | map('regex_replace', '^', '*.') | join(' ') }}
+  GSSAPIAuthentication yes
+  GSSAPIDelegateCredentials yes
+  GSSAPIKeyExchange yes
+  GSSAPIRenewalForcesRekey yes
+  GSSAPITrustDns yes

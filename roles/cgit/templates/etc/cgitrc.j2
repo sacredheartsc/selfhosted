@@ -1,0 +1,68 @@
+cache-size={{ cgit_cache_size }}
+clone-prefix={{ cgit_clone_prefixes | join(' ') }}
+enable-http-clone={{ cgit_enable_http_clone | int }}
+enable-blame=1
+enable-commit-graph=1
+enable-log-filecount=1
+enable-log-linecount=1
+branch-sort={{ cgit_branch_sort }}
+
+# static assets
+favicon=/static/{{ cgit_favicon | default('favicon.ico') | basename }}
+logo=/static/{{ cgit_logo | default('cgit.png') | basename }}
+css=/static/{{ cgit_css | default('cgit.css') | basename }}
+{% if cgit_head_include is defined %}
+head-include={{ cgit_static_dir }}/{{ cgit_head_include | basename }}
+{% endif %}
+{% if cgit_header is defined %}
+header={{ cgit_static_dir }}/{{ cgit_header | basename }}
+{% endif %}
+
+max-stats=year
+root-title={{ cgit_title }}
+root-desc={{ cgit_description }}
+remove-suffix=1
+root-readme={{ cgit_static_dir }}/about.html
+repository-sort={{ cgit_repository_sort }}
+snapshots=tar.gz zip
+local-time=1
+
+mimetype.gif=image/gif
+mimetype.html=text/html
+mimetype.jpg=image/jpeg
+mimetype.jpeg=image/jpeg
+mimetype.pdf=application/pdf
+mimetype.png=image/png
+mimetype.svg=image/svg+xml
+
+source-filter=/usr/libexec/cgit/filters/syntax-highlighting.sh
+about-filter=/usr/libexec/cgit/filters/about-formatting.sh
+
+readme=:README.md
+readme=:readme.md
+readme=:README.mkd
+readme=:readme.mkd
+readme=:README.html
+readme=:readme.html
+readme=:README.htm
+readme=:readme.htm
+readme=:README.txt
+readme=:readme.txt
+readme=:README
+readme=:readme
+readme=:INSTALL.md
+readme=:install.md
+readme=:INSTALL.mkd
+readme=:install.mkd
+readme=:INSTALL.html
+readme=:install.html
+readme=:INSTALL.htm
+readme=:install.htm
+readme=:INSTALL.txt
+readme=:install.txt
+readme=:INSTALL
+readme=:install
+
+enable-git-config=1
+project-list={{ cgit_project_list }}
+scan-path={{ cgit_scan_path }}

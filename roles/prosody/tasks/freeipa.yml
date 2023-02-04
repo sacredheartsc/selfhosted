@@ -1,0 +1,64 @@
+- name: create user
+  ipauser:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ prosody_user }}'
+    loginshell: /sbin/nologin
+    homedir: '{{ prosody_data_dir }}'
+    givenname: Prosody
+    sn: Service Account
+    state: present
+  run_once: yes
+
+- name: retrieve user keytab
+  include_role:
+    name: freeipa_keytab
+  vars:
+    keytab_principal: '{{ prosody_user }}'
+    keytab_path: '{{ prosody_keytab }}'
+
+- name: configure gssproxy for kerberized postgres
+  include_role:
+    name: gssproxy_client
+  vars:
+    gssproxy_name: prosody
+    gssproxy_section: service/prosody
+    gssproxy_client_keytab: '{{ prosody_keytab }}'
+    gssproxy_cred_usage: initiate
+    gssproxy_euid: prosody
+
+- name: create systemd override directory
+  file:
+    path: /etc/systemd/system/prosody.service.d
+    state: directory
+
+- name: create systemd override file
+  copy:
+    src: etc/systemd/system/prosody.service.d/override.conf
+    dest: /etc/systemd/system/prosody.service.d/override.conf
+  register: prosody_systemd_unit
+  notify: restart prosody
+
+- name: reload systemd units
+  systemd:
+    daemon_reload: yes
+  when: prosody_systemd_unit.changed
+
+- name: create SELinux policy for prosody to access gssproxy
+  include_role:
+    name: selinux_policy
+    apply:
+      tags: selinux
+  vars:
+    selinux_policy_name: prosody_gssproxy
+    selinux_policy_te: '{{ prosody_selinux_policy_te }}'
+  tags: selinux
+
+- name: create access group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ prosody_access_group }}'
+    nonposix: yes
+    state: present
+  run_once: yes

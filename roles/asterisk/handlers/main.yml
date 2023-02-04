@@ -1,0 +1,9 @@
+- name: reload asterisk
+  systemd:
+    name: asterisk
+    state: reloaded
+
+- name: restart asterisk
+  systemd:
+    name: asterisk
+    state: restarted

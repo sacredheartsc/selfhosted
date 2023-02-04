@@ -1,0 +1,74 @@
+asterisk_local_nets:
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
+
+asterisk_timezone: '{{ timezone }}'
+asterisk_locale: en_US.UTF-8
+
+asterisk_fqdn: '{{ ansible_fqdn }}'
+asterisk_from_domain: '{{ email_domain }}'
+
+asterisk_rtp_port_start: 10000
+asterisk_rtp_port_end: 10999
+asterisk_sip_port: 5060
+asterisk_sip_tls_port: 5061
+
+asterisk_http_port: 8088
+asterisk_https_port: 8089
+
+asterisk_voicemail_formats:
+  - wav49
+  - gsm
+  - wav
+
+asterisk_mail_from: asterisk-noreply@{{ email_domain }}
+
+asterisk_voicemail_email_subject: 'New voicemail ${VM_MSGNUM} in mailbox ${VM_MAILBOX}'
+asterisk_voicemail_email_body: 'Hi ${VM_NAME},\n\nYou have a new voicemail in mailbox ${VM_MAILBOX}.\n\nFrom: ${VM_CALLERID}\nDate: ${VM_DATE}\nDuration: ${VM_DUR}\nMessage Number: ${VM_MSGNUM}'
+asterisk_voicemail_email_date_format: '%A, %B %d, %Y at %r'
+asterisk_voicemail_min_password: 4
+
+asterisk_voicemail_max_message_count: 100
+asterisk_voicemail_max_message_secs: 300
+asterisk_voicemail_max_greeting_secs: 60
+asterisk_voicemail_max_failed_logins: 3
+
+asterisk_sip_trunks:
+  - name: example
+    host: sip.example.com:5061
+    codecs: g722,ulaw
+    username: testuser
+    password: testpass
+    transport: tls
+    media_encryption: sdes
+
+asterisk_sip_extensions:
+  - name: 6001
+    context: from-internal
+    mailbox: 6001@default
+    cid_name: Test User
+    username: 6001
+    password: testpassword
+    codecs: g722,ulaw
+
+asterisk_queues:
+  - name: home
+    strategy: ringall
+    retry: 1
+    timeout: 30
+    members:
+      - 6001
+      - 6002
+
+asterisk_ari_users:
+  - name: nagios
+    password: nagios
+    readonly: yes
+
+asterisk_voicemail_contexts:
+  default:
+    - address: 6001
+      password: 1234
+      name: John Doe
+      email: john@example.com

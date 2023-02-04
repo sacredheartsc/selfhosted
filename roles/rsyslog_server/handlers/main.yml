@@ -1,0 +1,10 @@
+- name: restart rsyslog
+  systemd:
+    name: rsyslog
+    state: restarted
+
+- name: reload syslog-gzip timer
+  systemd:
+    name: syslog-gzip.timer
+    daemon-reload: yes
+    state: restarted

@@ -1,0 +1,36 @@
+[Unit]
+Description=teddit reddit proxy
+After=network.target redis@{{ teddit_redis_port }}.service
+Requires=redis@{{ teddit_redis_port }}.service
+AssertPathExists={{ teddit_install_dir }}
+
+[Service]
+Type=simple
+Environment="LISTEN_ADDRESS=127.0.0.1"
+Environment="NODE_ENV=production"
+EnvironmentFile=-/etc/sysconfig/teddit
+ExecStart=/usr/bin/node app.js
+WorkingDirectory={{ teddit_install_dir }}
+User={{ teddit_user }}
+Group={{ teddit_user }}
+Restart=on-failure
+
+# See https://www.freedesktop.org/software/systemd/man/systemd.exec.html
+# for details
+DevicePolicy=closed
+NoNewPrivileges=yes
+PrivateDevices=yes
+PrivateTmp=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=yes
+RestrictRealtime=yes
+SystemCallFilter=~@clock @debug @module @mount @obsolete @privileged @reboot @setuid @swap
+
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

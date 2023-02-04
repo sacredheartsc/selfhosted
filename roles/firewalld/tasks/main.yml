@@ -1,0 +1,17 @@
+- name: install firewalld
+  dnf:
+    name: firewalld
+    state: present
+
+- name: enable firewalld
+  systemd:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: disable cockpit rule
+  firewalld:
+    service: cockpit
+    permanent: yes
+    immediate: yes
+    state: disabled

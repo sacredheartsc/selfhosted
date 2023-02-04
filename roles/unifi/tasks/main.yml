@@ -1,0 +1,81 @@
+- name: install packages
+  dnf:
+    name: '{{ unifi_packages }}'
+    state: present
+
+- name: create SELinux policy for mongodb
+  include_role:
+    name: selinux_policy
+    apply:
+      tags: selinux
+  vars:
+    selinux_policy_name: mongodb_cgroup_memory
+    selinux_policy_te: '{{ unifi_mongodb_te }}'
+  tags: selinux
+
+- name: start unifi controller
+  systemd:
+    name: unifi
+    enabled: yes
+    state: started
+
+- name: create default site
+  file:
+    path: '/var/lib/unifi/{{ item }}'
+    owner: unifi
+    group: unifi
+    state: directory
+    mode: 0750
+  loop:
+    - data
+    - data/sites
+    - data/sites/default
+
+- name: opt-out of ubiquiti analytics
+  lineinfile:
+    create: yes
+    path: /var/lib/unifi/data/sites/default/config.properties
+    regexp: ^config.system_cfg.1=system.analytics.anonymous=
+    line: config.system_cfg.1=system.analytics.anonymous=disabled
+    owner: unifi
+    group: unifi
+    mode: 0640
+  notify: restart unifi
+
+- name: open firewall ports
+  firewalld:
+    permanent: yes
+    immediate: yes
+    service: unifi
+    state: enabled
+  tags: firewalld
+
+- name: forward http ports
+  firewalld:
+    permanent: yes
+    immediate: yes
+    rich_rule: 'rule family={{ item[0] }} forward-port port={{ item[1][0] }} protocol=tcp to-port={{ item[1][1] }}'
+    state: enabled
+  loop: "{{ ['ipv4', 'ipv6'] | product([[80, 8080], [443, 8443]]) }}"
+  tags: firewalld
+
+- name: generate certificate hook script
+  template:
+    src: '{{ unifi_certificate_hook_path[1:] }}.j2'
+    dest: '{{ unifi_certificate_hook_path }}'
+    mode: 0555
+
+- name: request TLS certificate
+  include_role:
+    name: getcert_request
+  vars:
+    certificate_service: unifi
+    certificate_path: '{{ unifi_certificate_path }}'
+    certificate_key_path: '{{ unifi_certificate_key_path }}'
+    certificate_hook: '{{ unifi_certificate_hook_path }}'
+
+- name: log to rsyslog
+  copy:
+    src: etc/rsyslog.d/unifi.conf
+    dest: /etc/rsyslog.d/unifi.conf
+  notify: restart rsyslog

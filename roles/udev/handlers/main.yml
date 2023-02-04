@@ -1,0 +1,9 @@
+- name: restart systemd-udevd
+  systemd:
+    name: systemd-udevd
+    state: restarted
+  listen: reload udev rules
+
+- name: run udev triggers
+  command: udevadm trigger
+  listen: reload udev rules

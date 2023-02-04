@@ -1,0 +1,21 @@
+- name: configure proxmox hypervisor
+  hosts: proxmox_hypervisors
+  gather_facts: yes
+  roles:
+    - role: root_password
+      tags: root_password
+
+    - role: root_authorized_keys
+      tags: ssh,authorized_keys
+
+    - role: journald
+      tags: journald
+
+    - role: hostname
+      tags: hostname
+
+    - role: timezone
+      tags: timezone
+
+    - role: proxmox_hypervisor
+      tags: proxmox,pve

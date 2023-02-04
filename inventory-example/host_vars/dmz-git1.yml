@@ -1,0 +1,21 @@
+apache_letsencrypt: yes
+apache_server_name: git.example.com  # changeme
+nagios_https_vhosts: ['{{ apache_server_name }}']
+
+cgit_clone_prefixes:  # changeme - public clone URL displayed in cgit interface
+  - https://git.example.com
+
+cgit_cache_size: 10000
+
+# changeme: everything below this line
+cgit_title: 'ACME Corp : git'
+cgit_description: Source code for ACME Corporation
+
+cgit_about_html: >
+  This is just an example. Change me!
+
+cgit_logo: ~/assets/cgit/acme_logo.png
+cgit_favicon: ~/assets/cgit/acme_favicon.png
+cgit_css: ~/assets/cgit/acme.css
+cgit_header: ~/assets/cgit/acme-header.html
+cgit_head_include: ~/assets/cgit/acme-head-include.html

@@ -1,0 +1,31 @@
+service imap-login {
+  inet_listener imap {
+    port = 143
+  }
+
+  inet_listener imaps {
+    port = 993
+    ssl = yes
+  }
+}
+
+service lmtp {
+  user = {{ dovecot_vmail_user }}
+  inet_listener lmtp {
+    port = {{ dovecot_lmtp_port }}
+  }
+}
+
+service auth-worker {
+  user = $default_internal_user
+}
+
+# Allow the vmail user to write to stats. This isn't strictly necessary, but
+# prevents dovecot-lda from spamming the mail log with errors.
+service stats {
+  unix_listener stats-writer {
+    user = dovecot
+    group = {{ dovecot_vmail_user }}
+    mode = 0660
+  }
+}

@@ -1,0 +1,16 @@
+hosts = {{ freeipa_hosts | join(' ') }}
+
+sasl_bind = yes
+sasl_mech = gssapi
+sasl_realm = {{ freeipa_realm }}
+
+base = {{ freeipa_user_basedn }}
+
+user_filter = (&(uid=%Ln)(memberof=cn={{ dovecot_access_group }},{{ freeipa_group_basedn }}))
+user_attrs= \
+  =uid={{ dovecot_vmail_user }}, \
+  =gid={{ dovecot_vmail_user }}, \
+  =home={{ dovecot_vmail_dir }}/%{ldap:uid}
+
+iterate_attrs = uid=user
+iterate_filter = (memberof=cn={{ dovecot_access_group }},{{ freeipa_group_basedn }})

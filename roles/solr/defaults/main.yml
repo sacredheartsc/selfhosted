@@ -1,0 +1,5 @@
+solr_version: 9.1.1
+solr_lucene_version: 9.3.0
+solr_port: 8983
+solr_heap_size: 2g
+solr_softcommit_ms: 60000

@@ -1,0 +1,25 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: dav_servers
+
+- name: configure sabredav
+  hosts: dav_servers
+  tags: sabredav,dav
+  roles:
+    - role: sabredav
+
+    - role: apache_vhost
+      apache_default_vhost: yes
+      apache_document_root: '{{ sabredav_home }}'
+      apache_config: '{{ sabredav_apache_config }}'
+      tags: apache
+
+    - role: php
+      php_fpm_environment: '{{ sabredav_php_environment }}'
+      php_fpm_admin_flags: '{{ sabredav_php_flags }}'
+      tags: php
+
+    - role: archive_job
+      archive_name: webdav
+      archive_shell: '{{ sabredav_archive_shell }}'
+      tags: archive

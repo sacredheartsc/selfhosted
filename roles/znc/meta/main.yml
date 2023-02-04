@@ -1,0 +1,4 @@
+dependencies:
+  - role: yum
+    yum_repositories: epel
+    tags: yum

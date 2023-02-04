@@ -1,0 +1,2 @@
+nsd_server_count: '{{ ansible_processor_vcpus }}'
+nsd_zones: []

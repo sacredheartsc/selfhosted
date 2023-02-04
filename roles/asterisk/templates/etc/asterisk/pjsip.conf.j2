@@ -1,0 +1,28 @@
+[transport-defaults](!)
+type                       = transport
+bind                       = 0.0.0.0
+local_net                  = 127.0.0.0/8
+{% for cidr in asterisk_local_nets %}
+local_net                  = {{ cidr }}
+{% endfor %}
+{% if asterisk_external_ip is defined %}
+external_media_address     = {{ asterisk_external_ip }}
+external_signaling_address = {{ asterisk_external_ip }}
+{% endif %}
+
+[transport-udp](transport-defaults)
+protocol = udp
+
+[transport-tcp](transport-defaults)
+protocol = tcp
+
+[transport-tls](transport-defaults)
+protocol      = tls
+bind          = 0.0.0.0:5061
+method        = tlsv1_2
+cert_file     = {{ asterisk_certificate_path }}
+priv_key_file = {{ asterisk_certificate_key_path }}
+ca_list_file  = {{ asterisk_ca_file }}
+verify_client = no
+verify_server = yes
+allow_reload  = yes

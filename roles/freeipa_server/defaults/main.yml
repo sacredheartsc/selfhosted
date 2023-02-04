@@ -1,0 +1,33 @@
+freeipa_domain: '{{ ansible_domain }}'
+freeipa_realm: '{{ ansible_domain | upper }}'
+freeipa_email_domain: '{{ email_domain }}'
+freeipa_workgroup: WORKGROUP
+
+freeipa_archive_on_calendar: 'Sat *-*-* 04:00:00'
+
+freeipa_dns_forwarders:
+  - 8.8.8.8
+  - 8.8.4.4
+
+freeipa_dns_max_negative_cache: 5  # seconds
+
+freeipa_nfs_homedirs: no
+
+freeipa_admin_password: ChangeMe123
+freeipa_ds_password: ChangeMe123
+
+freeipa_idstart: 100000
+freeipa_idmax:   299999
+
+freeipa_maxpwdlife:    3650 # 10 years
+freeipa_minpwdlife:    1 # hours
+freeipa_historylength: 0
+freeipa_minclasses:    0
+freeipa_minlength:     8
+freeipa_maxfailcount:  6
+freeipa_failinterval:  60  # seconds
+freeipa_lockouttime:   600 # seconds
+
+freeipa_admin_password_expiration: 20310130235959
+
+freeipa_default_login_shell: /bin/bash

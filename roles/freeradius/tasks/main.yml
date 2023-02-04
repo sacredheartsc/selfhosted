@@ -1,0 +1,74 @@
+- name: install freeradius
+  dnf:
+    name: '{{ freeradius_packages }}'
+    state: present
+
+- import_tasks: freeipa.yml
+
+- name: request TLS certificate
+  include_role:
+    name: getcert_request
+  vars:
+    certificate_service: radius
+    certificate_path: '{{ freeradius_certificate_path }}'
+    certificate_key_path: '{{ freeradius_certificate_key_path }}'
+    certificate_ca_path: '{{ freeradius_certificate_ca_path }}'
+    certificate_owner: radiusd
+    certificate_hook: systemctl restart radiusd
+
+- name: generate dhparams
+  openssl_dhparam:
+    path: '{{ freeradius_dhparams_path }}'
+    size: 2048
+
+- name: enable ldap module
+  file:
+    src: /etc/raddb/mods-available/ldap
+    dest: /etc/raddb/mods-enabled/ldap
+    state: link
+
+- name: generate freeradius configuration
+  template:
+    src: etc/raddb/{{ item }}.j2
+    dest: /etc/raddb/{{ item }}
+    owner: root
+    group: radiusd
+    mode: 0640
+  loop:
+    - radiusd.conf
+    - clients.conf
+    - mods-available/eap
+    - mods-available/ldap
+    - sites-available/inner-tunnel
+  notify: restart radiusd
+
+- name: create tlscache directory
+  file:
+    path: '{{ freeradius_tlscache_dir }}'
+    state: directory
+    owner: radiusd
+    group: radiusd
+    mode: 0700
+
+- name: set up clean-freeradius-tlscache timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: clean-freeradius-tlscache
+    timer_description: Delete old freeradius tlscache files
+    timer_on_calendar: daily
+    timer_exec: find {{ freeradius_tlscache_dir }} -mtime +2 -exec rm -vf {} ;
+
+- name: start freeradius
+  systemd:
+    name: radiusd
+    enabled: yes
+    state: started
+
+- name: open firewall ports
+  firewalld:
+    service: radius
+    permanent: yes
+    immediate: yes
+    state: enabled
+  tags: firewalld

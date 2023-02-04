@@ -1,0 +1,79 @@
+- import_tasks: freeipa.yml
+
+- name: install rsync
+  dnf:
+    name: rsync
+    state: present
+
+- name: create home directory
+  file:
+    path: '{{ archive_home }}'
+    owner: '{{ archive_user }}'
+    group: '{{ archive_user }}'
+    mode: 0700
+    state: directory
+
+- name: create ssh directory
+  file:
+    path: '{{ archive_home }}/.ssh'
+    owner: '{{ archive_user }}'
+    group: '{{ archive_user }}'
+    mode: 0700
+    state: directory
+
+- name: copy ssh privkey
+  copy:
+    content: '{{ archive_ssh_privkey }}'
+    dest: "{{ archive_home }}/.ssh/id_{{ archive_ssh_pubkey | regex_replace('^ssh-(\\w+).*', '\\1') }}"
+    owner: '{{ archive_user }}'
+    group: '{{ archive_user }}'
+    mode: 0600
+
+- name: generate archiver script
+  template:
+    src: '{{ archive_script_path[1:] }}.j2'
+    dest: '{{ archive_script_path }}'
+    mode: 0555
+
+- name: create plugin directory
+  file:
+    path: '{{ archive_plugin_dir }}'
+    state: directory
+
+- name: copy plugins
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ archive_plugin_dir }}/{{ item.path }}'
+    mode: 0555
+  loop: "{{ lookup('filetree', archive_plugin_dir[1:], wantlist=True) }}"
+  when: item.state == 'file'
+
+- name: generate configuration
+  template:
+    src: '{{ archive_config_path[1:] }}.j2'
+    dest: '{{ archive_config_path }}'
+    owner: '{{ archive_user }}'
+    group: '{{ archive_user }}'
+    mode: 0440
+
+- name: create SELinux policy to avoid logspam
+  include_role:
+    name: selinux_policy
+    apply:
+      tags: selinux
+  vars:
+    selinux_policy_name: ssh_gssproxy
+    selinux_policy_te: '{{ archive_selinux_policy_te }}'
+  tags: selinux
+
+- name: create systemd timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: archiver
+    timer_description: Remote file archiver
+    timer_after: nss-user-lookup.target network-online.target gssproxy.service
+    timer_on_calendar: '{{ archive_on_calendar }}'
+    timer_user: '{{ archive_user }}'
+    timer_exec: '{{ archive_script_path }}'
+    timer_persistent: no

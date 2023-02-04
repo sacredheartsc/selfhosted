@@ -1,0 +1,16 @@
+[{{ gssproxy_section }}]
+mechs = krb5
+cred_store = ccache:FILE:/var/lib/gssproxy/clients/krb5cc_%u
+{% if gssproxy_client_keytab is defined %}
+cred_store = client_keytab:{{ gssproxy_client_keytab }}
+{% endif %}
+{% if gssproxy_keytab is defined %}
+cred_store = keytab:{{ gssproxy_keytab }}
+{% endif %}
+cred_usage = {{ gssproxy_cred_usage }}
+{% if gssproxy_euid is defined %}
+euid = {{ gssproxy_euid }}
+{% endif %}
+{% if gssproxy_program is defined %}
+program = {{ gssproxy_program }}
+{% endif %}

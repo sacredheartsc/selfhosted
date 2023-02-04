@@ -1,0 +1,16 @@
+# The format of this file is:
+#
+#   HOST PLUGIN_NAME [ARGS...]
+#
+# Beware, each line is naively split on whitespace to tokenize the arguments.
+# Quoting, escaping, shell characters, etc are NOT supported.
+
+# opnsense firewalls
+{% for host in groups.opnsense_firewalls %}
+{{ host }} archive_opnsense {{ hostvars[host].opnsense_backup_api_key }} {{ hostvars[host].opnsense_backup_api_secret }}
+{% endfor %}
+
+# edgeswitches
+{% for host in groups.switches %}
+{{ host }} archive_edgeswitch {{ hostvars[host].edgeswitch_backup_username }} {{ hostvars[host].edgeswitch_backup_password }}
+{% endfor %}

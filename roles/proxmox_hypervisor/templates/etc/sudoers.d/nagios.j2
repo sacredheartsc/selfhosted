@@ -1,0 +1,3 @@
+{% for command in proxmox_nagios_sudo_whitelist %}
+{{ proxmox_nagios_user }} ALL=(root) NOPASSWD: {{ command | replace(':', '\\:') }}
+{% endfor %}

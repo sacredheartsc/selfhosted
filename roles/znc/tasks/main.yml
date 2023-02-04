@@ -1,0 +1,86 @@
+- name: install packages
+  dnf:
+    name: '{{ znc_packages }}'
+    state: present
+
+- name: request TLS certificate
+  include_role:
+    name: getcert_request
+  vars:
+    certificate_service: irc
+    certificate_path: '{{ znc_certificate_path }}'
+    certificate_key_path: '{{ znc_certificate_key_path }}'
+    certificate_owner: znc
+    certificate_hook: pkill -HUP znc
+
+- name: generate dhparams
+  openssl_dhparam:
+    path: '{{ znc_dhparams_path }}'
+    size: 2048
+
+- import_tasks: freeipa.yml
+  tags: freeipa
+
+- name: configure saslauthd for znc
+  copy:
+    src: etc/sasl2/znc.conf
+    dest: /etc/sasl2/znc.conf
+  notify: restart saslauthd
+
+- name: enable saslauthd
+  systemd:
+    name: saslauthd
+    enabled: yes
+    state: started
+
+- name: create config directories
+  file:
+    path: '{{ znc_home }}/{{ item }}'
+    state: directory
+    owner: znc
+    group: znc
+    mode: 0700
+  loop:
+    - ''
+    - 'configs'
+    - 'moddata'
+    - 'moddata/cyrusauth'
+
+- name: generate config files
+  template:
+    src: '{{ znc_home[1:] }}/{{ item }}.j2'
+    dest: '{{ znc_home }}/{{ item }}'
+    owner: znc
+    group: znc
+  loop:
+    - configs/znc.conf
+    - moddata/cyrusauth/.registry
+  notify: reload znc
+
+- name: start znc
+  systemd:
+    name: znc
+    enabled: yes
+    state: started
+
+- name: forward https port
+  firewalld:
+    permanent: yes
+    immediate: yes
+    rich_rule: 'rule family={{ item }} forward-port port={{ 443 }} protocol=tcp to-port={{ znc_https_port }}'
+    state: enabled
+  loop:
+    - ipv4
+    - ipv6
+  tags: firewalld
+
+- name: open firewall ports
+  firewalld:
+    permanent: yes
+    immediate: yes
+    service: '{{ item }}'
+    state: enabled
+  loop:
+    - ircs
+    - https
+  tags: firewalld

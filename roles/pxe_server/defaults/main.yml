@@ -1,0 +1,4 @@
+pxe_root: /tftpboot
+pxe_http_port: 80
+pxe_grub_prefix: grub
+locale: en_US.UTF-8

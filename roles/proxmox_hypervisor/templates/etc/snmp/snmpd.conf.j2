@@ -1,0 +1,10 @@
+syslocation {{ proxmox_snmp_location }}
+syscontact {{ proxmox_snmp_contact }}
+
+sysServices    72
+
+master  agentx
+
+{% for user in snmp_v3_users %}
+rouser {{ user.name }}
+{% endfor %}

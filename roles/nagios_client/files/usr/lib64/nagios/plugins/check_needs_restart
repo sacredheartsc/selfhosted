@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -Eeu -o pipefail
+
+trap 'exit 3' ERR
+
+NEEDS_RESTARTING_STDOUT=$(sudo dnf needs-restarting --reboothint) || NEED_REBOOT=$? && NEED_REBOOT=$?
+STALE_SERVICES=($(sudo dnf needs-restarting --services 2>/dev/null | sed '/^user@/d'))
+
+if (( NEED_REBOOT == 1 )); then
+  echo 'Reboot needed to apply package updates.'
+  RC=1
+elif (( ${#STALE_SERVICES[@]} > 0 )); then
+  echo 'One or more services need restarting.'
+  RC=1
+else
+  echo 'Everything is up to date.'
+  RC=0
+fi
+
+printf '%s\n\n' "${NEEDS_RESTARTING_STDOUT}"
+
+if (( ${#STALE_SERVICES[@]} > 0 )); then
+  echo 'The following services need restarting to apply package updates:'
+  printf '  * %s\n' "${STALE_SERVICES[@]}"
+else
+  echo "All running services are up to date."
+fi
+
+exit $RC

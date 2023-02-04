@@ -1,0 +1,46 @@
+- name: create database
+  postgresql_db:
+    name: '{{ sabredav_db_name }}'
+    state: present
+  delegate_to: "{{ postgresql_inventory_host }}"
+  become: yes
+  become_user: postgres
+
+- name: create database user
+  postgresql_user:
+    name: '{{ sabredav_user }}'
+    db: '{{ sabredav_db_name }}'
+    priv: ALL
+    state: present
+  delegate_to: "{{ postgresql_inventory_host }}"
+  become: yes
+  become_user: postgres
+
+- name: check if database schema is initialized
+  postgresql_query:
+    login_user: '{{ sabredav_user }}'
+    login_host: '{{ sabredav_db_host }}'
+    db: '{{ sabredav_db_name }}'
+    query: SELECT 1 FROM calendars
+  become: yes
+  become_user: apache
+  environment:
+    GSS_USE_PROXY: 'yes'
+  register: sabredav_check_db
+  failed_when: no
+
+- name: initialize database schema
+  postgresql_query:
+    login_user: '{{ sabredav_user }}'
+    login_host: '{{ sabredav_db_host }}'
+    db: '{{ sabredav_db_name }}'
+    path_to_script: '{{ sabredav_home }}/pgsql.schema.sql'
+    as_single_query: yes
+  become: yes
+  become_user: apache
+  environment:
+    GSS_USE_PROXY: 'yes'
+  when:
+    - sabredav_check_db.msg is defined
+    - sabredav_check_db.msg is search('relation "calendars" does not exist')
+

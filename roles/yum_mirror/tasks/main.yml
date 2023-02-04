@@ -1,0 +1,47 @@
+- name: install packages
+  dnf:
+    name: yum-utils
+    state: present
+
+- name: create repo definitions
+  yum_repository:
+    name: '{{ item.id }}'
+    file: mirrors
+    description: '{{ item.name }}'
+    metalink: '{{ item.metalink | default(omit) }}'
+    mirrorlist: '{{ item.mirrorlist | default(omit) }}'
+    baseurl: '{{ item.baseurl | default(omit) }}'
+    gpgcheck: no
+    enabled: no
+    state: present
+  loop: '{{ yum_mirror_repositories }}'
+
+- name: create repo directories
+  file:
+    path: '{{ yum_mirror_webroot }}/{{ item.path }}'
+    state: directory
+    recurse: yes
+    setype: _default
+  loop: '{{ yum_mirror_repositories }}'
+
+- name: generate reposync cron script
+  template:
+    src: '{{ yum_mirror_reposync_script[1:] }}.j2'
+    dest: '{{ yum_mirror_reposync_script }}'
+    mode: 0555
+
+- name: set up reposync timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: reposync
+    timer_description: Sync yum mirrors from upstream
+    timer_after: network.target
+    timer_on_calendar: '{{ yum_sync_on_calendar }}'
+    timer_exec: '{{ yum_mirror_reposync_script }}'
+
+- name: sync repositories
+  systemd:
+    name: reposync.service
+    state: started
+  changed_when: no

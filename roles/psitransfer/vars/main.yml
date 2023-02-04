@@ -1,0 +1,33 @@
+psitransfer_home: /var/lib/psitransfer
+psitransfer_install_dir: '{{ psitransfer_home }}/psitransfer'
+psitransfer_data_dir: '{{ psitransfer_home }}/data'
+psitransfer_user: psitransfer
+psitransfer_url: https://github.com/psi-4ward/psitransfer/releases/download/v{{ psitransfer_version }}/psitransfer-v{{ psitransfer_version }}.tar.gz
+
+psitransfer_archive_shell: >-
+  TIMESTAMP=$(date +%Y%m%d%H%M%S);
+  tar czf "psitransfer-${TIMESTAMP}.tar.gz"
+  --transform "s|^\.|psitransfer-${TIMESTAMP}|"
+  -C {{ psitransfer_data_dir | quote }} .
+
+psitransfer_apache_config: |
+  {{ apache_proxy_config }}
+  ProxyPass        / http://127.0.0.1:{{ psitransfer_port }}/
+  ProxyPassReverse / http://127.0.0.1:{{ psitransfer_port }}/
+
+  RewriteEngine on
+  RewriteCond %{HTTP:Upgrade} websocket [NC]
+  RewriteCond %{HTTP:Connection} upgrade [NC]
+  RewriteRule ^/?(.*) "ws://127.0.0.1:{{ psitransfer_port }}/$1" [P,L]
+
+  <Location /upload>
+    {% for cidr in psitransfer_upload_cidrs %}
+    Require ip {{ cidr }}
+    {% endfor %}
+  </Location>
+
+  <Location /admin>
+    {% for cidr in psitransfer_admin_cidrs %}
+    Require ip {{ cidr }}
+    {% endfor %}
+  </Location>

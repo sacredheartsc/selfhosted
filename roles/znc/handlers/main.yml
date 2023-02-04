@@ -1,0 +1,8 @@
+- name: restart saslauthd
+  systemd:
+    name: saslauthd
+    state: restarted
+
+- name: reload znc
+  command: pkill -HUP znc
+  failed_when: no

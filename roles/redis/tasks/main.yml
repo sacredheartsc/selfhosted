@@ -1,0 +1,43 @@
+- name: install redis
+  dnf:
+    name: redis
+    state: present
+
+- name: create systemd unit
+  copy:
+    src: etc/systemd/system/redis@.service
+    dest: /etc/systemd/system/redis@.service
+  register: redis_unit
+
+- name: reload systemd units
+  systemd:
+    daemon_reload: yes
+  when: redis_unit.changed
+
+- name: create redis data directory
+  file:
+    path: '{{ redis_home }}/{{ redis_port }}'
+    owner: redis
+    group: redis
+    mode: 0750
+    state: directory
+
+- name: generate config file
+  template:
+    src: etc/redis.conf.j2
+    dest: /etc/redis-{{ redis_port }}.conf
+  register: redis_config_file
+
+- name: set redis_port_t selinux context for redis port
+  seport:
+    ports: '{{ redis_port }}'
+    proto: tcp
+    setype: redis_port_t
+    state: present
+  tags: selinux
+
+- name: enable redis
+  systemd:
+    name: redis@{{ redis_port }}
+    enabled: yes
+    state: "{{ 'restarted' if redis_config_file.changed else 'started' }}"

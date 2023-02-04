@@ -1,0 +1,70 @@
+- name: install cups
+  dnf:
+    name: cups
+    state: present
+
+- name: create certificate directory
+  file:
+    path: /etc/pki/tls/cups
+    state: directory
+
+- name: request TLS certificate
+  include_role:
+    name: getcert_request
+  vars:
+    certificate_service: cups
+    certificate_path: '{{ cups_certificate_path }}'
+    certificate_key_path: '{{ cups_certificate_key_path }}'
+    certificate_hook: systemctl restart cups
+
+- name: generate config files
+  template:
+    src: etc/cups/{{ item }}.j2
+    dest: /etc/cups/{{ item }}
+    owner: root
+    group: lp
+    mode: 0640
+  loop:
+    - cupsd.conf
+    - cups-files.conf
+  notify: restart cups
+
+- name: allow cups to listen on port 443
+  seport:
+    ports: 443
+    proto: tcp
+    setype: ipp_port_t
+    state: present
+  tags: selinux
+
+- import_tasks: freeipa.yml
+  tags: freeipa
+
+- name: enable cups
+  systemd:
+    name: cups
+    enabled: yes
+    state: started
+
+- name: forward port 80 to port 631
+  firewalld:
+    permanent: yes
+    immediate: yes
+    rich_rule: 'rule family={{ item }} forward-port port=80 protocol=tcp to-port=631'
+    state: enabled
+  loop:
+    - ipv4
+    - ipv6
+  tags: firewalld
+
+- name: open firewall ports
+  firewalld:
+    permanent: yes
+    immediate: yes
+    service: '{{ item }}'
+    state: enabled
+  loop:
+    - ipp
+    - http
+    - https
+  tags: firewalld

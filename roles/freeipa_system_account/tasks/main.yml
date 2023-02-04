@@ -1,0 +1,14 @@
+- name: create freeipa system account for LDAP binds
+  ldap_entry:
+    dn: 'uid={{ system_account_username }},{{ freeipa_sysaccount_basedn }}'
+    objectClass:
+      - account
+      - simplesecurityobject
+    attributes:
+      uid: '{{ system_account_username }}'
+      userPassword: '{{ system_account_password }}'
+      passwordExpirationTime: '{{ system_account_expiration }}'
+      nsIdleTimeout: 0
+    bind_dn: cn=Directory Manager
+    bind_pw: '{{ freeipa_ds_password }}'
+    server_uri: ldaps://{{ ipa_host }}

@@ -1,0 +1,77 @@
+- name: install packages
+  dnf:
+    name: '{{ sabredav_packages }}'
+    state: present
+
+- name: create webroot
+  file:
+    path: '{{ sabredav_home }}'
+    state: directory
+
+- name: clone git repository
+  git:
+    repo: '{{ sabredav_git_repo }}'
+    dest: '{{ sabredav_home }}'
+    version: '{{ sabredav_version }}'
+
+- name: set permissions on writeable directories
+  file:
+    path: '{{ sabredav_home }}/{{ item }}'
+    state: directory
+    mode: 0770
+    owner: apache
+    group: apache
+    setype: httpd_sys_rw_content_t
+  loop: '{{ sabredav_writable_dirs }}'
+
+- name: set selinux context on writeable directories
+  sefcontext:
+    target: '{{ sabredav_home }}/{{ item }}(/.*)?'
+    setype: httpd_sys_rw_content_t
+    state: present
+  loop: '{{ sabredav_writable_dirs }}'
+  register: sabredav_writeable_sefcontext
+  tags: selinux
+
+- name: apply selinux context to writeable directories
+  command: 'restorecon -R {{ sabredav_home }}/{{ item }}'
+  when: sabredav_writeable_sefcontext.results[index].changed
+  loop: '{{ sabredav_writable_dirs }}'
+  loop_control:
+    index_var: index
+  tags: selinux
+
+- import_tasks: freeipa.yml
+  tags: freeipa
+
+- name: configure gssproxy for kerberized postgres
+  include_role:
+    name: gssproxy_client
+  vars:
+    gssproxy_name: sabredav
+    gssproxy_section: service/php-fpm
+    gssproxy_client_keytab: '{{ sabredav_keytab }}'
+    gssproxy_cred_usage: initiate
+    gssproxy_euid: apache
+
+- name: check if composer is installed
+  stat:
+    path: /usr/local/bin/composer
+  register: stat_composer
+
+- name: install composer
+  include_tasks: composer.yml
+  when: not stat_composer.stat.exists
+
+- name: install dependencies using composer
+  composer:
+    command: install
+    working_dir: '{{ sabredav_home }}'
+
+- name: generate sabredav configuration
+  template:
+    src: '{{ sabredav_home[1:] }}/server.php.j2'
+    dest: '{{ sabredav_home }}/server.php'
+
+- import_tasks: database.yml
+  tags: database

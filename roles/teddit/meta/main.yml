@@ -1,0 +1,10 @@
+dependencies:
+  - role: yum
+    yum_repositories:
+      - epel
+      - rpmfusion-free
+    tags: yum
+
+  - role: redis
+    redis_port: '{{ teddit_redis_port }}'
+    tags: redis

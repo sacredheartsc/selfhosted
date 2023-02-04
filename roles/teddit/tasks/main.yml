@@ -1,0 +1,104 @@
+- name: install packages
+  dnf:
+    name: '{{ teddit_packages }}'
+    state: present
+
+- name: create local user
+  user:
+    name: '{{ teddit_user }}'
+    system: yes
+    home: '{{ teddit_home }}'
+    shell: /sbin/nologin
+    create_home: no
+
+- name: create home directory
+  file:
+    path: '{{ teddit_home }}'
+    owner: '{{ teddit_user }}'
+    group: '{{ teddit_user }}'
+    mode: 0755
+    state: directory
+
+- name: disable npm package lock
+  lineinfile:
+    regexp: ^package-lock=
+    line: package-lock=false
+    path: '{{ teddit_home }}/.npmrc'
+    create: yes
+    owner: '{{ teddit_user }}'
+    group: '{{ teddit_user }}'
+    mode: 0600
+    state: present
+
+- name: clone git repository
+  git:
+    repo: '{{ teddit_git_repo }}'
+    dest: '{{ teddit_install_dir }}'
+    version: '{{ teddit_version }}'
+    force: yes
+    update: yes
+  become: yes
+  become_user: '{{ teddit_user }}'
+  register: teddit_git
+  notify: restart teddit
+
+- name: install npm dependencies
+  npm:
+    path: '{{ teddit_install_dir }}'
+    production: yes
+    no_optional: yes
+  become: yes
+  become_user: '{{ teddit_user }}'
+  when: teddit_git.changed
+  notify: restart teddit
+
+- name: create teddit systemd unit
+  template:
+    src: etc/systemd/system/teddit.service.j2
+    dest: /etc/systemd/system/teddit.service
+  register: teddit_unit
+  notify: restart teddit
+
+- name: reload systemd daemons
+  systemd:
+    daemon_reload: yes
+  when: teddit_unit.changed
+
+- name: generate config file
+  template:
+    src: '{{ teddit_install_dir[1:] }}/config.js.j2'
+    dest: '{{ teddit_install_dir }}/config.js'
+    owner: '{{ teddit_user }}'
+    group: '{{ teddit_user }}'
+    mode: 0600
+  notify: restart teddit
+
+- name: start teddit
+  systemd:
+    name: teddit
+    enabled: yes
+    state: started
+
+- name: set http_port_t selinux contect on teddit port
+  seport:
+    ports: '{{ teddit_port }}'
+    proto: tcp
+    setype: http_port_t
+    state: present
+  tags: selinux
+
+- name: generate update script
+  template:
+    src: '{{ teddit_home[1:] }}/teddit-update.sh.j2'
+    dest: '{{ teddit_home }}/teddit-update.sh'
+    mode: 0555
+
+- name: set up teddit-update timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: teddit-update
+    timer_description: Update teddit
+    timer_after: network.target
+    timer_on_calendar: '{{ teddit_update_on_calendar }}'
+    timer_exec: '{{ teddit_home }}/teddit-update.sh'

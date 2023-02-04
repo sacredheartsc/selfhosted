@@ -1,0 +1,78 @@
+- name: install packages
+  dnf:
+    name: '{{ photostructure_packages }}'
+    state: present
+
+- import_tasks: freeipa.yml
+  tags: freeipa
+
+- name: create home directory
+  file:
+    path: '{{ photostructure_home }}'
+    owner: '{{ photostructure_user }}'
+    group: '{{ photostructure_user }}'
+    mode: 0700
+    state: directory
+
+- name: clone git repository
+  git:
+    repo: '{{ photostructure_repo }}'
+    dest: '{{ photostructure_install_dir }}'
+    update: no
+    version: '{{ photostructure_version }}'
+  become: yes
+  become_user: '{{ photostructure_user }}'
+  register: photostructure_git
+
+- name: build photostructure
+  shell:
+    cmd: >-
+      mkdir -p "$HOME/.config/PhotoStructure" &&
+      rm -rf node_modules "$HOME/.electron" "$HOME/.electron-gyp" "$HOME/.npm/_libvips" "$HOME/.node-gyp" "$HOME/.cache/yarn/*/*sharp*" &&
+      npx --yes yarn install --silent
+    chdir: '{{ photostructure_install_dir }}'
+  become: true
+  become_user: '{{ photostructure_user }}'
+  when: photostructure_git.changed
+
+- name: create systemd unit file
+  template:
+    src: etc/systemd/system/photostructure.service.j2
+    dest: /etc/systemd/system/photostructure.service
+  register: photostructure_unit
+  notify: restart photostructure
+
+- name: reload systemd units
+  systemd:
+    daemon_reload: yes
+  when: photostructure_unit.changed
+
+- name: generate environment file
+  template:
+    src: etc/sysconfig/photostructure
+    dest: /etc/sysconfig/photostructure
+    owner: root
+    group: '{{ photostructure_user }}'
+  notify: restart photostructure
+
+- name: start photostructure
+  systemd:
+    name: photostructure
+    state: started
+    enabled: yes
+
+- name: generate update script
+  template:
+    src: '{{ photostructure_home[1:] }}/photostructure-update.sh.j2'
+    dest: '{{ photostructure_home }}/photostructure-update.sh'
+    mode: 0555
+
+- name: set up photostructure-update timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: photostructure-update
+    timer_description: Update photostructure
+    timer_after: network.target nss-user-lookup.target
+    timer_on_calendar: '{{ photostructure_update_on_calendar }}'
+    timer_exec: '{{ photostructure_home }}/photostructure-update.sh'

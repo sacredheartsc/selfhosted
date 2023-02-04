@@ -1,0 +1,8 @@
+{% for file in freeipa_log_files %}
+input(type="imfile"
+      addMetadata="on"
+      file="{{ file.path }}"
+      tag="{{ file.tag }}"
+      severity="{{ file.severity | default('info') }}")
+
+{% endfor %}

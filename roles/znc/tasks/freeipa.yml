@@ -1,0 +1,49 @@
+- name: create HBAC service
+  ipahbacsvc:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ znc_hbac_service }}'
+    description: ZNC IRC Bouncer
+    state: present
+  run_once: yes
+
+- name: create znc-servers hostgroup
+  ipahostgroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ znc_hbac_hostgroup }}'
+    description: ZNC Servers
+    host: "{{ groups[znc_hbac_hostgroup] | map('regex_replace', '$', '.' ~ ansible_domain) }}"
+    state: present
+  run_once: yes
+
+- name: create access group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ znc_access_group }}'
+    description: ZNC Users
+    nonposix: yes
+    state: present
+  run_once: yes
+
+- name: create HBAC rule
+  ipahbacrule:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: allow_znc_on_znc_servers
+    description: Allow ZNC on ZNC servers
+    hostgroup:
+      - '{{ znc_hbac_hostgroup }}'
+    group:
+      - '{{ znc_access_group }}'
+    hbacsvc:
+      - '{{ znc_hbac_service }}'
+  run_once: yes
+
+- name: generate PAM configuration
+  copy:
+    content: |
+      auth    required pam_sss.so
+      account required pam_sss.so
+    dest: /etc/pam.d/znc

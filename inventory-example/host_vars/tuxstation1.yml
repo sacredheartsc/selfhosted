@@ -1,0 +1,5 @@
+# When powersave is enabled on the communication controller of the Dell
+# Optiplex Micro, the onboad NIC drops a *huge* amount of packets.
+# see https://bugzilla.kernel.org/show_bug.cgi?id=213377
+udev_pci_powersave_blacklist:
+  - 8086:43e0

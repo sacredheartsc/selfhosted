@@ -1,0 +1,33 @@
+#!/bin/bash
+
+exec 1> >(logger -s -t $(basename "$0")) 2>&1
+
+UNIFI_KEYSTORE='{{ unifi_keystore }}'
+CERT_PATH='{{ unifi_certificate_path }}'
+CA_PATH='{{ unifi_certificate_ca_path }}'
+KEY_PATH='{{ unifi_certificate_key_path }}'
+PKCS12_PATH='/etc/pki/tls/private/unifi.p12'
+PASSWORD='aircontrolenterprise'
+
+openssl pkcs12         \
+  -export              \
+  -in "$CERT_PATH"     \
+  -inkey "$KEY_PATH"   \
+  -out "$PKCS12_PATH"  \
+  -name unifi          \
+  -CAfile "$CA_PATH"   \
+  -caname root         \
+  -password pass:"$PASSWORD"
+
+keytool                           \
+  -importkeystore                 \
+  -deststorepass "$PASSWORD"      \
+  -destkeypass "$PASSWORD"        \
+  -destkeystore "$UNIFI_KEYSTORE" \
+  -srckeystore "$PKCS12_PATH"     \
+  -srcstoretype PKCS12            \
+  -srcstorepass "$PASSWORD"       \
+  -alias unifi                    \
+  -noprompt
+
+systemctl restart unifi

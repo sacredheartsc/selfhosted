@@ -1,0 +1,36 @@
+namespace inbox {
+
+  mailbox Drafts {
+    auto = subscribe
+    special_use = \Drafts
+  }
+
+  mailbox Junk {
+    auto = subscribe
+    special_use = \Junk
+  }
+
+  mailbox Trash {
+    auto = subscribe
+    special_use = \Trash
+  }
+
+  mailbox Sent {
+    auto = subscribe
+    special_use = \Sent
+  }
+
+  mailbox Archive {
+    auto = subscribe
+    special_use = \Archive
+  }
+
+  # "auto = subscribe" on virtual folders causes dovecot to coredump.
+  mailbox "Virtual/All Messages" {
+    special_use = \All
+  }
+
+  mailbox Virtual/Flagged {
+    special_use = \Flagged
+  }
+}

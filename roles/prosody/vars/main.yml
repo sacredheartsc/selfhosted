@@ -1,0 +1,38 @@
+prosody_certificate_dir: /etc/pki/prosody
+prosody_module_dir: /usr/local/lib64/prosody/modules
+prosody_data_dir: /var/lib/prosody
+prosody_keytab: /var/lib/gssproxy/clients/{{ prosody_user }}.keytab
+prosody_groups_file: /etc/prosody/groups.ini
+
+prosody_module_repo: https://hg.prosody.im/prosody-modules/
+
+prosody_packages:
+  - prosody
+  - lua-dbi
+  - lua-event
+  - lua-ldap
+  - lua-sec
+  - mercurial
+
+prosody_apache_config: |
+  {{ apache_proxy_config }}
+  ProxyPass        / http://127.0.0.1:{{ prosody_http_port }}/
+  ProxyPassReverse / http://127.0.0.1:{{ prosody_http_port }}/
+
+prosody_selinux_policy_te: |
+  require {
+    type prosody_t;
+    type gssproxy_t;
+    type gssproxy_var_lib_t;
+    type ldap_port_t;
+    class dir search;
+    class sock_file write;
+    class unix_stream_socket connectto;
+    class tcp_socket name_connect;
+  }
+
+  #============= prosody_t ==============
+  allow prosody_t gssproxy_var_lib_t:dir search;
+  allow prosody_t gssproxy_var_lib_t:sock_file write;
+  allow prosody_t gssproxy_t:unix_stream_socket connectto;
+  allow prosody_t ldap_port_t:tcp_socket name_connect;

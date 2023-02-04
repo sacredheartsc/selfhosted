@@ -1,0 +1,10 @@
+auth_default_realm = {{ freeipa_realm }}
+
+auth_username_format = %Ln
+
+auth_gssapi_hostname = "$ALL"
+
+auth_mechanisms = gssapi plain login
+
+!include auth-system.conf.ext
+!include auth-ldap.conf.ext

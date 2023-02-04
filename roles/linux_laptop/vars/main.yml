@@ -1,0 +1,6 @@
+linux_laptop_wifi_certificate_path: /etc/pki/tls/certs/wifi-{{ ansible_fqdn }}.crt
+linux_laptop_wifi_certificate_key_path: /etc/pki/tls/private/wifi-{{ ansible_fqdn }}.key
+linux_laptop_wifi_certificate_ca_path: /etc/ipa/ca.crt
+linux_laptop_wifi_certificate_key_passphrase: just_have_to_use_something_or_networkmanger_freaks_out
+
+linux_laptop_hbac_hostgroup: linux_laptops

@@ -1,0 +1,2 @@
+archive_ssh_privkey: '{{ vault_archive_ssh_privkey }}'
+archive_ssh_pubkey: ssh-rsa AAAAAAAAAchangeme

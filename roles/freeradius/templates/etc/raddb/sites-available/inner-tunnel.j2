@@ -1,0 +1,90 @@
+server inner-tunnel {
+  listen {
+    ipaddr = 127.0.0.1
+    port = 18120
+    type = auth
+  }
+
+  authorize {
+    filter_username
+    chap
+    suffix
+
+    update control {
+      &Proxy-To-Realm := LOCAL
+    }
+
+    eap {
+      ok = return
+    }
+
+    ldap
+    if (ok || updated) {
+      update {
+        control:Auth-Type := ldap
+      }
+    }
+
+    expiration
+    logintime
+    pap
+  }
+
+  authenticate {
+    Auth-Type PAP {
+      pap
+    }
+
+    Auth-Type CHAP {
+      chap
+    }
+
+    Auth-Type LDAP {
+      ldap
+    }
+
+    eap
+  }
+
+  session {
+    radutmp
+  }
+
+
+  post-auth {
+    -sql
+    update reply {
+      User-Name !* ANY
+      Message-Authenticator !* ANY
+      EAP-Message !* ANY
+      Proxy-State !* ANY
+      MS-MPPE-Encryption-Types !* ANY
+      MS-MPPE-Encryption-Policy !* ANY
+      MS-MPPE-Send-Key !* ANY
+      MS-MPPE-Recv-Key !* ANY
+    }
+
+    update {
+      &outer.session-state: += &reply:
+    }
+
+    Post-Auth-Type REJECT {
+      -sql
+      attr_filter.access_reject
+
+      update outer.session-state {
+        &Module-Failure-Message := &request:Module-Failure-Message
+      }
+    }
+
+    if (LDAP-Group != "{{ freeradius_access_group }}") {
+      reject
+    }
+  }
+
+  pre-proxy { }
+
+  post-proxy {
+    eap
+  }
+}

@@ -1,0 +1,1 @@
+cups_server_name: '{{ cups_host }}'

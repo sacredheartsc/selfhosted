@@ -1,0 +1,15 @@
+nsd_init_serial: 10000
+
+nsd_default_ttl: 10800
+
+nsd_soa_block: |
+  $TTL    {{ zone.ttl | default(nsd_default_ttl) }}
+  $ORIGIN {{ zone.name }}.
+
+  @  IN  SOA  {{ zone.ns | default('ns1.' + zone.name) }}.  {{ zone.contact | default('hostmaster.' + zone.name) }}.  (
+    {{ serial }} ; serial
+    {{ zone.refresh | default('1d') }} ; refresh
+    {{ zone.retry   | default('3m') }} ; retry
+    {{ zone.expire  | default('1w') }} ; expire
+    {{ zone.minimum | default('3h') }} ; minimum
+  )

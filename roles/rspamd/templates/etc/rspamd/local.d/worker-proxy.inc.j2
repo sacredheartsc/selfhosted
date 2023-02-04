@@ -1,0 +1,7 @@
+bind_socket = 0.0.0.0:{{ rspamd_milter_port }}
+
+count = {{ rspamd_milter_process_count }}
+
+upstream "local" {
+  self_scan = yes;
+}

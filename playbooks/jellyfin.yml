@@ -1,0 +1,20 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: jellyfin_servers
+
+- name: configure jellyfin
+  hosts: jellyfin_servers
+  tags: jellyfin
+  roles:
+    - role: jellyfin
+
+    - role: apache_vhost
+      apache_default_vhost: yes
+      apache_config: '{{ jellyfin_apache_config }}'
+      tags: apache
+
+    - role: archive_job
+      archive_name: jellyfin
+      archive_user: '{{ jellyfin_user }}'
+      archive_shell: '{{ jellyfin_archive_shell }}'
+      tags: archive

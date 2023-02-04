@@ -1,0 +1,74 @@
+#!/bin/bash
+
+set -Eeu -o pipefail
+shopt -s lastpipe
+
+trap 'exit 3' ERR
+
+usage() {
+  echo 'usage: check_zpool -w WARN_THRESHOLD -c CRIT_THRESHOLD' 1>&2
+  exit 3
+}
+
+while getopts ':w:c:' opt; do
+  case $opt in
+    w)  WARN_THRESHOLD=${OPTARG//%/} ;;
+    c)  CRIT_THRESHOLD=${OPTARG//%/} ;;
+    *)  usage ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if [ -z "${WARN_THRESHOLD:-}" -o -z "${CRIT_THRESHOLD:-}" ]; then
+  usage
+fi
+
+if (( WARN_THRESHOLD < CRIT_THRESHOLD )); then
+  echo 'WARN must be greater than CRIT' 1>&2
+  exit 3
+fi
+
+CRIT=()
+WARN=()
+OK=()
+
+zpool list -Ho name,free,capacity,health | while read -r name free capacity health; do 
+  capacity=${capacity//%/}
+  percent_free=$(( 100 - capacity ))
+  output="${name} $health: $free free (${percent_free}%)"
+
+  if [ "$health" != ONLINE ]; then
+    output="$output"$'\n'"$(zpool status "$name")"
+  fi
+
+  if (( percent_free < CRIT_THRESHOLD )) || [ "$health" != ONLINE ]; then
+    CRIT+=("$output")
+  elif (( percent_free < WARN_THRESHOLD )); then
+    WARN+=("$output")
+  else
+    OK+=("$output")
+  fi
+done
+
+if [ -z "${CRIT[*]}${WARN[*]}${OK[*]}" ]; then
+  echo 'OK - no zpools present'
+  exit 0
+fi
+
+rc=0
+
+for line in "${CRIT[@]}"; do
+  echo "CRIT - ${line}"
+  rc=3
+done
+
+for line in "${WARN[@]}"; do
+  echo "WARN - ${line}"
+  (( rc )) || rc=2
+done
+
+for line in "${OK[@]}"; do
+  echo "OK - ${line}"
+done
+
+exit $rc

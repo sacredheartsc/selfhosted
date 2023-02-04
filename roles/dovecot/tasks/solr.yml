@@ -1,0 +1,40 @@
+- name: add solr collection for dovecot
+  command:
+    cmd: '{{ solr_install_dir }}/bin/solr create -c dovecot'
+    creates: '{{ solr_data_dir }}/dovecot'
+  become: True
+  become_user: solr
+
+- name: check if dovecot schema exists
+  stat:
+    path: '{{ solr_data_dir }}/dovecot/conf/schema.xml.bak'
+  register: schema_xml_bak
+
+- name: copy dovecot solr schema
+  copy:
+    src: '{{ solr_data_dir[1:] }}/dovecot/conf/schema.xml'
+    dest: '{{ solr_data_dir }}/dovecot/conf/schema.xml'
+    owner: solr
+    group: solr
+  register: solr_schema
+  changed_when: no
+
+- name: stat new schema
+  stat:
+    path: '{{ solr_data_dir }}/dovecot/conf/schema.xml'
+  register: schema_xml
+
+- name: remove managed-schema file
+  file:
+    path: '{{ solr_data_dir }}/dovecot/conf/managed-schema.xml'
+    state: absent
+  when: (not schema_xml_bak.stat.exists) or (schema_xml_bak.stat.checksum != schema_xml.stat.checksum)
+  notify: restart solr
+
+- name: generate dovecot solr config
+  template:
+    src: '{{ solr_data_dir[1:] }}/dovecot/conf/solrconfig.xml.j2'
+    dest: '{{ solr_data_dir }}/dovecot/conf/solrconfig.xml'
+    owner: solr
+    group: solr
+  notify: restart solr

@@ -1,0 +1,10 @@
+recipient_delimiter = {{ dovecot_recipient_delimiter }}
+lda_original_recipient_header = X-Original-To
+
+lda_mailbox_autocreate = yes
+
+lda_mailbox_autosubscribe = no
+
+protocol lda {
+  mail_plugins = $mail_plugins sieve
+}

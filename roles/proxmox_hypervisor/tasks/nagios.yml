@@ -1,0 +1,68 @@
+- name: install packages
+  apt:
+    name: '{{ proxmox_nagios_packages }}'
+    state: present
+
+- name: create nagios user
+  user:
+    name: nagios
+    comment: Nagios Pseudo-User
+    system: yes
+    shell: /bin/bash
+    home: '{{ proxmox_nagios_home }}'
+    create_home: yes
+    state: present
+
+- name: add nagios ssh key
+  authorized_key:
+    user: nagios
+    key: '{{ proxmox_nagios_ssh_pubkey }}'
+    state: present
+
+- name: copy custom nagios scripts
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ proxmox_nagios_plugin_dir }}/{{ item.path }}'
+    mode: 0555
+  loop: "{{ lookup('filetree', proxmox_nagios_plugin_dir[1:], wantlist=True) }}"
+  when: item.state == 'file'
+
+- name: generate sudo rules
+  template:
+    src: etc/sudoers.d/nagios.j2
+    dest: /etc/sudoers.d/nagios
+    mode: 0400
+
+- name: set PATH for nagios user
+  copy:
+    content: export PATH=/sbin:/bin:/usr/sbin:/usr/bin:{{ proxmox_nagios_plugin_dir }}
+    dest: '{{ proxmox_nagios_home }}/.bashrc'
+    owner: '{{ proxmox_nagios_user }}'
+    group: '{{ proxmox_nagios_user }}'
+    mode: 0644
+
+- name: stop snmpd
+  systemd:
+    name: snmpd
+    state: stopped
+
+- name: generate snmpd.conf
+  template:
+    src: etc/snmp/snmpd.conf.j2
+    dest: /etc/snmp/snmpd.conf
+    mode: 0600
+
+- name: add snmpv3 users
+  lineinfile:
+    path: /var/lib/snmp/snmpd.conf
+    line: 'createUser {{ item.name }} SHA "{{ item.auth_pass }}" AES "{{ item.priv_pass }}"'
+    insertafter: EOF
+  loop: '{{ snmp_v3_users }}'
+  loop_control:
+    label: '{{ item.name }}'
+
+- name: enable and start snmpd
+  systemd:
+    name: snmpd
+    enabled: yes
+    state: started

@@ -1,0 +1,96 @@
+# NOTE: certmonger post-command are passed directly to exec().
+# Spaces in filenames, quotes, and other shell meta-characters will break your hook!
+---
+- name: check if certificate is already tracked by certmonger
+  command: ipa-getcert list --certfile {{ certificate_path }}
+  failed_when: False
+  changed_when: False
+  register: certmonger_already_tracking
+
+- name: retrieve certificate via certmonger
+  block:
+    - name: create freeipa hosts
+      ipahost:
+        ipaadmin_principal: '{{ ipa_user }}'
+        ipaadmin_password: '{{ ipa_pass }}'
+        name: '{{ certificate_san }}'
+        state: present
+      loop: '{{ certificate_sans }}'
+      loop_control:
+        loop_var: certificate_san
+
+    - name: create freeipa services
+      ipaservice:
+        ipaadmin_principal: '{{ ipa_user }}'
+        ipaadmin_password: '{{ ipa_pass }}'
+        name: '{{ certificate_service }}/{{ certificate_san }}'
+        host: '{{ omit if certificate_san == ansible_fqdn else [ansible_fqdn] }}'
+      loop: '{{ certificate_sans }}'
+      loop_control:
+        loop_var: certificate_san
+      when: "certificate_service != 'host'"
+
+    - name: prepare post-save hook
+      block:
+        - name: create post-save script
+          copy:
+            content: |
+              #!/bin/bash
+              exec 1> >(logger -s -t $(basename "$0")) 2>&1
+              exec {{ certificate_hook }}
+            dest: '{{ certificate_post_save_script }}'
+            mode: 0555
+            setype: certmonger_unconfined_exec_t
+
+        - name: set certmonger_unconfined_exec_t sefcontext on post-save script
+          sefcontext:
+            target: '{{ certificate_post_save_script }}'
+            state: present
+            setype: certmonger_unconfined_exec_t
+          tags: selinux
+          register: certificate_post_save_script_sefcontext
+
+        - name: apply selinux context to post-save script
+          command: restorecon {{ certificate_post_save_script | quote }}
+          when: certificate_post_save_script_sefcontext.changed
+          tags: selinux
+      when: certificate_hook is defined
+
+    - name: submit certificate request
+      command: >
+        ipa-getcert {{ 'resubmit' if certmonger_already_tracking.rc == 0 else 'request' }}
+        --certfile {{ certificate_path | quote }}
+        {% if certmonger_already_tracking.rc != 0 %}
+        --keyfile {{ certificate_key_path | quote }}
+        --key-type {{ certificate_type | quote }}
+        --key-size {{ certificate_size | quote }}
+        {% endif %}
+        --principal {{ certificate_service ~ '/' ~ ansible_fqdn | quote }}
+        --subject-name CN={{ ansible_fqdn | quote }}
+        {% for san in certificate_sans %}
+        --dns {{ san | quote }}
+        {% endfor %}
+        --cert-owner {{ certificate_owner | quote }}
+        --cert-perms {{ '0%0o' % certificate_mode  }}
+        --key-owner {{ certificate_owner | quote }}
+        --key-perms {{ '0%0o' % certificate_mode }}
+        {% if certificate_key_passphrase is defined %}
+        --pin {{ certificate_key_passphrase | quote }}
+        {% endif %}
+        {% if certificate_hook is defined %}
+        --after-command {{ certificate_post_save_script | quote }}
+        {% endif %}
+
+    - name: wait request to complete
+      command: ipa-getcert status --certfile {{ certificate_path | quote }}
+      register: certmonger_status
+      retries: 10
+      delay: 2
+      until: certmonger_status.rc == 0
+  when: certmonger_already_tracking.rc != 0 or certificate_resubmit
+
+- name: enable certmonger daemon
+  systemd:
+    name: certmonger
+    enabled: yes
+    state: started

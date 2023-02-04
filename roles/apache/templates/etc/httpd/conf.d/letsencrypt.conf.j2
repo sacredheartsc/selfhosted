@@ -1,0 +1,8 @@
+Alias /.well-known/acme-challenge/ {{ apache_letsencrypt_dir}}/.well-known/acme-challenge/
+ProxyPass /.well-known/acme-challenge/ !
+<Directory "{{ apache_letsencrypt_dir }}/.well-known/acme-challenge/">
+  Options None
+  AllowOverride None
+  ForceType text/plain
+  RedirectMatch 404 "^(?!/\.well-known/acme-challenge/[\w-]{43}$)"
+</Directory>

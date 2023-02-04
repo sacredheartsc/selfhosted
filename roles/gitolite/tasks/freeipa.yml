@@ -1,0 +1,49 @@
+- name: create service account
+  ipauser:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ gitolite_freeipa_user }}'
+    loginshell: /sbin/nologin
+    homedir: '{{ gitolite_home }}'
+    givenname: Gitolite
+    sn: Service Account
+    state: present
+  run_once: True
+
+- name: retrieve user keytab
+  include_role:
+    name: freeipa_keytab
+  vars:
+    keytab_principal: '{{ gitolite_freeipa_user }}'
+    keytab_path: '{{ gitolite_keytab }}'
+
+- name: configure gssproxy for kerberized LDAP
+  include_role:
+    name: gssproxy_client
+  vars:
+    gssproxy_priority: 51
+    gssproxy_name: gitolite
+    gssproxy_section: service/gitolite
+    gssproxy_client_keytab: '{{ gitolite_keytab }}'
+    gssproxy_cred_usage: initiate
+    gssproxy_euid: '{{ gitolite_user }}'
+
+- name: create admin group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ gitolite_admin_group }}'
+    description: gitolite admins
+    nonposix: yes
+    state: present
+  run_once: True
+
+- name: create access group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ gitolite_access_group }}'
+    description: gitolite users
+    nonposix: yes
+    state: present
+  run_once: True

@@ -1,0 +1,33 @@
+dev_packages:
+  - '@Development Tools'
+  - tmux
+  - traceroute
+  - vim
+  - tree
+  - htop
+  - stow
+  - sshpass
+  - openldap-clients
+  - pwgen
+  - ImageMagick
+  - jq
+  - wireguard-tools
+  - pciutils
+  - usbutils
+  - perl-Image-ExifTool
+  - rsync
+  - wget
+  - discount
+  - python3-pip
+  - postgresql
+  # sieveconnect dependencies
+  - perl-Authen-SASL
+  - perl-IO-Socket-INET6
+  - perl-Net-DNS
+  - perl-Sys-Hostname
+  - perl-Term-ReadLine
+  - perl-Term-ReadLine-Gnu
+  - perl-TermReadKey
+
+dev_sieveconnect_version: '0.90'
+dev_sieveconnect_url: https://github.com/philpennock/sieve-connect/releases/download/v{{ dev_sieveconnect_version }}/sieve-connect-{{ dev_sieveconnect_version }}.tar.bz2

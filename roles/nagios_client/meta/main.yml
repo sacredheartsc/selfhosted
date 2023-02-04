@@ -1,0 +1,8 @@
+dependencies:
+  - role: yum
+    yum_repositories: epel
+    when: '"yum_mirrors" not in group_names'
+    tags: yum
+
+  - role: snmp
+    tags: snmp

@@ -1,0 +1,16 @@
+- name: install chrony
+  package:
+    name: chrony
+    state: present
+
+- name: generate chrony.conf
+  template:
+    src: etc/chrony.conf.j2
+    dest: /etc/chrony.conf
+  notify: restart chrony
+
+- name: start chrony
+  systemd:
+    name: chronyd
+    state: started
+    enabled: yes

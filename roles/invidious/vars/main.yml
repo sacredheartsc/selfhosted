@@ -1,0 +1,42 @@
+invidious_packages:
+  - openssl-devel
+  - libevent-devel
+  - libxml2-devel
+  - libyaml-devel
+  - gmp-devel
+  - readline-devel
+  - postgresql
+  - librsvg2-devel
+  - sqlite-devel
+  - zlib-devel
+  - gcc
+  - git
+  - python3-psycopg2
+
+invidious_git_repo: https://github.com/iv-org/invidious
+invidious_home: /opt/invidious
+invidious_install_dir: '{{ invidious_home }}/invidious'
+
+invidious_crystal_url: https://github.com/crystal-lang/crystal/releases/download/{{ invidious_crystal_version | regex_replace('-.*$', '') }}/crystal-{{ invidious_crystal_version }}-linux-x86_64.tar.gz
+invidious_crystal_install_dir: /opt/crystal
+
+invidious_schema_files:
+  - channels
+  - videos
+  - channel_videos
+  - users
+  - session_ids
+  - nonces
+  - annotations
+  - playlists
+  - playlist_videos
+
+invidious_db_cleanup_sql:
+  - DELETE FROM nonces * WHERE expire < current_timestamp
+  - TRUNCATE TABLE videos
+
+invidious_apache_config: |
+  AllowEncodedSlashes NoDecode
+  {{ apache_proxy_config }}
+  ProxyPass        / http://127.0.0.1:{{ invidious_port }}/ nocanon
+  ProxyPassReverse / http://127.0.0.1:{{ invidious_port }}/

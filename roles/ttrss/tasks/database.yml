@@ -1,0 +1,26 @@
+- name: create database
+  postgresql_db:
+    name: '{{ ttrss_db_name }}'
+    state: present
+  delegate_to: "{{ postgresql_inventory_host }}"
+  become: yes
+  become_user: postgres
+
+- name: create database user
+  postgresql_user:
+    name: '{{ ttrss_user }}'
+    db: '{{ ttrss_db_name }}'
+    priv: ALL
+    state: present
+  delegate_to: "{{ postgresql_inventory_host }}"
+  become: yes
+  become_user: postgres
+
+- name: update database schema
+  command: php {{ ttrss_home }}/update.php --update-schema=force-yes
+  become: yes
+  become_user: apache
+  environment:
+    GSS_USE_PROXY: 'yes'
+  register: ttrss_update_schema
+  changed_when: ttrss_update_schema.stdout is not search('Database schema is already at latest version')

@@ -1,0 +1,34 @@
+log_level: warn
+domain: {{ invidious_server_name }}
+external_port: 443
+channel_threads: {{ invidious_channel_threads }}
+feed_threads: {{ invidious_channel_threads }}
+database_url: postgres://{{ invidious_db_user }}:{{ invidious_db_password}}@{{ invidious_db_host }}/{{ invidious_db_name }}?sslmode=verify-full
+use_pubsub_feeds: {{ invidious_use_pubsub_feeds }}
+hmac_key: {{ invidious_hmac_key }}
+https_only: true
+registration_enabled: {{ invidious_registration_enabled }}
+admin_email: {{ invidious_admin_email }}
+port: {{ invidious_port }}
+host_binding: 127.0.0.1
+popular_enabled: {{ invidious_popular_enabled }}
+full_refresh: {{ invidious_full_refresh }}
+captcha_enabled: false
+check_tables: true
+cache_annotations: true
+
+default_user_preferences:
+  dark_mode: {{ invidious_default_dark_mode }}
+  autoplay: {{ invidious_default_autoplay }}
+  continue: {{ invidious_default_continue }}
+  continue_autoplay: {{ invidious_default_continue_autoplay }}
+  local: {{ invidious_default_local }}
+  quality: {{ invidious_default_quality }}
+  quality_dash: {{ invidious_default_quality_dash }}
+  locale: {{ invidious_default_locale }}
+  region: {{ invidious_default_region }}
+  related_videos: {{ invidious_default_related_videos }}
+  video_loop: {{ invidious_default_video_loop }}
+  player_style: {{ invidious_default_player_style }}
+  default_home: {{ invidious_default_home }}
+  feed_menu: {{ invidious_feed_menu | to_yaml }}

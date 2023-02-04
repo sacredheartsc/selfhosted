@@ -1,0 +1,21 @@
+- name: initialize freeipa replica
+  command: >
+    ipa-replica-install
+    --unattended
+    --realm={{ freeipa_realm }}
+    --domain={{ freeipa_domain }}
+    --principal=admin
+    --admin-password={{ freeipa_admin_password | quote }}
+    --hostname={{ ansible_fqdn }}
+    --ip-address={{ ansible_default_ipv4.address }}
+    --no-host-dns
+    --setup-ca
+    --setup-dns
+    --setup-adtrust
+    {% for forwarder in freeipa_dns_forwarders %}
+    --forwarder {{ forwarder }}
+    {% endfor %}
+    --no-ntp
+  args:
+    creates: /etc/ipa/default.conf
+

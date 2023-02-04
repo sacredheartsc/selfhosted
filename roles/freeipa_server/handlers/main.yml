@@ -1,0 +1,19 @@
+- name: restart freeipa
+  systemd:
+    name: ipa
+    state: restarted
+
+- name: restart sssd
+  systemd:
+    name: sssd
+    state: restarted
+
+- name: restart rsyslog
+  systemd:
+    name: rsyslog
+    state: restarted
+
+- name: restart samba
+  systemd:
+    name: smb
+    state: restarted

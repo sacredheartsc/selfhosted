@@ -1,0 +1,3 @@
+freeradius_clients: []
+freeradius_ldap_servers: '{{ freeipa_hosts }}'
+freeradius_access_group: role-wifi-access

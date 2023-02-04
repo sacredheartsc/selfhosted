@@ -1,0 +1,10 @@
+{% for server in proxmox_ntp_servers %}
+server {{ server }} iburst
+{% endfor %}
+
+driftfile /var/lib/chrony/chrony.drift
+makestep 1.0 3
+rtcsync
+keyfile /etc/chrony/chrony.keys
+leapsectz right/UTC
+logdir /var/log/chrony

@@ -1,0 +1,3 @@
+nagios_interface_discard_warn: 500
+nagios_interface_discard_crit: 1000
+freeipa_autofs: no

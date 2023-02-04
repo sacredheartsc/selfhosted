@@ -1,0 +1,54 @@
+- name: install packages
+  dnf:
+    name: '{{ nagios_packages }}'
+    state: present
+
+- name: add nagios ssh key
+  authorized_key:
+    user: nagios
+    key: '{{ nagios_ssh_pubkey }}'
+    state: present
+
+- name: set selinux context for nagios .ssh directory
+  sefcontext:
+    target: '{{ nagios_home }}/\.ssh(/.*)?'
+    setype: ssh_home_t
+    state: present
+  register: nagios_ssh_sefcontext
+  tags: selinux
+
+- name: apply selinux context to nagios .ssh directory
+  command: 'restorecon -R {{ nagios_home }}/.ssh'
+  when: nagios_ssh_sefcontext.changed
+  tags: selinux
+
+- name: set nagios shell
+  user:
+    name: nagios
+    shell: /bin/bash
+
+- name: set PATH for nagios user
+  copy:
+    content: export PATH=/sbin:/bin:/usr/sbin:/usr/bin:{{ nagios_plugin_dir }}
+    dest: '{{ nagios_home }}/.bashrc'
+    owner: nagios
+    group: nagios
+    mode: 0644
+
+- name: copy custom nagios plugins
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ nagios_plugin_dir }}/{{ item.path }}'
+    mode: 0555
+  loop: "{{ lookup('filetree', nagios_plugin_dir[1:], wantlist=True) }}"
+  loop_control:
+    label: '{{ item.path }}'
+  when: item.state == 'file'
+  tags: nagios_plugins
+
+- name: generate sudo rules
+  template:
+    src: etc/sudoers.d/nagios.j2
+    dest: /etc/sudoers.d/nagios
+    mode: 0400
+  tags: nagios_plugins

@@ -1,0 +1,63 @@
+[Unit]
+Description=Apache Solr
+Before=dovecot.service
+
+[Service]
+Type=simple
+User=solr
+LimitNOFILE=65000
+LimitNPROC=65000
+Restart=on-failure
+
+ProtectSystem=strict
+ReadWritePaths={{ solr_data_dir }} /var/log/solr
+
+# Harden this java nightmare
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+DevicePolicy=closed
+ProtectSystem=strict
+ProtectHome=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+WorkingDirectory={{ solr_install_dir }}/server
+LogsDirectory=solr
+
+Environment=SOLR_HOME={{ solr_data_dir }}
+Environment=SOLR_CONF_DIR=${SOLR_HOME}/server/solr/configsets/_default/conf
+Environment=JVM_ARGS=
+Environment=JVM_GC_ARGS="-XX:+UseG1GC -XX:+PerfDisableSharedMem -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=250 -XX:+UseLargePages -XX:+AlwaysPreTouch -XX:+ExplicitGCInvokesConcurrent"
+Environment=JVM_HEAP_SIZE=512m
+Environment=JETTY_HOST=localhost
+Environment=JETTY_PORT=8983
+Environment=LOG4J_PROPS={{ solr_install_dir }}/server/resources/log4j2.xml
+EnvironmentFile=/etc/sysconfig/solr
+
+ExecStart=java -server \
+  $JVM_ARGS \
+  -Xmx${JVM_HEAP_SIZE} \
+  $SOLR_OPTS \
+  $JVM_GC_ARGS \
+  -XX:+CrashOnOutOfMemoryError \
+  -Dlog4j.configurationFile=${LOG4J_PROPS} \
+  -Dsolr.log.dir=/var/log/solr \
+  -Djetty.host=${JETTY_HOST} \
+  -Djetty.port=${JETTY_PORT} \
+  -Djetty.home={{ solr_install_dir }}/server \
+  -Dsolr.solr.home=${SOLR_HOME} \
+  -Dsolr.data.home= \
+  -Dsolr.install.dir={{ solr_install_dir }} \
+  -Dsolr.default.confdir=${SOLR_CONF_DIR} \
+  -Dlog4j2.formatMsgNoLookups=true \
+  -jar start.jar --module=http --module=gzip
+
+[Install]
+WantedBy=multi-user.target

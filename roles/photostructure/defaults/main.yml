@@ -1,0 +1,11 @@
+photostructure_port: 8080
+photostructure_scan_interval_hours: 24
+photostructure_max_cpu_percent: 95
+photostructure_log_level: warn
+photostructure_backup_interval_minutes: 30
+photostructure_version: alpha
+
+photostructure_user: s-photostructure
+photostructure_file_access_group: role-photo-admin
+
+photostructure_kerberized_cidrs: '{{ kerberized_cidrs }}'

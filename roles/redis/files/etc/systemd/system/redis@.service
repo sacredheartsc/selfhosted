@@ -1,0 +1,18 @@
+[Unit]
+Description=Redis persistent key-value database on port %I
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/redis-server /etc/redis-%i.conf --supervised systemd
+ExecStop=/usr/bin/redis-cli -h 127.0.0.1 -p %i shutdown
+Type=notify
+User=redis
+Group=redis
+RuntimeDirectory=redis-%i
+RuntimeDirectoryMode=0755
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+LimitNOFILE=10240

@@ -1,0 +1,18 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: asterisk_servers
+
+- name: configure asterisk pbx
+  hosts: asterisk_servers
+  tags: asterisk
+  roles:
+    - role: asterisk
+
+    - role: archive_job
+      archive_name: asterisk
+      archive_user: asterisk
+      archive_shell: >-
+        TIMESTAMP=$(date +%Y%m%d%H%M%S);
+        tar czf "asterisk-${TIMESTAMP}.tar.gz"
+        --transform "s|^\.|asterisk-${TIMESTAMP}|" -C {{ asterisk_data_dir }} .
+      tags: archive

@@ -1,0 +1,6 @@
+apache_can_sendmail: yes
+apache_can_network_connect_db: yes
+apache_can_connect_ldap: yes
+apache_gssapi: yes
+
+nagios_http_status: 401

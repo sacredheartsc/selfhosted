@@ -1,0 +1,78 @@
+nagios_packages:
+  - nagios
+  - nagios-plugins-all
+  - nagios-contrib
+  - nagios-selinux
+  - perl-Net-SNMP
+  - perl-Getopt-Long
+  - perl-Crypt-Rijndael
+  - perl-Crypt-DES
+  - perl-Digest-HMAC
+  - perl-Switch
+  - perl-bignum
+  - git
+  - python3
+  - bc
+
+nagios_home: /var/spool/nagios
+nagios_html_dir: /usr/share/nagios/html
+nagios_cgi_dir:  /usr/lib64/nagios/cgi-bin
+nagios_status_file: /var/log/nagios/status.dat
+nagios_state_retention_file: /var/log/nagios/retention.dat
+nagios_plugin_dir: /usr/lib64/nagios/plugins
+
+nagios_mib_dir: /usr/share/snmp/mibs
+
+nagios_manubulon_install_dir: /usr/local/share/manubulon
+
+nagios_thirdparty_plugins:
+  check_cyberpower: https://exchange.nagios.org/components/com_mtree/attachment.php?link_id=7181&cf_id=24
+  check_ssl_cert: https://raw.githubusercontent.com/matteocorti/check_ssl_cert/master/check_ssl_cert
+
+nagios_thirdparty_mibs: {}
+
+nagios_hbac_service: nagios
+nagios_hbac_hostgroup: nagios_servers
+
+nagios_check_by_ssh_args: >-
+  --hostname='$HOSTADDRESS$'
+  --quiet
+  --ssh-option=StrictHostKeyChecking=no
+  --ssh-option=UserKnownHostsFile=/dev/null
+  --ssh-option=ControlMaster=yes
+  --ssh-option='ControlPath=/var/run/nagios/ssh-$HOSTNAME$'
+  --ssh-option=ControlPersist={{ nagios_ssh_control_persist | quote }}
+
+nagios_manubulon_args: >-
+  --hostname='$HOSTADDRESS$'
+  --login='$_HOSTSNMP_USER$'
+  --passwd='$_HOSTSNMP_AUTH_PASS$'
+  --privpass='$_HOSTSNMP_PRIV_PASS$'
+  --protocols='$_HOSTSNMP_AUTH_PROTO$,$_HOSTSNMP_PRIV_PROTO$'
+
+nagios_selinux_policy_te: |
+  require {
+    type nagios_spool_t;
+    type httpd_t;
+    class file open;
+  }
+
+  #============= httpd_t ==============
+  allow httpd_t nagios_spool_t:file open;
+
+nagios_apache_config: |
+  <Location />
+    AuthType GSSAPI
+    AuthName "FreeIPA Single Sign-On"
+    {{ apache_gssapi_session_config }}
+    AuthLDAPUrl "{{ apache_ldap_url }}?krbprincipalname"
+    {{ apache_ldap_creds }}
+    Require ldap-attribute memberof=cn={{ nagios_access_group }},{{ freeipa_group_basedn }}
+  </Location>
+
+  ScriptAlias "/cgi-bin/" "{{ nagios_cgi_dir }}/"
+
+  <Directory "{{ nagios_cgi_dir }}">
+    AllowOverride None
+    Require all granted
+  </Directory>

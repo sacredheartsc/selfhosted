@@ -1,0 +1,54 @@
+eap {
+  default_eap_type = ttls
+  timer_expire = 60
+  ignore_unknown_eap_types = yes
+  cisco_accounting_username_bug = no
+  max_sessions = ${max_requests}
+
+  tls-config tls-common {
+    private_key_password =
+    private_key_file = {{ freeradius_certificate_key_path }}
+    certificate_file = {{ freeradius_certificate_path }}
+    ca_file = {{ freeradius_certificate_ca_path }}
+    auto_chain = no
+    ca_path = ${cadir}
+    cipher_list = "PROFILE=SYSTEM"
+    cipher_server_preference = no
+    tls_min_version = "1.2"
+    tls_max_version = "1.2"
+    ecdh_curve = "prime256v1"
+
+    cache {
+      enable = yes
+      lifetime = 24 # hours
+      name = "EAP module"
+      persist_dir = "${db_dir}/tlscache"
+      store {
+        Tunnel-Private-Group-Id
+      }
+    }
+
+    verify {
+      skip_if_ocsp_ok = yes
+      tmpdir = /var/run/radiusd/tmp
+      client = "/usr/bin/openssl verify -CApath ${..ca_path} %{TLS-Client-Cert-Filename}"
+    }
+
+    ocsp {
+      enable = yes
+      override_cert_url = no
+    }
+  }
+
+  tls {
+    tls = tls-common
+  }
+
+  ttls {
+    tls = tls-common
+    default_eap_type = md5
+    copy_request_to_tunnel = no
+    use_tunneled_reply = no
+    virtual_server = "inner-tunnel"
+  }
+}

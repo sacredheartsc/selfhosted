@@ -1,0 +1,40 @@
+- name: create mediawiki user
+  ipauser:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ mediawiki_user }}'
+    loginshell: /sbin/nologin
+    homedir: '{{ mediawiki_home }}'
+    givenname: MediaWiki
+    sn: Service Account
+    state: present
+  run_once: True
+
+- name: create mediawiki groups
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ item }}'
+    nonposix: yes
+    state: present
+  run_once: True
+  loop:
+    - '{{ mediawiki_access_group }}'
+    - '{{ mediawiki_admin_group }}'
+
+- name: retrieve mediawiki user keytab
+  include_role:
+    name: freeipa_keytab
+  vars:
+    keytab_principal: '{{ mediawiki_user }}'
+    keytab_path: '{{ mediawiki_keytab }}'
+
+- name: configure gssproxy for kerberized postgres
+  include_role:
+    name: gssproxy_client
+  vars:
+    gssproxy_name: mediawiki
+    gssproxy_section: service/php-fpm
+    gssproxy_client_keytab: '{{ mediawiki_keytab }}'
+    gssproxy_cred_usage: initiate
+    gssproxy_euid: apache

@@ -1,0 +1,30 @@
+hastebin_packages:
+  - git
+  - nodejs
+
+hastebin_home: /var/lib/hastebin
+hastebin_install_dir: '{{ hastebin_home }}/haste-server'
+hastebin_data_dir: '{{ hastebin_home }}/data'
+hastebin_git_repo: https://github.com/toptal/haste-server
+hastebin_keytab: /var/lib/gssproxy/clients/{{ hastebin_user }}.keytab
+
+hastebin_jquery_url: https://code.jquery.com/jquery-1.7.1.min.js
+
+hastebin_archive_shell: >-
+  TIMESTAMP=$(date +%Y%m%d%H%M%S);
+  tar czf "hastebin-${TIMESTAMP}.tar.gz"
+  --transform "s|^\.|hastebin-${TIMESTAMP}|"
+  -C "{{ hastebin_data_dir }}" .
+
+hastebin_apache_config: |
+  {{ apache_proxy_config }}
+  ProxyPass        / http://127.0.0.1:{{ hastebin_port }}/
+  ProxyPassReverse / http://127.0.0.1:{{ hastebin_port }}/
+
+  <Location /documents>
+    <Limit POST PUT DELETE>
+      {% for cidr in hastebin_upload_cidrs %}
+      Require ip {{ cidr }}
+      {% endfor %}
+    </Limit>
+  </Location>

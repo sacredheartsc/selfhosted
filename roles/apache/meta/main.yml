@@ -1,0 +1,5 @@
+dependencies:
+  - role: freeipa_system_account
+    system_account_username: '{{ apache_sysaccount_username }}'
+    system_account_password: '{{ apache_sysaccount_password }}'
+    when: apache_gssapi

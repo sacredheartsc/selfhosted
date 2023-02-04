@@ -1,0 +1,41 @@
+compatibility_level = 2
+
+# path definitions (package defaults)
+queue_directory = /var/spool/postfix
+command_directory = /usr/sbin
+daemon_directory = /usr/libexec/postfix
+data_directory = /var/lib/postfix
+mail_owner = postfix
+
+sendmail_path = /usr/sbin/sendmail.postfix
+newaliases_path = /usr/bin/newaliases.postfix
+mailq_path = /usr/bin/mailq.postfix
+setgid_group = postdrop
+html_directory = no
+manpage_directory = /usr/share/man
+sample_directory = /usr/share/doc/postfix/samples
+readme_directory = /usr/share/doc/postfix/README_FILES
+meta_directory = /etc/postfix
+shlib_directory = /usr/lib64/postfix
+
+smtpd_discard_ehlo_keywords = ''
+
+myorigin = {{ postfix_myorigin }}
+
+biff = no
+# disable local delivery
+mydestination =
+
+inet_interfaces = loopback-only
+inet_protocols = all
+mynetworks_style = host
+
+relayhost = {{ postfix_relayhost }}
+
+alias_database = hash:/etc/aliases
+
+smtputf8_enable = yes
+message_size_limit = {{ postfix_message_size_limit }}
+
+smtp_tls_security_level = may
+smtp_tls_CAfile = {{ postfix_smtp_ca_file }}

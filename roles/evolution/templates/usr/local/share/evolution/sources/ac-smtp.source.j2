@@ -1,0 +1,22 @@
+[Autoconfig]
+Revision=1
+
+[Data Source]
+DisplayName={{ evolution_mail_account_name }}
+Enabled=true
+Parent=ac-imap
+
+[Mail Transport]
+BackendName=smtp
+
+[Authentication]
+Host={{ evolution_smtp_host }}
+Method=GSSAPI
+Port=587
+ProxyUid=system-proxy
+RememberPassword=true
+User=${USER}
+CredentialName=
+
+[Security]
+Method=starttls-on-standard-port

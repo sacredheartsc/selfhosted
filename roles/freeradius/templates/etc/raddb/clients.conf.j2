@@ -1,0 +1,6 @@
+{% for client in freeradius_clients %}
+client {{ client.name }} {
+  ipaddr = {{ client.address }}
+  secret = {{ client.secret }}
+}
+{% endfor %}

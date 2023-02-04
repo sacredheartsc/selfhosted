@@ -1,0 +1,33 @@
+- name: create linux-laptops hostgroup
+  ipahostgroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ linux_laptop_hbac_hostgroup}}'
+    description: Linux Laptops
+    host: "{{ groups[linux_laptop_hbac_hostgroup] | map('regex_replace', '$', '.' ~ ansible_domain) }}"
+    state: present
+  run_once: yes
+
+- name: create linux laptop access group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ linux_laptop_access_group }}'
+    nonposix: yes
+    state: present
+  run_once: yes
+
+- name: create HBAC rule for gdm
+  ipahbacrule:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: allow_gdm_on_linux_laptops
+    description: Allow login to GDM on linux laptops
+    hostgroup:
+      - '{{ linux_laptop_hbac_hostgroup }}'
+    group:
+      - '{{ linux_laptop_access_group }}'
+    hbacsvc:
+      - gdm
+      - gdm-password
+  run_once: yes

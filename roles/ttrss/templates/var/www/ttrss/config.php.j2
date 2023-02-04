@@ -1,0 +1,23 @@
+<?php
+putenv('TTRSS_SELF_URL_PATH={{ ttrss_url }}');
+
+putenv('TTRSS_DB_TYPE=pgsql');
+putenv('TTRSS_DB_HOST={{ ttrss_db_host }}');
+putenv('TTRSS_DB_USER={{ ttrss_user }}');
+putenv('TTRSS_DB_NAME={{ ttrss_db_name }}');
+
+putenv('TTRSS_SESSION_COOKIE_LIFETIME={{ ttrss_session_lifetime_sec }}');
+
+putenv('TTRSS_SMTP_FROM_NAME={{ ttrss_email_from_name }}');
+putenv('TTRSS_SMTP_FROM_ADDRESS={{ ttrss_email_from_address }}');
+
+putenv('TTRSS_PHP_EXECUTABLE=/usr/bin/php');
+
+putenv('TTRSS_LOG_DESTINATION=syslog');
+
+putenv('TTRSS_CHECK_FOR_UPDATES=false');
+
+putenv('TTRSS_PLUGINS=auth_freeipa');
+
+putenv('TTRSS_AUTH_FREEIPA_ALLOW_GROUPS={{ ttrss_access_group }}');
+putenv('TTRSS_AUTH_FREEIPA_ADMIN_GROUPS={{ ttrss_admin_group }}');

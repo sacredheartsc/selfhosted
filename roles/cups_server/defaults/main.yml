@@ -1,0 +1,3 @@
+cups_server_aliases: '{{ cnames }}'
+cups_server_admin: root@{{ email_domain }}
+cups_admin_group: role-cups-admin

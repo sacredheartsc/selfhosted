@@ -1,0 +1,61 @@
+module(load="imklog")
+module(load="imuxsock" SysSock.name="/run/systemd/journal/syslog")
+module(load="imfile")
+module(load="omrelp" tls.tlslib="openssl")
+
+global(
+  workDirectory="/var/lib/rsyslog"
+  parser.escapecontrolcharactertab="off"
+)
+
+module(
+  load="builtin:omfile"
+  template="RSYSLOG_TraditionalFileFormat"
+  fileOwner="root"
+  fileGroup="root"
+  fileCreateMode="0600"
+  dirCreateMode="0700"
+)
+
+include(file="/etc/rsyslog.d/*.conf" mode="optional")
+
+# if message didn't come from imfile, process as normal.
+if ($!metadata!filename == '') then {
+  # EL defaults
+  *.info;mail.none;authpriv.none;cron.none  /var/log/messages
+  authpriv.*                                /var/log/secure
+  mail.*                                    -/var/log/maillog
+  cron.*                                    /var/log/cron
+  *.emerg                                   :omusrmsg:*
+  uucp,news.crit                            /var/log/spooler
+  local7.*                                  /var/log/boot.log
+}
+
+{% if rsyslog_forward %}
+# forward to syslog server
+if prifilt("*.info") then {
+  action(type="omrelp"
+    template="RSYSLOG_ForwardFormat"
+    target="{{ rsyslog_target }}"
+    {% if rsyslog_tls %}
+    port="{{ rsyslog_relp_tls_port }}"
+    tls="on"
+    tls.caCert="{{ rsyslog_certificate_ca_path }}"
+    tls.myCert="{{ rsyslog_certificate_path }}"
+    tls.myPrivKey="{{ rsyslog_certificate_key_path }}"
+    tls.authMode="name"
+    tls.permittedPeer="{{ rsyslog_target }}"
+    {% else %}
+    port="{{ rsyslog_relp_port }}"
+    {% endif %}
+    queue.type="LinkedList"
+    queue.size="{{ rsyslog_queue_size }}"
+    queue.filename="q_forward"
+    queue.saveOnShutdown="on"
+    queue.maxDiskSpace="{{ rsyslog_queue_max_disk_space }}"
+    action.resumeRetryCount="-1"
+    action.resumeInterval="10"
+    action.reportSuspension="on"
+    action.reportSuspensionContinuation="on")
+}
+{% endif %}

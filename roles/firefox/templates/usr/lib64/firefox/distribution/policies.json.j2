@@ -1,0 +1,116 @@
+{
+  "policies": {
+    "ExtensionSettings": {
+      {% for ext in firefox_extensions %}
+      {{ ext.id | to_json }}: {
+        "install_url": {{ (ext.url if ext.url is defined else 'https://addons.mozilla.org/firefox/downloads/latest/' ~ ext.name ~ '/latest.xpi') | to_json }},
+        "installation_mode": {{ ext.mode | default('normal_installed') | to_json }}
+      }{% if not loop.last %},{% endif %}
+
+      {% endfor %}
+    },
+    "3rdparty": {
+      "Extensions": {
+        {% for ext in firefox_extensions | selectattr('policy', 'defined') %}
+        {{ ext.id | to_json }}: {{ ext.policy | to_json }}{% if not loop.last %},{% endif %}
+
+        {% endfor %}
+      }
+    },
+    {% if firefox_disable_user_messaging %}
+    "UserMessaging": {
+      "WhatsNew": false,
+      "ExtensionRecommendations": false,
+      "UrlbarInterventions": false,
+      "SkipOnboarding": true
+    },
+    "OverridePostUpdatePage": "",
+    "OverrideFirstRunPage": "",
+    {% endif %}
+    "EnableTrackingProtection": {
+      {% for s in ['Value', 'Cryptomining', 'Fingerprinting'] %}
+      "{{ s }}": {{ firefox_use_tracking_protection | bool | to_json }},
+      {% endfor %}
+      "Locked": false
+    },
+    "Cookies": {
+      "Behavior": "{{ firefox_cookie_behavior }}",
+      "BehaviorPrivateBrowsing": "{{ firefox_cookie_behavior }}"
+    },
+    "Authentication": {
+      "SPNEGO": {{ firefox_spnego_domains | to_json }},
+      "AllowNonFQDN": {
+        "SPNEGO": {{ firefox_spnego_allow_non_fqdn | bool | to_json }}
+      },
+      "AllowProxies": {
+        "SPNEGO": {{ firefox_spnego_allow_proxies | bool | to_json }}
+      }
+    },
+    "NoDefaultBookmarks": {{ firefox_disable_default_bookmarks | bool | to_json }},
+    "DisablePocket": {{ firefox_disable_pocket | bool | to_json }},
+    "DisableAppUpdate": {{ firefox_disable_app_update | to_json }},
+    "CaptivePortal": {{ (not firefox_disable_captive_portal) | to_json }},
+    "DisableFeedbackCommands": {{ firefox_disable_feedback | bool | to_json }},
+    "DisableFirefoxAccounts": {{ firefox_disable_accounts | bool | to_json }},
+    "DisableFirefoxStudies": {{ firefox_disable_studies | bool | to_json }},
+    "DisableTelemetry": {{ firefox_disable_telemetry | bool | to_json }},
+    "DontCheckDefaultBrowser": {{ firefox_disable_default_browser_check | bool | to_json }},
+    "OfferToSaveLoginsDefault": {{ firefox_offer_to_save_logins_default | bool | to_json }},
+    "DNSOverHTTPS": {
+      "Enabled": {{ (not firefox_disable_dns_over_https) | to_json }}
+    },
+    "SearchSuggestEnabled": {{ (not firefox_disable_search_suggestions) | to_json }},
+    "Homepage": {
+      "URL": {{ firefox_homepage | to_json }},
+      "StartPage": "homepage"
+    },
+    "FirefoxHome": {
+      "Search": true,
+      "TopSites": {{ (not firefox_disable_top_sites) | to_json }},
+      "SponsoredTopSites": false,
+      "Highlights": {{ (not firefox_disable_highlights) | to_json }},
+      "Pocket": {{ (not firefox_disable_pocket) | to_json }},
+      "SponsoredPocket": {{ (not firefox_disable_pocket) | to_json }},
+      "Snippets": {{ (not firefox_disable_snippets) | to_json }}
+    },
+    {% if firefox_managed_bookmarks %}
+    "ManagedBookmarks": [
+      {
+        "toplevel_name": {{ firefox_managed_bookmarks_top_level_name | to_json }}
+      },
+      {% for bookmark in firefox_managed_bookmarks %}
+      {
+        "url": {{ bookmark.url | to_json }},
+        "name": {{ bookmark.name | to_json }}
+      }{% if not loop.last %},{% endif %}
+
+      {% endfor %}
+    ],
+    {% endif %}
+    "ExtensionUpdate": {{ firefox_update_extensions | bool | to_json }},
+    "Preferences": {
+      {% for pref in firefox_preferences  %}
+      {{ pref.name | to_json }}: {
+        "Value": {{ pref.value | to_json }},
+        "Status": {{ pref.status | default('default') | to_json }}
+      },
+
+      {% endfor %}
+      "privacy.trackingprotection.socialtracking.enabled": {
+        "Value": {{ firefox_use_tracking_protection | bool | to_json }},
+        "Status": "locked"
+      },
+      "browser.toolbars.bookmarks.visibility": {
+        "Value": "newtab",
+        "Status": "default"
+      },
+      {% for s in ['malware', 'phishing', 'downloads'] %}
+      "browser.safebrowsing.{{ s }}.enabled": {
+        "Value": {{ (not firefox_disable_safe_browsing) | to_json }},
+        "Status": "locked"
+      }{% if not loop.last %},{% endif %}
+
+      {% endfor %}
+    }
+  }
+}

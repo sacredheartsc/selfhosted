@@ -1,0 +1,19 @@
+- name: install packages
+  dnf:
+    name: '{{ nfs_packages }}'
+    state: present
+
+- name: create zfs filesystems for exports
+  import_tasks: exports.yml
+
+- name: create zfs filesystems for home directories
+  import_tasks: homedirs.yml
+
+- name: configure nfs shares
+  import_tasks: nfs.yml
+
+- name: configure smb shares
+  import_tasks: smb.yml
+
+- name: generate autofs maps
+  import_tasks: autofs.yml

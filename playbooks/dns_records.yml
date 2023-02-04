@@ -1,0 +1,28 @@
+- name: add dns records for infrastructure hosts
+  hosts: proxmox_hypervisors:opnsense_firewalls:unmanaged
+  tags: dns
+  roles:
+    - dns_records
+
+- name: add reverse dns records for firewall vlan interfaces
+  hosts: freeipa_master
+  tags: dns
+  tasks:
+    - name: create reverse dns zones
+      ipadnszone:
+        ipaadmin_principal: '{{ ipa_user }}'
+        ipaadmin_password: '{{ ipa_pass }}'
+        zone_name: '{{ item }}'
+        state: present
+      loop: "{{ vlans.values() | map(attribute='gateway') | ansible.utils.ipaddr('revdns') | map('regex_replace', '^[^.]+\\.', '') | unique }}"
+
+    - name: create ptr records
+      ipadnsrecord:
+        ipaadmin_principal: '{{ ipa_user }}'
+        ipaadmin_password: '{{ ipa_pass }}'
+        zone_name: "{{ item | ansible.utils.ipaddr('revdns') | regex_replace('^[^.]+\\.', '') }}"
+        record_name: '{{ item | split(".") | last }}'
+        record_type: PTR
+        record_value: '{{ groups["opnsense_firewalls"] | sort | first  }}.{{ domain }}.'
+        state: present
+      loop: "{{ vlans.values() | map(attribute='gateway') }}"

@@ -1,0 +1,24 @@
+server:
+  ip-address: {{ ansible_default_ipv4.address }}
+  server-count: {{ nsd_server_count }}
+  database: ""
+  pidfile: ""
+  hide-version: yes
+  verbosity: 1
+  log-only-syslog: yes
+  minimal-responses: yes
+  refuse-any: yes
+
+{% for zone in nsd_zones %}
+zone:
+  name: {{ zone.name }}
+  zonefile: /etc/nsd/%s.zone
+{% for ns in zone.slave_nameservers | default([]) %}
+  notify: {{ ns }} NOKEY
+  provide-xfr: {{ ns }} NOKEY
+{% endfor %}
+{% endfor %}
+
+remote-control:
+  control-enable: yes
+  control-interface: /run/nsd/nsd.ctl

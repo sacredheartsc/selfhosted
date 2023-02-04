@@ -1,0 +1,3 @@
+coturn_auth_secret: '{{ vault_coturn_auth_secret }}'
+coturn_external_ip: 203.0.113.61  # changeme
+coturn_realm: turn.example.com    # changeme

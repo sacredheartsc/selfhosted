@@ -1,0 +1,74 @@
+- name: install rsyslog
+  dnf:
+    name: '{{ rsyslog_packages }}'
+    state: present
+
+- name: request TLS certificate
+  include_role:
+    name: getcert_request
+  vars:
+    certificate_service: syslog
+    certificate_path: '{{ rsyslog_certificate_path }}'
+    certificate_key_path: '{{ rsyslog_certificate_key_path }}'
+    certificate_hook: systemctl restart rsyslog
+
+- name: generate config file
+  template:
+    src: etc/rsyslog.conf.j2
+    dest: /etc/rsyslog.conf
+  notify: restart rsyslog
+
+- name: create syslog-gzip systemd timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: syslog-gzip
+    timer_description: Compress old syslog files
+    timer_after: nss-user-lookup.target
+    timer_on_calendar: '{{ rsyslog_gzip_on_calendar }}'
+    timer_user: '{{ rsyslog_owner }}'
+    timer_group: '{{ rsyslog_group }}'
+    timer_exec: find {{ rsyslog_storage_dir }} -type f -mtime +{{ rsyslog_gzip_days_ago }} -not -name '*.gz' -exec gzip {} ;
+
+- name: create syslog-update-today-symlink timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: syslog-update-today-symlink
+    timer_description: Update today symlink in syslog dir
+    timer_after: nss-user-lookup.target
+    timer_on_calendar: daily
+    timer_user: '{{ rsyslog_owner }}'
+    timer_group: '{{ rsyslog_group }}'
+    timer_shell: yes
+    timer_exec: ln -sfT "$(date +%Y/%m/%d)" {{ rsyslog_storage_dir }}/today
+
+- name: create remote log directory
+  file:
+    path: '{{ rsyslog_storage_dir }}'
+    state: directory
+
+- name: create today symlink
+  systemd:
+    name: syslog-update-today-symlink.service
+    state: started
+  changed_when: no
+
+- name: enable rsyslog
+  systemd:
+    name: rsyslog
+    enabled: yes
+    state: started
+
+- name: open firewall ports
+  firewalld:
+    port: '{{ item }}'
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop:
+    - '{{ rsyslog_port }}/tcp'
+    - '{{ rsyslog_port }}/udp'
+    - '{{ rsyslog_relp_port }}/tcp'
+    - '{{ rsyslog_relp_tls_port }}/tcp'
+  tags: firewalld

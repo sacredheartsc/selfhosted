@@ -1,0 +1,24 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: freeipa_servers
+
+- name: configure freeipa master
+  hosts: freeipa_master
+  tags: freeipa
+  roles:
+    - role: freeipa_server
+
+    - role: archive_job
+      archive_name: ipa
+      archive_on_calendar: 'Sat *-*-* 02:00:00'
+      archive_shell: >-
+        ipa-backup &&
+        mv -v /var/lib/ipa/backup/* . &&
+        find . -mindepth 1 -type d -exec chmod -v 770 {} +
+      tags: archive
+
+- name: configure freeipa replicas
+  hosts: freeipa_servers:!freeipa_master
+  tags: freeipa
+  roles:
+    - freeipa_server

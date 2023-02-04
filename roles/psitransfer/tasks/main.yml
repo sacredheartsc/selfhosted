@@ -1,0 +1,76 @@
+- name: install nodejs
+  dnf:
+    name: nodejs
+    state: present
+
+- name: create local user
+  user:
+    name: '{{ psitransfer_user }}'
+    system: yes
+    home: '{{ psitransfer_home }}'
+    shell: /sbin/nologin
+    create_home: no
+
+- name: create directories
+  file:
+    path: '{{ item }}'
+    owner: '{{ psitransfer_user }}'
+    group: '{{ psitransfer_user }}'
+    mode: 0700
+    state: directory
+  loop:
+    - '{{ psitransfer_home }}'
+    - '{{ psitransfer_install_dir }}'
+    - '{{ psitransfer_data_dir }}'
+
+- name: extract tarball
+  unarchive:
+    src: '{{ psitransfer_url }}'
+    remote_src: yes
+    dest: '{{ psitransfer_install_dir }}'
+    owner: '{{ psitransfer_user }}'
+    group: '{{ psitransfer_user }}'
+    extra_opts:
+      - '--strip-components=1'
+
+- name: install npm dependencies
+  npm:
+    path: '{{ psitransfer_install_dir }}'
+    production: yes
+  become: yes
+  become_user: '{{ psitransfer_user }}'
+
+- name: create systemd unit
+  template:
+    src: etc/systemd/system/psitransfer.service.j2
+    dest: /etc/systemd/system/psitransfer.service
+  register: psitransfer_unit
+  notify: restart psitransfer
+
+- name: reload systemd daemons
+  systemd:
+    daemon_reload: yes
+  when: psitransfer_unit.changed
+
+- name: generate config file
+  template:
+    src: '{{ psitransfer_install_dir[1:] }}/config.production.js.j2'
+    dest: '{{ psitransfer_install_dir }}/config.production.js'
+    owner: '{{ psitransfer_user }}'
+    group: '{{ psitransfer_user }}'
+    mode: 0600
+  notify: restart psitransfer
+
+- name: start psitransfer
+  systemd:
+    name: psitransfer
+    enabled: yes
+    state: started
+
+- name: set http_port_t selinux context on psitransfer port
+  seport:
+    ports: '{{ psitransfer_port }}'
+    proto: tcp
+    setype: http_port_t
+    state: present
+  tags: selinux

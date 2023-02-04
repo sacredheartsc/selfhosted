@@ -1,0 +1,41 @@
+unifi_packages:
+  - java-11-openjdk-headless
+  - unifi
+  - mongodb-org-server
+
+unifi_keystore: /var/lib/unifi/data/keystore
+unifi_certificate_hook_path: /usr/local/sbin/unifi-certificate-update.sh
+unifi_certificate_path: /etc/pki/tls/certs/unifi.pem
+unifi_certificate_key_path: /etc/pki/tls/private/unifi.key
+unifi_certificate_ca_path: /etc/ipa/ca.crt
+
+unifi_autobackup_dir: /var/lib/unifi/data/backup/autobackup
+
+unifi_archive_shell: >-
+  cp --preserve=timestamps {{ unifi_autobackup_dir | quote }}/*.unf .
+
+unifi_mongodb_te: |
+  require {
+    type cgroup_t;
+    type configfs_t;
+    class dir { search getattr };
+    class file { getattr open read };
+    type file_type;
+    type mongod_t;
+    type proc_net_t;
+    type sysctl_fs_t;
+    type sysctl_net_t;
+    type var_lib_nfs_t;
+  }
+
+  #============= mongod_t ==============
+  allow mongod_t cgroup_t:dir { search getattr };
+  allow mongod_t cgroup_t:file { getattr open read };
+  allow mongod_t configfs_t:dir getattr;
+  allow mongod_t file_type:dir { getattr search };
+  allow mongod_t file_type:file getattr;
+  allow mongod_t proc_net_t:file { open read };
+  allow mongod_t sysctl_fs_t:dir search;
+  allow mongod_t sysctl_net_t:dir search;
+  allow mongod_t sysctl_net_t:file { getattr read open };
+  allow mongod_t var_lib_nfs_t:dir search;

@@ -1,0 +1,29 @@
+- name: add yum repositories
+  yum_repository:
+    name: 'internal-{{ repo }}'
+    file: internal
+    description: '{{ yum_repository_defs[repo].name }}'
+    baseurl: '{{ yum_repository_defs[repo].baseurl }}'
+    gpgcheck: yes
+    gpgkey: 'file://{{ yum_gpg_path_prefix ~ yum_repository_defs[repo].gpgkey }}'
+    includepkgs: '{{ yum_repository_defs[repo].includepkgs | default(omit) }}'
+    enabled: yes
+  loop: '{{ yum_add_repositories }}'
+  loop_control:
+    loop_var: repo
+
+- name: copy gpg keys
+  copy:
+    src: '{{ yum_gpg_path_prefix[1:] ~ key }}'
+    dest: '{{ yum_gpg_path_prefix ~ key }}'
+  loop: "{{ yum_add_repositories | map('extract', yum_repository_defs) | map(attribute='gpgkey') | unique | map('replace', '$releasever', ansible_distribution_major_version) }}"
+  loop_control:
+    loop_var: key
+
+- name: import gpg keys
+  rpm_key:
+    key: '{{ yum_gpg_path_prefix ~ key }}'
+    state: present
+  loop: "{{ yum_add_repositories | map('extract', yum_repository_defs) | map(attribute='gpgkey') | unique | map('replace', '$releasever', ansible_distribution_major_version) }}"
+  loop_control:
+    loop_var: key

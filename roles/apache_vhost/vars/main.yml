@@ -1,0 +1,26 @@
+apache_certificate_path: /etc/pki/tls/certs/httpd-{{ apache_server_name }}.pem
+apache_certificate_key_path: /etc/pki/tls/private/httpd-{{ apache_server_name }}.key
+
+apache_ldap_url: "ldaps://{{ freeipa_hosts | join(' ') }}/{{ freeipa_user_basedn }}"
+apache_ldap_creds: |
+  AuthLDAPBindDN uid={{ apache_sysaccount_username }},{{ freeipa_sysaccount_basedn }}
+  AuthLDAPBindPassword {{ apache_sysaccount_password }}
+apache_ldap_config: |
+  AuthLDAPUrl "{{ apache_ldap_url }}?uid"
+  {{ apache_ldap_creds }}
+
+apache_gssapi_session_config: |
+  GssapiUseSessions On
+  Session On
+  SessionCookieName gssapi_session path=/;httponly;secure;samesite=strict
+  GssapiSessionKey file:{{ apache_gssapi_session_key }}
+
+apache_proxy_vhost_config: |
+  ProxyPreserveHost On
+  ProxyRequests Off
+apache_proxy_header_config: |
+  RequestHeader set X-Forwarded-Proto "https"
+  RequestHeader set X-Real-IP %{REMOTE_ADDR}s
+apache_proxy_config: |
+  {{ apache_proxy_vhost_config }}
+  {{ apache_proxy_header_config }}

@@ -1,0 +1,49 @@
+- name: generate client certificate
+  hosts: localhost
+  connection: local
+  become: no
+  vars_prompt:
+    - name: client_ip
+      prompt: Enter client ip address
+      private: no
+  vars:
+    config_path: "{{ lookup('env', 'HOME') }}/{{ organization | replace(' ', '-') | lower }}-wg.conf"
+    server_pubkey: '{{ wireguard_pubkey }}'
+    server_port: '{{ wireguard_port | default(51820) }}'
+    server_host: '{{ wireguard_host }}'
+    gateway: '{{ vlans.vpn.gateway }}'
+    dns_server: "{{ vlans.vpn.dns_servers | join(',') }}"
+  tasks:
+    - name: generate private key
+      command:
+        cmd: wg genkey
+      register: wg_genkey
+      changed_when: no
+
+    - name: generate public key
+      command:
+        cmd: wg pubkey
+        stdin: '{{ wg_genkey.stdout }}'
+      register: wg_pubkey
+      changed_when: no
+
+    - name: generate wireguard config file
+      copy:
+        dest: '{{ config_path }}'
+        mode: 0600
+        content: |
+          [Interface]
+          Address = {{ client_ip }}/32
+          PrivateKey = {{ wg_genkey.stdout }}
+          DNS = {{ dns_server }}
+
+          [Peer]
+          PublicKey = {{ server_pubkey }}
+          AllowedIPs = 0.0.0.0/0
+          Endpoint = {{ server_host }}:{{ server_port }}
+
+    - debug:
+        msg: 'wireguard client config written to {{ config_path }}'
+
+    - debug:
+        msg: 'Add the following client to the wireguard server: {{ client_ip }}/32 {{ wg_pubkey.stdout }}'

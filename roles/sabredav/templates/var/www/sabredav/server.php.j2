@@ -1,0 +1,61 @@
+<?php
+
+// timezone
+date_default_timezone_set('UTC');
+
+// database
+$pdo = new PDO('pgsql:dbname={{ sabredav_db_name }};host={{ sabredav_db_host }}', '{{ sabredav_user }}');
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+// autoloader
+require_once 'vendor/autoload.php';
+
+// freeipa
+$ipa = new \FreeIPA\Connection();
+$allowedGroups = ['{{ sabredav_access_group }}'];
+
+// backends
+$principalBackend = new \FreeIPA\PrincipalBackend($ipa, $allowedGroups);
+$caldavBackend    = new \Sabre\CalDAV\Backend\PDO($pdo);
+$carddavBackend   = new \Sabre\CardDAV\Backend\PDO($pdo);
+$authBackend      = new \FreeIPA\AuthBackend($ipa, $caldavBackend, $carddavBackend, $allowedGroups);
+$lockBackend      = new \Sabre\DAV\Locks\Backend\PDO($pdo);
+
+// directory structure
+$server = new Sabre\DAV\Server([
+  new \Sabre\CalDAV\Principal\Collection($principalBackend),
+  new \Sabre\CalDAV\CalendarRoot($principalBackend, $caldavBackend),
+  new \Sabre\CardDAV\AddressBookRoot($principalBackend, $carddavBackend),
+  new \Sabre\DAVACL\FS\HomeCollection($principalBackend, __DIR__.'/webdav')
+]);
+
+// plugins
+$server->addPlugin(new \Sabre\DAV\Auth\Plugin($authBackend,'SabreDAV'));
+$server->addPlugin(new \Sabre\DAV\Browser\Plugin());
+$server->addPlugin(new \Sabre\DAV\Sync\Plugin());
+$server->addPlugin(new \Sabre\DAV\Sharing\Plugin());
+
+$aclPlugin = new \Sabre\DAVACL\Plugin();
+$aclPlugin->hideNodesFromListings = true;
+$server->addPlugin($aclPlugin);
+
+// webdav plugins
+$server->addPlugin(new \Sabre\DAV\Locks\Plugin($lockBackend));
+$server->addPlugin(new \Sabre\DAV\Browser\GuessContentType());
+$server->addPlugin(new \Sabre\DAV\TemporaryFileFilterPlugin(__DIR__.'/tmpdata'));
+
+// caldav plugins
+$server->addPlugin(new \Sabre\CalDAV\Plugin());
+$server->addPlugin(new \Sabre\CalDAV\Schedule\Plugin());
+$server->addPlugin(new \Sabre\CalDAV\Schedule\IMipPlugin('{{ sabredav_imip_from }}'));
+$server->addPlugin(new \Sabre\CalDAV\Subscriptions\Plugin());
+$server->addPlugin(new \Sabre\CalDAV\Notifications\Plugin());
+$server->addPlugin(new \Sabre\CalDAV\SharingPlugin());
+$server->addPlugin(new \Sabre\CalDAV\ICSExportPlugin());
+
+// carddav plugins
+$server->addPlugin(new \Sabre\CardDAV\Plugin());
+$server->addPlugin(new \Sabre\CardDAV\VCFExportPlugin());
+
+// lets goooooo
+$server->exec();

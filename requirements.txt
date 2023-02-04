@@ -1,0 +1,4 @@
+# pip3 install --user -r requirements.txt
+ansible == 5.8.0
+passlib
+netaddr

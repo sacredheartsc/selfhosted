@@ -1,0 +1,13 @@
+teddit_packages:
+  - ffmpeg
+  - nodejs
+  - git
+
+teddit_git_repo: https://codeberg.org/teddit/teddit
+teddit_home: /opt/teddit
+teddit_install_dir: '{{ teddit_home }}/teddit'
+
+teddit_apache_config: |
+  {{ apache_proxy_config }}
+  ProxyPass        / http://127.0.0.1:{{ teddit_port }}/
+  ProxyPassReverse / http://127.0.0.1:{{ teddit_port }}/

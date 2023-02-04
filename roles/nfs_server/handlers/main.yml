@@ -1,0 +1,19 @@
+- name: restart nfs-server
+  systemd:
+    name: nfs-server
+    state: restarted
+
+- name: reload nfs-server
+  systemd:
+    name: nfs-server
+    state: reloaded
+
+- name: restart samba
+  systemd:
+    name: smb
+    state: restarted
+
+- name: reload samba
+  systemd:
+    name: smb
+    state: reloaded

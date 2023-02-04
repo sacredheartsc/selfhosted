@@ -1,0 +1,4 @@
+- name: restart tika
+  systemd:
+    name: tika
+    state: restarted

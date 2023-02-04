@@ -1,0 +1,9 @@
+- name: restart postfix
+  systemd:
+    name: postfix
+    state: restarted
+
+- name: restart saslauthd
+  systemd:
+    name: saslauthd
+    state: restarted

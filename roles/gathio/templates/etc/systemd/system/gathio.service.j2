@@ -1,0 +1,34 @@
+[Unit]
+Description=gathio event manager
+After=network.target
+AssertPathExists={{ gathio_install_dir }}
+
+[Service]
+Type=simple
+Environment="NODE_ENV=production"
+EnvironmentFile=-/etc/sysconfig/gathio
+ExecStart=/usr/bin/node start.js
+WorkingDirectory={{ gathio_install_dir }}
+User={{ gathio_user }}
+Group={{ gathio_user }}
+Restart=on-failure
+
+# See https://www.freedesktop.org/software/systemd/man/systemd.exec.html
+# for details
+DevicePolicy=closed
+NoNewPrivileges=yes
+PrivateDevices=yes
+PrivateTmp=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=yes
+RestrictRealtime=yes
+SystemCallFilter=~@clock @debug @module @mount @obsolete @privileged @reboot @setuid @swap
+
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

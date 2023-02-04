@@ -1,0 +1,4 @@
+- name: restart zfs-zed
+  systemd:
+    name: zfs-zed
+    state: restarted

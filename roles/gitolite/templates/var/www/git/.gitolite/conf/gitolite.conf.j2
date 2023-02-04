@@ -1,0 +1,11 @@
+repo gitolite-admin
+  RW+  = @{{ gitolite_admin_group }}
+
+repo CREATOR/[A-Za-z0-9/_-]+
+  C    = @{{ gitolite_admin_group }} @{{ gitolite_access_group }}
+  RW+  = CREATOR
+  RW   = WRITERS
+  R    = READERS
+  option default.roles-1 = READERS @all
+  config gitweb.owner    = %GL_CREATOR
+  config gitweb.category = user repositories

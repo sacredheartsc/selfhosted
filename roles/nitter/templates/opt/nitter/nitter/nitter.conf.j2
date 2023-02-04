@@ -1,0 +1,38 @@
+[Server]
+address = "127.0.0.1"
+port = {{ nitter_port }}
+https = true
+httpMaxConnections = {{ nitter_max_connections }}
+staticDir = "./public"
+title = "nitter"
+hostname = "{{ nitter_server_name }}"
+
+[Cache]
+listMinutes = 240
+rssMinutes = 10
+redisHost = "127.0.0.1"
+redisPort = {{ nitter_redis_port }}
+redisPassword = ""
+redisConnections = 20
+redisMaxConnections = 30
+
+[Config]
+hmacKey = "{{ nitter_hmac_key }}"
+base64Media = false
+enableRSS = true
+enableDebug = false
+
+proxy = ""
+proxyAuth = ""
+
+tokenCount = {{ nitter_token_count }}
+
+[Preferences]
+theme = "Nitter"
+replaceTwitter = ""
+replaceYouTube = ""
+replaceReddit = ""
+replaceInstagram = ""
+proxyVideos = true
+hlsPlayback = true
+infiniteScroll = true

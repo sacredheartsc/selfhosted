@@ -1,0 +1,71 @@
+- name: generate client certificate
+  hosts: localhost
+  connection: local
+  become: no
+  vars_prompt:
+    - name: username
+      prompt: Enter username for the certificate subject
+      private: no
+    - name: passphrase
+      prompt: Enter password for the p12 file
+      private: yes
+  vars:
+    cert_dir: "{{ lookup('env', 'HOME') }}/pki"
+    key_size: 2048
+    key_path: '{{ cert_dir }}/{{ username }}.key'
+    csr_path: '{{ cert_dir }}/{{ username }}.csr'
+    crt_path: '{{ cert_dir }}/{{ username }}.crt'
+    p12_path: '{{ cert_dir }}/{{ username }}.p12'
+    profile_id: caIPAclientAuth
+  tasks:
+    - name: create output directory
+      file:
+        path: '{{ cert_dir }}'
+        state: directory
+
+    - name: generate private key
+      openssl_privatekey:
+        path: '{{ key_path }}'
+        size: '{{ key_size }}'
+        mode: 0600
+
+    - name: generate CSR
+      openssl_csr:
+        path: '{{ csr_path }}'
+        privatekey_path: '{{ key_path }}'
+        common_name: '{{ username }}'
+        use_common_name_for_san: no
+
+    - name: request certificate from IPA
+      shell:
+        cmd: >
+          ipa cert-request {{ csr_path }}
+          --principal {{ username }}
+          --profile-id {{ profile_id }}
+          --chain
+          --certificate-out {{ crt_path }}
+
+    # The openssl_pkcs12 ansible module seems to generate files that can't be
+    # decrypted by Android clients. The openssl CLI works fine though.
+    - name: generate PKCS#12 file
+      command:
+        cmd: >
+          openssl pkcs12 -export
+          -out {{ p12_path }}
+          -inkey {{ key_path }}
+          -in {{ crt_path }}
+          -name {{ username }}@{{ domain }}
+          -password pass:{{ passphrase | quote }}
+        creates: '{{ p12_path }}'
+
+    - name: cleanup files
+      file:
+        path: '{{ item }}'
+        state: absent
+      loop:
+        - '{{ key_path }}'
+        - '{{ csr_path }}'
+        - '{{ crt_path }}'
+
+    - debug:
+        msg: 'PKCS#12 file written to {{ p12_path }}. Passphrase: {{ passphrase }}'

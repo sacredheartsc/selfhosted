@@ -1,0 +1,9 @@
+- name: restart unifi
+  systemd:
+    name: unifi
+    state: restarted
+
+- name: restart rsyslog
+  systemd:
+    name: rsyslog
+    state: restarted

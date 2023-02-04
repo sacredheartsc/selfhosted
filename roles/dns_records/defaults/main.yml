@@ -1,0 +1,3 @@
+dns_ip: '{{ ip }}'
+dns_fqdn: '{{ fqdn }}'
+dns_cnames: '{{ cnames }}'

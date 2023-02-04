@@ -1,0 +1,7 @@
+rsyslog_target: '{{ syslog_host }}'
+rsyslog_forward: yes
+rsyslog_queue_max_disk_space: 250m
+rsyslog_queue_size: 10000
+rsyslog_relp_port: 20514
+rsyslog_relp_tls_port: 10514
+rsyslog_tls: yes

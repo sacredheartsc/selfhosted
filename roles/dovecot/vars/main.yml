@@ -1,0 +1,64 @@
+dovecot_packages:
+  - dovecot
+  - dovecot-pigeonhole
+
+dovecot_vmail_user: vmail
+dovecot_vmail_dir: /var/vmail
+
+dovecot_hbac_hostgroup: imap_servers
+dovecot_hbac_service: dovecot
+
+dovecot_certificate_path: /etc/pki/dovecot/certs/dovecot.pem
+dovecot_certificate_key_path: /etc/pki/dovecot/private/dovecot.key
+dovecot_dhparams_path: /etc/pki/dovecot/dhparams-dovecot.pem
+dovecot_ssl_cipher_list: ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
+
+dovecot_quota_warning_script: /usr/local/bin/dovecot-quota-warning.sh
+dovecot_archive_script: /usr/local/bin/dovecot-archive.sh
+
+dovecot_keytab: /var/lib/gssproxy/clients/dovecot.keytab
+
+dovecot_sieve_dir: /etc/dovecot/sieve
+dovecot_sieve_before_dir: /etc/dovecot/sieve.before.d
+dovecot_sieve_pipe_bin_dir: /usr/lib/dovecot/sieve-pipe
+
+dovecot_solr_schema_path: /usr/share/doc/dovecot/solr-schema-7.7.0.xml
+dovecot_solr_config_path: /usr/share/doc/dovecot/solr-config-7.7.0.xml
+
+dovecot_selinux_policy_te: |
+  require {
+    type autofs_t;
+    type dovecot_t;
+    type dovecot_auth_t;
+    type dovecot_auth_exec_t;
+    type dovecot_deliver_exec_t;
+    type gssd_t;
+    type gssproxy_t;
+    type gssproxy_var_lib_t;
+    class dir search;
+    class sock_file write;
+    class unix_stream_socket connectto;
+    class process noatsecure;
+    class file { read execute open getattr execute_no_trans map };
+    class dir search;
+    class key { read write };
+  }
+
+  ### The following rules are needed for dovecot to access gssproxy:
+  #============= dovecot_auth_t ==============
+  allow dovecot_auth_t gssproxy_t:unix_stream_socket connectto;
+  allow dovecot_auth_t gssproxy_var_lib_t:dir search;
+  allow dovecot_auth_t gssproxy_var_lib_t:sock_file write;
+  allow dovecot_auth_t autofs_t:dir search;
+  allow dovecot_auth_t gssd_t:key { read write };
+
+  #============= dovecot_t ==============
+  allow dovecot_t dovecot_auth_t:process noatsecure;
+  allow dovecot_t dovecot_deliver_exec_t:file { read execute open getattr execute_no_trans };
+
+  #============= gssproxy_t ==============
+  allow gssproxy_t dovecot_auth_exec_t:file getattr;
+
+  ### The following rules are needed for the delivery process to exec quota warning scripts:
+  #============= dovecot_t ==============
+  allow dovecot_t dovecot_deliver_exec_t:file { read execute open getattr execute_no_trans map };

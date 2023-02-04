@@ -1,0 +1,7 @@
+# TYPE      DATABASE        USER            ADDRESS                 METHOD
+local       all             all                                     peer
+{% for user in postgresql_password_users %}
+hostssl     all             {{ user }}      all                     scram-sha-256
+{% endfor %}
+hostssl     all             all             all                     gss include_realm=0 krb_realm={{ freeipa_realm }}
+hostgssenc  all             all             all                     gss include_realm=0 krb_realm={{ freeipa_realm }}

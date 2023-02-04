@@ -1,0 +1,62 @@
+#!/usr/libexec/platform-python
+
+# Nagios check for Asterisk PJSIP endpoints
+#
+# Copyright (c) 2023 stonewall@sacredheartsc.com
+# MIT License https://opensource.org/licenses/MIT
+
+import requests
+import json
+import argparse
+import sys
+from enum import Enum
+
+class Status(Enum):
+    OK = 0
+    WARN = 1
+    CRIT = 2
+    UNKNOWN = 3
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-H', '--host', help='asterisk host', type=str, required=True)
+parser.add_argument('-P', '--port', help='asterisk ARI port', type=int, default=8089)
+parser.add_argument('-u', '--username', help='asterisk ARI username', type=str, required=True)
+parser.add_argument('-p', '--password', help='asterisk ARI password', type=str, required=True)
+parser.add_argument('endpoints', nargs='+', help='endpoint name to check', metavar='ENDPOINT')
+args = parser.parse_args()
+
+try:
+    r = requests.get(f'https://{args.host}:{args.port}/ari/endpoints', auth=(args.username, args.password))
+
+    if r.status_code == 200:
+        state = {i['resource']: i['state'] for i in r.json() if i['technology'] == 'PJSIP'}
+        results = []
+
+        for endpoint in args.endpoints:
+            if endpoint in state:
+                status = Status.OK if state[endpoint] == 'online' else Status.CRIT
+                message = f'{endpoint} is {state[endpoint]}'
+                results.append((status, message))
+            else:
+                results.append((Status.UNKNOWN, f'{endpoint} not found'))
+
+        results.sort(key=lambda x:x[0].value, reverse=True)
+
+        if results[0][0] == Status.OK:
+            print('all endpoints connected')
+        elif results[0][0] == Status.UNKNOWN:
+            print('endpoint(s) not found in ARI!')
+        else:
+            print('endpoint not connected!')
+
+        for result in results:
+            print(f'{result[0].name}: {result[1]}')
+
+        sys.exit(results[0][0].value)
+    else:
+        print('failed to retrieve data from ARI!')
+        sys.exit(Status.UNKNOWN.value)
+
+except Exception as e:
+    print(str(e))
+    sys.exit(Status.UNKNOWN.value)

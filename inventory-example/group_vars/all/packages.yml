@@ -1,0 +1,4 @@
+packages_install:
+  - man
+  - less
+  - tmux

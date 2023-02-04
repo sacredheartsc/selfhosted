@@ -1,0 +1,39 @@
+- name: prepare boot images
+  include_tasks: extract_iso.yml
+  loop: '{{ pxe_images }}'
+
+- name: create grub directories
+  file:
+    path: '{{ pxe_root }}/{{ item }}'
+    state: directory
+  loop:
+    - '{{ pxe_grub_prefix }}'
+    - kickstart
+
+- name: generate menuentries
+  template:
+    src: grub/menuentry-{{ image.os }}.cfg.j2
+    dest: '{{ pxe_root }}/{{ pxe_grub_prefix }}/{{ image.name }}-{{ image.version }}-{{ image.arch }}.cfg'
+  loop: '{{ pxe_images }}'
+  loop_control:
+    loop_var: image
+
+- name: generate kickstart files
+  template:
+    src: kickstart/{{ item }}.j2
+    dest: '{{ pxe_root }}/kickstart/{{ item }}'
+  loop: '{{ pxe_images | selectattr("kickstart", "defined") | map(attribute="kickstart") | flatten | map(attribute="name") | unique }}'
+
+- name: generate kickstart menuentries
+  template:
+    src: grub/menuentry-{{ image.os }}.cfg.j2
+    dest: '{{ pxe_root }}/{{ pxe_grub_prefix }}/{{ image.name }}-{{ image.version }}-{{ image.arch }}-{{ kickstart.name | splitext | first }}.cfg'
+  vars:
+    image: '{{ item.0 }}'
+    kickstart: '{{ item.1 }}'
+  loop: '{{ pxe_images | subelements("kickstart", { "skip_missing": true }) }}'
+
+- name: generate grub config
+  template:
+    src: grub/grub.cfg.j2
+    dest: '{{ pxe_root }}/{{ pxe_grub_prefix }}/grub.cfg'

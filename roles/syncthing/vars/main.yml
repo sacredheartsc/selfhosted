@@ -1,0 +1,46 @@
+syncthing_packages:
+  - syncthing
+  - syncthing-tools
+  - httpd
+
+syncthing_home: /var/lib/syncthing
+syncthing_runtime_dir: /var/run/syncthing
+
+syncthing_max_udp_buffer_size: 2500000
+
+syncthing_archive_shell: >-
+  TIMESTAMP=$(date +%Y%m%d%H%M%S);
+  tar czf "syncthing-${TIMESTAMP}.tar.gz"
+  --transform "s|^\.|syncthing-${TIMESTAMP}|"
+  --exclude="*/index-*.db*"
+  -C "{{ syncthing_home }}" .
+
+syncthing_selinux_policy_te: |
+  require {
+    type httpd_t;
+    type unconfined_service_t;
+    class unix_stream_socket connectto;
+  }
+
+  #============= httpd_t ==============
+  allow httpd_t unconfined_service_t:unix_stream_socket connectto;
+
+syncthing_apache_config: |
+  {{ apache_proxy_vhost_config }}
+
+  {% for user in syncthing_users %}
+  <Location /{{ user }}/>
+    AuthType GSSAPI
+    AuthName "FreeIPA Single Sign-On"
+    GssapiLocalName On
+    {{ apache_gssapi_session_config }}
+
+    Require user {{ user }}
+
+    ProxyPass        unix:{{ syncthing_runtime_dir }}/{{ user }}/gui.sock|http://{{ user }}/
+    ProxyPassReverse unix:{{ syncthing_runtime_dir }}/{{ user }}/gui.sock|http://{{ user }}/
+
+    {{ apache_proxy_header_config }}
+  </Location>
+
+  {% endfor %}

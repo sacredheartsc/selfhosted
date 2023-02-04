@@ -1,0 +1,50 @@
+- name: install packages
+  dnf:
+    name: '{{ dnf_automatic_packages }}'
+    state: present
+
+- name: generate dnf-automatic configuration
+  copy:
+    src: etc/dnf/automatic.conf
+    dest: /etc/dnf/automatic.conf
+
+- name: copy dnf-automatic restart script
+  copy:
+    src: '{{ dnf_automatic_restart_script[1:] }}'
+    dest: '{{ dnf_automatic_restart_script }}'
+    mode: 0555
+
+- name: create systemd override directories
+  file:
+    path: /etc/systemd/system/dnf-automatic.{{ item }}.d
+    state: directory
+  loop:
+    - timer
+    - service
+
+- name: create systemd override files
+  template:
+    src: etc/systemd/system/dnf-automatic.{{ item }}.d/override.conf.j2
+    dest: /etc/systemd/system/dnf-automatic.{{ item }}.d/override.conf
+  loop:
+    - timer
+    - service
+  register: dnf_automatic_unit
+  notify: restart dnf-automatic
+
+- name: reload systemd units
+  systemd:
+    daemon_reload: yes
+  when: dnf_automatic_unit.changed
+
+- name: enable dnf-automatic systemd timer
+  systemd:
+    name: dnf-automatic.timer
+    enabled: yes
+    state: started
+
+- name: disable dnf-makecache timer
+  systemd:
+    name: dnf-makecache.timer
+    state: stopped
+    enabled: no

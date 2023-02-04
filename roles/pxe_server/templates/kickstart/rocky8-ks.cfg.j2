@@ -1,0 +1,89 @@
+%pre --interpreter=/bin/bash
+set -Eeu -o pipefail
+
+# get the primary interface name
+interface=$(ip route list default | cut -d' ' -f5)
+
+# parse DHCP lease info
+declare -A dhcp
+while IFS= read -r line; do
+  dhcp["${line%% =*}"]=${line#*= }
+done <<< $(nmcli --terse --fields dhcp4 device show "$interface" | cut -d: -f2-)
+
+# configure interface for DHCP
+printf 'network --bootproto=dhcp --device=%q --hostname=%q --onboot=yes --noipv6\n' \
+  "$interface"                          \
+  "${dhcp[host_name]:-rocky-kickstart}" \
+  > /tmp/network.ks
+
+# if ntp-server was specified by DHCP server, use it
+if [ -n "${dhcp[ntp_servers]:-}" ]; then
+  printf 'timezone %q --utc --ntpservers=%q\n' \
+    {{ timezone | quote }}                     \
+    "${dhcp[ntp_servers]}"                     \
+    > /tmp/timezone.ks
+else
+  printf 'timezone %q --utc\n' {{ timezone | quote }} > /tmp/timezone.ks
+fi
+%end
+
+
+# installer configuration
+cmdline
+eula --agreed
+reboot
+
+
+# system configuration
+firstboot --disabled
+firewall --disabled
+keyboard --vckeymap=us
+lang {{ locale }}
+rootpw --iscrypted {{ root_password | password_hash("sha512", root_password_salt | default("")) }}
+selinux --disabled
+skipx
+
+{% for pubkey in root_authorized_keys %}
+sshkey --username=root "{{ pubkey }}"
+{% endfor %}
+
+
+# network
+%include /tmp/network.ks
+
+
+# timezone
+%include /tmp/timezone.ks
+
+
+# storage
+autopart --type=lvm --fstype=xfs --nohome
+bootloader --boot-drive=vda --location=mbr --timeout=3
+clearpart --drives=vda --all --initlabel
+zerombr
+
+
+# packages
+%packages
+@^minimal-environment
+-plymouth
+-iwl100-firmware
+-iwl1000-firmware
+-iwl105-firmware
+-iwl135-firmware
+-iwl2000-firmware
+-iwl2030-firmware
+-iwl3160-firmware
+-iwl5000-firmware
+-iwl5150-firmware
+-iwl6000-firmware
+-iwl6000g2a-firmware
+-iwl6050-firmware
+-iwl7260-firmware
+%end
+
+
+# disable kernel crashdumps
+%addon com_redhat_kdump --disable
+
+%end

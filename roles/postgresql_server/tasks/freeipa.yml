@@ -1,0 +1,49 @@
+- name: create postgres service principal
+  ipaservice:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: 'postgres/{{ ansible_fqdn }}'
+    state: present
+
+- name: retrieve postgres service keytab
+  include_role:
+    name: freeipa_keytab
+  vars:
+    keytab_principal: 'postgres/{{ ansible_fqdn }}'
+    keytab_path: '{{ postgresql_keytab }}'
+
+- name: create SELinux policy for postgres to access gssproxy
+  include_role:
+    name: selinux_policy
+    apply:
+      tags: selinux
+  vars:
+    selinux_policy_name: postrgres_gssproxy
+    selinux_policy_te: '{{ postgresql_selinux_policy_te }}'
+  tags: selinux
+
+- name: create systemd override directory
+  file:
+    path: /etc/systemd/system/postgresql.service.d/
+    state: directory
+
+- name: create systemd unit override
+  copy:
+    src: etc/systemd/system/postgresql.service.d/override.conf
+    dest: /etc/systemd/system/postgresql.service.d/override.conf
+  register: postgresql_systemd_override
+
+- name: reload systemd units
+  systemd:
+    daemon_reload: yes
+  when: postgresql_systemd_override.changed
+
+- name: configure gssproxy
+  include_role:
+    name: gssproxy_client
+  vars:
+    gssproxy_name: postgres
+    gssproxy_section: service/postgresql
+    gssproxy_keytab: '{{ postgresql_keytab }}'
+    gssproxy_cred_usage: accept
+    gssproxy_euid: postgres

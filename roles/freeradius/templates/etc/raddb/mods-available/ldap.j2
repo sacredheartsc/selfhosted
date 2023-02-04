@@ -1,0 +1,113 @@
+ldap {
+{% for server in freeradius_ldap_servers %}
+  server = '{{ server }}'
+{% endfor %}
+
+  base_dn = '{{ freeipa_user_basedn }}'
+
+  sasl {
+    mech = 'GSSAPI'
+    realm = '{{ freeipa_realm }}'
+  }
+
+  update {
+    control:Password-With-Header  += 'userPassword'
+    control:      += 'radiusControlAttribute'
+    request:      += 'radiusRequestAttribute'
+    reply:        += 'radiusReplyAttribute'
+  }
+
+  user_dn = "LDAP-UserDn"
+
+  user {
+    base_dn = "${..base_dn}"
+{% raw %}
+    filter = "(uid=%{%{Stripped-User-Name}:-%{User-Name}})"
+{% endraw %}
+  }
+
+  group {
+    base_dn = '{{ freeipa_group_basedn }}'
+    filter = '(objectClass=ipagroup)'
+    name_attribute = cn
+{% raw %}
+    membership_filter = "(member=%{control:${..user_dn}})"
+{% endraw %}
+    membership_attribute = 'memberOf'
+    cacheable_name = 'yes'
+    cacheable_dn = 'yes'
+    allow_dangling_group_ref = 'yes'
+  }
+
+  profile { }
+
+  client {
+    base_dn = "${..base_dn}"
+    filter = '(objectClass=radiusClient)'
+
+    template { }
+
+    attribute {
+      ipaddr        = 'radiusClientIdentifier'
+      secret        = 'radiusClientSecret'
+    }
+  }
+
+  read_clients = no
+
+  accounting {
+    reference = "%{tolower:type.%{Acct-Status-Type}}"
+
+    type {
+      start {
+        update {
+          description := "Online at %S"
+        }
+      }
+
+      interim-update {
+        update {
+          description := "Last seen at %S"
+        }
+      }
+
+      stop {
+        update {
+          description := "Offline at %S"
+        }
+      }
+    }
+  }
+
+  post-auth {
+    update {
+      description := "Authenticated at %S"
+    }
+  }
+
+  options {
+    chase_referrals = yes
+    rebind = yes
+    res_timeout = 10
+    srv_timelimit = 3
+    net_timeout = 1
+    idle = 60
+    probes = 3
+    interval = 3
+    ldap_debug = 0x0000
+  }
+
+  tls { }
+
+  pool {
+    start = ${thread[pool].start_servers}
+    min = ${thread[pool].min_spare_servers}
+    max = ${thread[pool].max_servers}
+
+    spare = ${thread[pool].max_spare_servers}
+    uses = 0
+    retry_delay = 30
+    lifetime = 0
+    idle_timeout = 60
+  }
+}

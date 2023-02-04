@@ -1,0 +1,10 @@
+{% for groupname in groups.keys() | difference(['all','ungrouped'] + nagios_excluded_groups) %}
+{% if groups[groupname] | reject('in', nagios_excluded_groups | map('extract', groups) | flatten) %}
+define hostgroup {
+  hostgroup_name  {{ groupname }}
+  alias           {{ groupname | replace('_', ' ') | title }}
+  members         {{ groups[groupname] | reject('in', nagios_excluded_groups | map('extract', groups) | flatten) | join(',') }}
+}
+
+{% endif %}
+{% endfor %}

@@ -1,0 +1,18 @@
+- name: set hostname
+  hostname:
+    name: '{{ hostname_fqdn }}'
+  register: hostname
+
+- name: update /etc/hosts
+  template:
+    src: etc/hosts.j2
+    dest: /etc/hosts
+  register: hosts_file
+
+- name: gather hostname facts
+  setup:
+    filter:
+      - ansible_fqdn
+      - ansible_hostname
+      - ansible_domain
+  when: hostname.changed or hosts_file.changed

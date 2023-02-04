@@ -1,0 +1,100 @@
+- name: install packages
+  dnf:
+    name: '{{ vaultwarden_packages }}'
+    state: present
+
+- import_tasks: freeipa.yml
+  tags: freeipa
+
+- name: create home directory
+  file:
+    path: '{{ vaultwarden_home }}'
+    owner: '{{ vaultwarden_user }}'
+    group: '{{ vaultwarden_user }}'
+    mode: 0755
+    state: directory
+
+- name: download rustup
+  get_url:
+    url: https://sh.rustup.rs
+    dest: '{{ vaultwarden_home }}/rustup.sh'
+    mode: 0555
+  become: yes
+  become_user: '{{ vaultwarden_user }}'
+  register: rustup
+
+- name: install rust
+  command: '{{ vaultwarden_home }}/rustup.sh -y'
+  when: rustup.changed
+  become: yes
+  become_user: '{{ vaultwarden_user }}'
+
+- name: clone git repository
+  git:
+    repo: '{{ vaultwarden_git_repo }}'
+    dest: '{{ vaultwarden_source_dir }}'
+    version: '{{ vaultwarden_version }}'
+    force: yes
+    update: yes
+  become: yes
+  become_user: '{{ vaultwarden_user }}'
+  register: vaultwarden_git
+  notify: restart vaultwarden
+
+- name: build vaultwarden
+  shell:
+    cmd: 'source ${HOME}/.cargo/env && cargo build --features postgresql --release'
+    chdir: '{{ vaultwarden_source_dir }}'
+  become: yes
+  become_user: '{{ vaultwarden_user }}'
+  when: vaultwarden_git.changed
+
+- name: create web vault directory
+  file:
+    path: '{{ vaultwarden_web_dir }}'
+    owner: '{{ vaultwarden_user }}'
+    group: '{{ vaultwarden_user }}'
+    mode: 0755
+    state: directory
+
+- name: extract web vault
+  unarchive:
+    src: '{{ vaultwarden_web_url }}'
+    dest: '{{ vaultwarden_web_dir }}'
+    remote_src: yes
+    extra_opts: --strip-components=1
+  become: yes
+  become_user: '{{ vaultwarden_user }}'
+
+- name: create data directory
+  file:
+    path: '{{ vaultwarden_data_dir }}'
+    owner: '{{ vaultwarden_user }}'
+    group: '{{ vaultwarden_user }}'
+    mode: 0700
+    state: directory
+
+- name: create systemd unit
+  template:
+    src: etc/systemd/system/vaultwarden.service.j2
+    dest: /etc/systemd/system/vaultwarden.service
+  notify: restart vaultwarden
+
+- name: reload systemd daemons
+  systemd:
+    daemon_reload: yes
+
+- name: generate environment file
+  template:
+    src: etc/sysconfig/vaultwarden.j2
+    dest: /etc/sysconfig/vaultwarden
+  notify: restart vaultwarden
+
+- import_tasks: database.yml
+  tags: database
+
+- name: enable systemd unit
+  systemd:
+    name: vaultwarden
+    enabled: yes
+    state: started

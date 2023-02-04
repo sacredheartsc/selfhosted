@@ -1,0 +1,3 @@
+# Force legacy BIOS for Rocky 8 VMs - UEFI doesn't seem to work.
+proxmox_template: rocky8.7
+proxmox_bios: seabios

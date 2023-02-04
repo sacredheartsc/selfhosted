@@ -1,0 +1,20 @@
+rsyslog_packages:
+  - rsyslog
+  - rsyslog-doc
+  - rsyslog-relp
+  - rsyslog-openssl
+
+rsyslog_log_by_tag:
+  - unifi
+  - airsonic
+
+rsyslog_access_log_by_tag:
+  - httpd
+  - nginx
+  - slapd
+
+rsyslog_certificate_path: /etc/pki/rsyslog/syslog.pem
+rsyslog_certificate_key_path: /etc/pki/rsyslog/syslog.key
+rsyslog_certificate_ca_path: /etc/ipa/ca.crt
+
+rsyslog_storage_dir: /var/log/remote

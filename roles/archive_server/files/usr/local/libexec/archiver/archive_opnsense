@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -Eeu -o pipefail
+
+HOST=$1
+KEY=$2
+SECRET=$3
+
+URL=https://${HOST}/api/backup/backup/download
+TIMESTAMP=$(date +%Y%m%d%H%M%S)
+
+curl -sSfk -u "${KEY}:${SECRET}" -o "opnsense-${TIMESTAMP}.xml" "$URL"

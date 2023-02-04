@@ -1,0 +1,46 @@
+photostructure_packages:
+  - nodejs
+  - ffmpeg
+  - libjpeg-turbo-utils
+  - libheif
+  - python3-devel
+  - git
+  - perl
+
+photostructure_repo: https://github.com/photostructure/photostructure-for-servers.git
+photostructure_home: /opt/photostructure
+photostructure_library: '{{ photostructure_home }}/library'
+photostructure_keytab: /var/lib/gssproxy/clients/{{ photostructure_user }}.keytab
+photostructure_install_dir: '{{ photostructure_home }}/photostructure-for-servers'
+
+photostructure_update_script_path: /usr/local/sbin/photostructure-update.sh
+photostructure_update_on_calendar: weekly
+
+photostructure_apache_config: |
+  ProxyPass        / http://127.0.0.1:{{ photostructure_port }}/
+  ProxyPassReverse / http://127.0.0.1:{{ photostructure_port }}/
+  ProxyTimeout 3600
+  {{ apache_proxy_config }}
+
+  <Location />
+    AuthName "FreeIPA Single Sign-On"
+    <If "{% for cidr in photostructure_kerberized_cidrs %}-R '{{ cidr }}'{% if not loop.last %} || {% endif %}{% endfor %}">
+      AuthType GSSAPI
+      GssapiLocalName On
+      {{ apache_gssapi_session_config }}
+    </If>
+    <Else>
+      AuthType Basic
+      AuthBasicProvider ldap
+    </Else>
+    {{ apache_ldap_config }}
+    Require ldap-attribute memberof=cn={{ photostructure_access_group }},{{ freeipa_group_basedn }}
+  </Location>
+
+photostructure_archive_shell: >-
+  systemctl stop photostructure;
+  TIMESTAMP=$(date +%Y%m%d%H%M%S);
+  tar cf "photostructure-${TIMESTAMP}.tar"
+  --transform "s|^\.|photostructure-${TIMESTAMP}|"
+  -C {{ photostructure_library | quote }} . ;
+  systemctl start photostructure

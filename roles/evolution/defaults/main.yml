@@ -1,0 +1,6 @@
+evolution_mail_account_name: '{{ organization }}'
+evolution_dav_account_name: '{{ organization }}'
+evolution_email_domain: '{{ email_domain }}'
+evolution_imap_host: '{{ imap_host }}'
+evolution_smtp_host: '{{ mail_host }}'
+evolution_dav_host: 'dav.{{ domain }}'

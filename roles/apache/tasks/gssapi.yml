@@ -1,0 +1,49 @@
+- name: create HTTP service principal
+  ipaservice:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: 'HTTP/{{ ansible_fqdn }}'
+    state: present
+
+- name: retrieve HTTP keytab
+  include_role:
+    name: freeipa_keytab
+  vars:
+    keytab_principal: 'HTTP/{{ ansible_fqdn }}'
+    keytab_path: '{{ apache_keytab }}'
+
+- name: configure gssproxy for kerberized HTTP
+  include_role:
+    name: gssproxy_client
+  vars:
+    gssproxy_name: httpd
+    gssproxy_section: service/HTTP
+    gssproxy_keytab: '{{ apache_keytab }}'
+    gssproxy_cred_usage: accept
+    gssproxy_euid: apache
+    gssproxy_program: /usr/sbin/httpd
+
+- name: create systemd override directory
+  file:
+    path: /etc/systemd/system/httpd.service.d
+    state: directory
+
+- name: set GSS_USE_PROXY=yes in httpd environment
+  copy:
+    src: etc/systemd/system/httpd.service.d/override.conf
+    dest: /etc/systemd/system/httpd.service.d/override.conf
+  register: apache_systemd_unit
+  notify: restart apache
+
+- name: reload systemd units
+  systemd:
+    daemon_reload: yes
+  when: apache_systemd_unit.changed
+
+- name: create gssapi session directory
+  file:
+    path: '{{ apache_session_dir }}'
+    mode: 0700
+    owner: apache
+    group: apache
+    state: directory

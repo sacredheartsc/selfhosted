@@ -1,0 +1,16 @@
+- name: create directories
+  file:
+    path: '{{ pxe_root }}/{{ item.name }}/{{ item.version }}/{{ item.arch }}'
+    state: directory
+    recurse: yes
+
+- name: download iso
+  get_url:
+    url: '{{ item.url }}'
+    checksum: sha256:{{ item.sha256 }}
+    dest: '{{ pxe_root }}/{{ item.name }}/{{ item.version }}/{{ item.arch }}/{{ item.name }}-{{ item.version }}-{{ item.arch }}.iso'
+
+- name: extract iso with bsdtar
+  command: >-
+    bsdtar -C '{{ pxe_root }}/{{ item.name }}/{{ item.version }}/{{ item.arch }}'
+    -xf '{{ pxe_root }}/{{ item.name }}/{{ item.version }}/{{ item.arch }}/{{ item.name }}-{{ item.version }}-{{ item.arch }}.iso'

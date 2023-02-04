@@ -1,0 +1,19 @@
+{% for export in nfs_exports | selectattr('smb_share', 'defined') %}
+[{{ export.smb_share }}]
+path = {{ zfs_mountpoints[export.dataset] if export.dataset is defined else export.path }}
+{% endfor %}
+
+{% for share in smb_shares %}
+[{{ share.name }}]
+path = {{ share.path }}
+{% endfor %}
+
+{% if nfs_homedirs | selectattr('user', 'defined') %}
+[users]
+path = {{ zfs_mountpoints[nfs_homedir_user_dataset] }}
+{% endif %}
+
+{% if nfs_homedirs | selectattr('group', 'defined') %}
+[groups]
+path = {{ zfs_mountpoints[nfs_homedir_group_dataset] }}
+{% endif %}

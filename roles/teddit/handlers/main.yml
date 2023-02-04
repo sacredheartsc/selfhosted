@@ -1,0 +1,4 @@
+- name: restart teddit
+  systemd:
+    name: teddit
+    state: restarted

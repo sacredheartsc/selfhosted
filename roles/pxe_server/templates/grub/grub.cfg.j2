@@ -1,0 +1,22 @@
+set timeout=-1
+
+if [ "$grub_cpu" = "x86_64" -a "$grub_platform" = "efi" ]; then
+  set linux=linuxefi
+  set initrd=initrdefi
+  export linux
+  export initrd
+fi
+
+{% for image in pxe_images %}
+if [ "$grub_cpu" = "{{ image.arch }}" ]; then
+  menuentry "{{ image.description }} {{ image.version }}" {
+    configfile "$prefix/{{ image.name }}-{{ image.version }}-{{image.arch }}.cfg"
+  }
+
+  {% for kickstart in image.kickstart | default([]) %}
+  menuentry "{{ image.description }} {{ image.version }}: {{ kickstart.description }}" {
+    configfile "$prefix/{{ image.name }}-{{ image.version }}-{{image.arch }}-{{ kickstart.name | splitext | first }}.cfg"
+  }
+  {% endfor %}
+fi
+{% endfor %}

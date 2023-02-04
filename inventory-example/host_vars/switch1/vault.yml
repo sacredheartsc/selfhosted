@@ -1,0 +1,4 @@
+# This is a sample file with fake secrets. For a real deployment, encrypt this
+# file with `ansible-vault encrypt` and add your own secrets.
+---
+vault_edgeswitch_backup_password: changeme

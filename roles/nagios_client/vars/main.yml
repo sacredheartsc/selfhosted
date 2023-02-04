@@ -1,0 +1,11 @@
+nagios_packages:
+  - nagios-plugins-all
+
+nagios_home: /var/spool/nagios
+nagios_plugin_dir: /usr/lib64/nagios/plugins
+nagios_user: nagios
+
+nagios_sudo_whitelist:
+  - /usr/bin/dnf needs-restarting --reboothint
+  - /usr/bin/dnf needs-restarting --services
+  - /usr/bin/systemctl status -- *

@@ -1,0 +1,8 @@
+# ssh-based checks depend on the ssh service being OK
+define servicedependency {
+  hostgroup                      nagios_check_ssh
+  service_description            ssh
+  dependent_servicegroup_name    ssh
+  execution_failure_criteria     c,u
+  notification_failure_criteria  c,u
+}

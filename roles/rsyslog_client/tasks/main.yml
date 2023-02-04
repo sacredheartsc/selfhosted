@@ -1,0 +1,27 @@
+- name: install rsyslog
+  dnf:
+    name: '{{ rsyslog_packages }}'
+    state: present
+
+- name: request TLS certificate
+  include_role:
+    name: getcert_request
+  vars:
+    certificate_sans: ['{{ ansible_fqdn }}']
+    certificate_service: syslog
+    certificate_path: '{{ rsyslog_certificate_path }}'
+    certificate_key_path: '{{ rsyslog_certificate_key_path }}'
+    certificate_hook: systemctl restart rsyslog
+  when: rsyslog_tls
+
+- name: generate rsyslog configuration
+  template:
+    src: etc/rsyslog.conf.j2
+    dest: /etc/rsyslog.conf
+  notify: restart rsyslog
+
+- name: enable rsyslog
+  systemd:
+    name: rsyslog
+    enabled: yes
+    state: started

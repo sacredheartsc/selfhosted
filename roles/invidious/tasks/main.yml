@@ -1,0 +1,116 @@
+- name: install dependencies
+  dnf:
+    name: '{{ invidious_packages }}'
+    state: present
+
+- name: create crystal directory
+  file:
+    path: '{{ invidious_crystal_install_dir }}'
+    state: directory
+
+- name: download crystal-lang
+  unarchive:
+    src: '{{ invidious_crystal_url }}'
+    dest: '{{ invidious_crystal_install_dir }}'
+    remote_src: yes
+    extra_opts: --strip-components=1
+
+- name: create local user
+  user:
+    name: '{{ invidious_user }}'
+    system: yes
+    home: '{{ invidious_home }}'
+    shell: /sbin/nologin
+    create_home: no
+
+- name: create home home directory
+  file:
+    path: '{{ invidious_home }}'
+    owner: '{{ invidious_user }}'
+    group: '{{ invidious_user }}'
+    mode: 0755
+    state: directory
+
+- name: clone repo
+  git:
+    repo: '{{ invidious_git_repo }}'
+    dest: '{{ invidious_install_dir }}'
+    version: '{{ invidious_version }}'
+    update: yes
+    force: yes
+  become: yes
+  become_user: '{{ invidious_user }}'
+  register: invidious_git
+
+- name: build invidious
+  command:
+    cmd: '{{ item }}'
+    chdir: '{{ invidious_install_dir }}'
+  environment:
+    PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:{{ invidious_crystal_install_dir }}/bin
+  loop:
+    - shards install --production
+    - crystal build src/invidious.cr -Ddisable_quic --release
+  when: invidious_git.changed
+  become: yes
+  become_user: '{{ invidious_user }}'
+
+- name: create systemd unit
+  template:
+    src: etc/systemd/system/invidious.service.j2
+    dest: /etc/systemd/system/invidious.service
+  register: invidious_unit
+  notify: restart invidious
+
+- name: reload systemd daemons
+  systemd:
+    daemon_reload: yes
+  when: invidious_unit.changed
+
+- name: generate config file
+  template:
+    src: '{{ invidious_install_dir[1:] }}/config/config.yml.j2'
+    dest: '{{ invidious_install_dir }}/config/config.yml'
+    owner: '{{ invidious_user }}'
+    group: '{{ invidious_user }}'
+    mode: 0600
+  notify: restart invidious
+
+- import_tasks: database.yml
+
+- name: allow apache to connect to invidious port
+  seport:
+    ports: '{{ invidious_port }}'
+    proto: tcp
+    setype: http_port_t
+    state: present
+  tags: selinux
+
+- name: start invidious
+  systemd:
+    name: invidious
+    enabled: yes
+    state: started
+
+- name: generate update script
+  template:
+    src: '{{ invidious_home[1:] }}/invidious-update.sh.j2'
+    dest: '{{ invidious_home }}/invidious-update.sh'
+    mode: 0555
+
+- name: create invidious-update timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: invidious-update
+    timer_description: Update invidious
+    timer_after: network.target
+    timer_on_calendar: '{{ invidious_update_on_calendar }}'
+    timer_exec: '{{ invidious_home }}/invidious-update.sh'
+
+- name: restart invidious daily at 3:30am
+  cron:
+    name: restart invidious
+    minute: 30
+    hour: 3
+    job: systemctl restart invidious

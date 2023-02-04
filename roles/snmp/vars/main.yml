@@ -1,0 +1,2 @@
+snmp_packages:
+  - net-snmp

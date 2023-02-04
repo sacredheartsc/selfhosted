@@ -1,0 +1,4 @@
+- name: restart chrony
+  systemd:
+    name: chronyd
+    state: restarted

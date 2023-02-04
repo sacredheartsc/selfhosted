@@ -1,0 +1,16 @@
+- name: install rsyslog
+  apt:
+    name: rsyslog
+    state: present
+
+- name: generate rsyslog configuration
+  template:
+    src: etc/rsyslog.d/forward.conf.j2
+    dest: /etc/rsyslog.d/forward.conf
+  notify: restart rsyslog
+
+- name: enable rsyslog
+  systemd:
+    name: rsyslog
+    enabled: yes
+    state: started

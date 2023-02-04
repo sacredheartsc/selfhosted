@@ -1,0 +1,1 @@
+nagios_https_vhosts: ['{{ prosody_http_host | default(ansible_fqdn) }}']

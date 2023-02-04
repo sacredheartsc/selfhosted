@@ -1,0 +1,21 @@
+vaultwarden_version: 1.27.0
+vaultwarden_web_version: 2023.1.0
+
+vaultwarden_port: 8008
+vaultwarden_websocket_port: 8009
+
+vaultwarden_server_name: '{{ ansible_fqdn }}'
+vaultwarden_url: https://{{ vaultwarden_server_name }}
+
+vaultwarden_user: s-vaultwarden
+vaultwarden_db_name: vaultwarden
+vaultwarden_db_host: '{{ postgresql_host }}'
+vaultwarden_verify_signups: true
+vaultwarden_signup_domain_whitelist: ['{{ email_domain }}']
+vaultwarden_invitations_allowed: false
+vaultwarden_user_attachment_limit_kb: 1048576 # 1 GB
+vaultwarden_admin_group: role-bitwarden-admin
+
+vaultwarden_smtp_host: '{{ mail_host }}'
+vaultwarden_smtp_from: bitwarden-noreply@{{ email_domain }}
+vaultwarden_smtp_from_name: Bitwarden

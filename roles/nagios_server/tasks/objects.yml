@@ -1,0 +1,32 @@
+- name: generate nagios objects
+  template:
+    src: '{{ item.src }}'
+    dest: /etc/nagios/objects/{{ item.path | splitext | first }}
+    owner: root
+    group: nagios
+    mode: 0640
+    lstrip_blocks: yes
+  loop: "{{ lookup('filetree', '../templates/etc/nagios/objects', wantlist=True) }}"
+  when: item.state == 'file'
+  loop_control:
+    label: '{{ item.path }}'
+  notify: reload nagios
+
+- name: generate nagios resource file
+  template:
+    src: etc/nagios/private/resource.cfg.j2
+    dest: /etc/nagios/private/resource.cfg
+    owner: root
+    group: nagios
+    mode: 0640
+  notify: reload nagios
+
+- name: copy nagios plugins
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ nagios_plugin_dir }}/{{ item.path }}'
+    mode: 0555
+  loop: "{{ lookup('filetree', nagios_plugin_dir[1:], wantlist=True) }}"
+  loop_control:
+    label: '{{ item.path }}'
+  when: item.state == 'file'

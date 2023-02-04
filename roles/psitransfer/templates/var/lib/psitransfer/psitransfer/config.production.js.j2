@@ -1,0 +1,12 @@
+module.exports = {
+  "uploadAppPath": "/upload",
+  "uploadDir": "{{ psitransfer_data_dir }}",
+  "retentions": {{ psitransfer_retentions | to_json }},
+  "defaultRetention": "{{ psitransfer_default_retention }}",
+  "maxFileSize": {{ psitransfer_max_file_size | human_to_bytes }},
+  "maxBucketSize": {{ psitransfer_max_bucket_size | human_to_bytes }},
+  "maxPreviewSize": {{ psitransfer_max_preview_size | human_to_bytes }},
+  {% if psitransfer_admin_password is defined %}
+  "adminPass": "{{ psitransfer_admin_password }}"
+  {% endif %}
+};

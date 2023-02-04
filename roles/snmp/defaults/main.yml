@@ -1,0 +1,9 @@
+snmp_location: unknown
+snmp_contact: '{{ organization }} Sysadmins <root@{{ email_domain }}>'
+
+snmp_force_users: no
+
+snmp_v3_users:
+  - name: '{{ nagios_snmp_user }}'
+    auth_pass: '{{ nagios_snmp_auth_pass }}'
+    priv_pass: '{{ nagios_snmp_priv_pass }}'

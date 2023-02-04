@@ -1,0 +1,4 @@
+- name: restart photostructure
+  systemd:
+    name: photostructure
+    state: restarted

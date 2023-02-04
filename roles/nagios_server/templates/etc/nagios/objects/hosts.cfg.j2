@@ -1,0 +1,31 @@
+define host {
+  host_name            {{ inventory_hostname }}
+  alias                {{ inventory_hostname }}
+  address              127.0.0.1
+  use                  generic-host
+  check_command        check_dummy
+  notification_period  24x7
+  _fqdn                {{ ansible_fqdn }}
+  _snmp_user           {{ hostvars[inventory_hostname].nagios_snmp_user }}
+  _snmp_priv_pass      {{ hostvars[inventory_hostname].nagios_snmp_priv_pass }}
+  _snmp_priv_proto     {{ hostvars[inventory_hostname].nagios_snmp_priv_proto }}
+  _snmp_auth_pass      {{ hostvars[inventory_hostname].nagios_snmp_auth_pass }}
+  _snmp_auth_proto     {{ hostvars[inventory_hostname].nagios_snmp_auth_proto }}
+}
+
+{% for host in groups['all'] | reject('equalto', inventory_hostname) | reject('in', nagios_excluded_groups | map('extract', groups) | flatten) %}
+define host {
+  host_name         {{ host }}
+  alias             {{ host }}
+  address           {{ hostvars[host].ip }}
+  use               generic-host
+  check_command     check_ping!$HOSTADDRESS$!{{ hostvars[host].nagios_ping_count }}!{{ hostvars[host].nagios_ping_rtt_warn }},{{ hostvars[host].nagios_ping_loss_warn | replace('%', '') }}%!{{ hostvars[host].nagios_ping_rtt_crit }},{{ hostvars[host].nagios_ping_loss_crit | replace('%', '') }}%
+  _fqdn             {{ hostvars[host].fqdn }}
+  _snmp_user        {{ hostvars[host].nagios_snmp_user }}
+  _snmp_priv_pass   {{ hostvars[host].nagios_snmp_priv_pass }}
+  _snmp_priv_proto  {{ hostvars[host].nagios_snmp_priv_proto }}
+  _snmp_auth_pass   {{ hostvars[host].nagios_snmp_auth_pass }}
+  _snmp_auth_proto  {{ hostvars[host].nagios_snmp_auth_proto }}
+}
+
+{% endfor %}

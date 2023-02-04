@@ -1,0 +1,477 @@
+################
+# IMAP Mailboxes
+################
+- name: restore dovecot mailboxes
+  hosts: imap_servers
+  vars_files: ../../roles/dovecot/vars/main.yml
+  vars:
+    dovecot_temp_dir: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-mailboxes
+    dovecot_backup_tarball: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-mailboxes.tar.gz'
+    dovecot_backup_sieve_tarball: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-sieve.tar.gz'
+  tags: dovecot,imap
+  tasks:
+    - name: create temporary directory
+      file:
+        path: '{{ dovecot_temp_dir }}'
+        owner: '{{ dovecot_vmail_user }}'
+        group: '{{ dovecot_vmail_user }}'
+        mode: 0770
+        state: directory
+
+    - name: extract mailbox tarball
+      unarchive:
+        src: '{{ dovecot_backup_tarball }}'
+        dest: '{{ dovecot_temp_dir }}'
+        extra_opts:
+          - --same-owner
+          - --strip-components=1
+
+    - name: collect dovecot users
+      command: doveadm user *
+      register: dovecot_users
+      changed_when: no
+
+    - name: import mailboxes
+      command: >-
+        doveadm -o plugin/quota= sync -u {{ item | quote }}
+        mdbox:{{ dovecot_temp_dir }}/{{ item | quote }}/mdbox
+      loop: '{{ dovecot_users.stdout_lines }}'
+
+    - name: drop FTS indexes
+      command: doveadm fts rescan -A
+
+    - name: reindex mailboxes
+      command: doveadm index -A -q *
+
+    - name: delete temporary directory
+      file:
+        path: '{{ dovecot_temp_dir }}'
+        state: absent
+
+    - name: extract sieve scripts
+      unarchive:
+        src: '{{ dovecot_backup_sieve_tarball }}'
+        dest: '{{ dovecot_vmail_dir }}'
+        extra_opts:
+          - --same-owner
+
+
+##################
+# Rspamd Databases
+##################
+- name: restore rspamd databases
+  hosts: rspamd_servers
+  vars_files:
+    - ../../roles/redis/vars/main.yml
+    - ../../roles/rspamd/vars/main.yml
+  vars:
+    rspamd_backup_tarball: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-rspamd.tar.gz'
+  tags: rspamd
+  tasks:
+    - name: stop redis instances
+      systemd:
+        name: redis@{{ item }}
+        state: stopped
+      loop:
+        - '{{ rspamd_redis_port }}'
+        - '{{ rspamd_redis_bayes_port }}'
+
+    - name: stop rspamd
+      systemd:
+        name: rspamd
+        state: stopped
+
+    - name: extract redis tarballs
+      unarchive:
+        src: '{{ rspamd_backup_tarball }}'
+        dest: '{{ redis_home }}'
+        extra_opts:
+          - --strip-components=1
+          - --same-owner
+
+    - name: start redis instances
+      systemd:
+        name: redis@{{ item }}
+        state: started
+      loop:
+        - '{{ rspamd_redis_port }}'
+        - '{{ rspamd_redis_bayes_port }}'
+
+    - name: start rspamd
+      systemd:
+        name: rspamd
+        state: started
+
+
+###################
+# ZNC Configuration
+###################
+- name: restore znc configuration
+  hosts: znc_servers
+  vars_files: ../../roles/znc/vars/main.yml
+  vars:
+    znc_backup_tarball: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-znc.tar.gz'
+  tags: znc
+  tasks:
+    - name: stop znc
+      systemd:
+        name: znc
+        state: stopped
+
+    - name: extract config tarball
+      unarchive:
+        src: '{{ znc_backup_tarball }}'
+        dest: '{{ znc_home }}'
+        extra_opts:
+          - --strip-components=1
+          - --same-owner
+
+    - name: start znc
+      systemd:
+        name: znc
+        state: started
+
+
+#########################
+# Syncthing Configuration
+#########################
+- name: restore syncthing configuration
+  hosts: syncthing_servers
+  vars_files: ../../roles/syncthing/vars/main.yml
+  vars:
+    syncthing_backup_tarball: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-syncthing.tar.gz'
+  tags: syncthing
+  tasks:
+    - name: stop syncthing daemons
+      command: systemctl stop syncthing-user@*
+
+    - name: extract config tarball
+      unarchive:
+        src: '{{ syncthing_backup_tarball }}'
+        dest: '{{ syncthing_home }}'
+        extra_opts:
+          - --strip-components=1
+          - --same-owner
+
+    - name: collect syncthing users
+      find:
+        paths: '{{ syncthing_home }}'
+        recurse: no
+        file_type: directory
+      register: syncthing_users
+
+    - name: start syncthing daemons
+      systemd:
+        name: syncthing-user@{{ item }}
+        state: started
+      loop: "{{ syncthing_users.files | map(attribute='path') | map('basename') }}"
+
+
+##################
+# Git Repositories
+##################
+- name: restore git repositories
+  hosts: git_servers
+  vars_files:
+    - ../../roles/gitolite/vars/main.yml
+    - ../../roles/cgit/vars/main.yml
+  vars:
+    git_backup_tarball: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-git.tar.gz'
+  tags: git
+  tasks:
+    - name: extract git tarball
+      unarchive:
+        src: '{{ git_backup_tarball }}'
+        dest: '{{ gitolite_home }}'
+        extra_opts:
+          - --strip-components=1
+          - --same-owner
+
+    - name: clear cgit cache
+      file:
+        path: '{{ cgit_cache_dir }}'
+        owner: apache
+        mode: 0755
+        setype: _default
+        state: '{{ item }}'
+      loop:
+        - absent
+        - directory
+
+
+######################
+# PostgreSQL Databases
+######################
+- name: restore postgresql databases
+  hosts: postgresql_servers
+  vars_files: ../../roles/postgresql_server/vars/main.yml
+  vars:
+    postgresql_backup_gzip: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-pg_dumpall.sql.gz'
+    postgresql_remote_gzip: /var/tmp/{{ postgresql_backup_gzip | basename }}
+  tags: postgres,postgresql
+  tasks:
+    - name: copy backup gzip to remote host
+      copy:
+        src: '{{ postgresql_backup_gzip }}'
+        dest: '{{ postgresql_remote_gzip }}'
+        owner: '{{ postgresql_user }}'
+        group: '{{ postgresql_user }}'
+        mode: 0400
+
+    - name: import database backup
+      shell: gunzip {{ postgresql_remote_gzip | quote }} --to-stdout | psql
+      become: yes
+      become_user: '{{ postgresql_user }}'
+
+    - name: delete gzip file from remote host
+      file:
+        path: '{{ postgresql_remote_gzip }}'
+        state: absent
+
+
+########################
+# Jellyfin Configuration
+########################
+- name: restore jellyfin configuration
+  hosts: jellyfin_servers
+  vars_files: ../../roles/jellyfin/vars/main.yml
+  vars:
+    jellyfin_backup_tarball: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-jellyfin.tar.gz'
+  tags: jellyfin
+  tasks:
+    - name: stop jellyfin
+      systemd:
+        name: jellyfin
+        state: stopped
+
+    - name: extract backup tarball
+      unarchive:
+        src: '{{ jellyfin_backup_tarball }}'
+        dest: /
+        extra_opts:
+          - --same-owner
+
+    - name: start jellyfin
+      systemd:
+        name: jellyfin
+        state: started
+
+
+##################
+# Mediawiki Images
+##################
+- name: restore mediawiki images
+  hosts: wiki_servers
+  vars_files: ../../roles/mediawiki/vars/main.yml
+  vars:
+    mediawiki_backup_tarball: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-mediawiki.tar.gz'
+  tags: mediawiki,wiki
+  tasks:
+    - name: extract backup tarball
+      unarchive:
+        src: '{{ mediawiki_backup_tarball }}'
+        dest: '{{ mediawiki_home }}/images'
+        extra_opts:
+          - --strip-components=1
+          - --same-owner
+
+
+#########################
+# Photostructure Database
+#########################
+- name: restore photostructure database
+  hosts: photostructure_servers
+  vars_files:
+    - ../../roles/photostructure/vars/main.yml
+  vars:
+    photostructure_backup_tarball: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-photostructure.tar'
+  tags: photostructure
+  tasks:
+    - name: stop photostructure
+      systemd:
+        name: photostructure
+        state: stopped
+
+    - name: extract backup tarball
+      unarchive:
+        src: '{{ photostructure_backup_tarball }}'
+        dest: '{{ photostructure_library }}'
+        extra_opts:
+          - --strip-components=1
+          - --same-owner
+
+    - name: start photostructure
+      systemd:
+        name: photostructure
+        state: started
+
+
+####################
+# Cups Configuration
+####################
+- name: restore cups configuration
+  hosts: cups_servers
+  vars:
+    cups_backup_tarball: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-cups.tar.gz'
+  tags: cups
+  tasks:
+    - name: stop cups
+      systemd:
+        name: cups
+        state: stopped
+
+    - name: extract backup tarball
+      unarchive:
+        src: '{{ cups_backup_tarball }}'
+        dest: /etc/cups
+        extra_opts:
+          - --same-owner
+
+    - name: start cups
+      systemd:
+        name: cups
+        state: started
+
+
+###############
+# Asterisk Data
+###############
+- name: restore asterisk data
+  hosts: asterisk_servers
+  vars_files: ../../roles/asterisk/vars/main.yml
+  vars:
+    asterisk_backup_tarball: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-asterisk.tar.gz'
+  tags: asterisk
+  tasks:
+    - name: stop asterisk
+      systemd:
+        name: asterisk
+        state: stopped
+
+    - name: extract backup tarball
+      unarchive:
+        src: '{{ asterisk_backup_tarball }}'
+        dest: '{{ asterisk_data_dir }}'
+        extra_opts:
+          - --strip-components=1
+          - --same-owner
+
+    - name: start asterisk
+      systemd:
+        name: asterisk
+        state: started
+
+
+####################
+# WebDAV Directories
+####################
+- name: restore webdav directories
+  hosts: dav_servers
+  vars_files: ../../roles/sabredav/vars/main.yml
+  vars:
+    sabredav_backup_tarball: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-webdav.tar.gz'
+  tags: sabredav,dav,webdav
+  tasks:
+    - name: extract backup tarball
+      unarchive:
+        src: '{{ sabredav_backup_tarball }}'
+        dest: '{{ sabredav_home }}/webdav'
+        extra_opts:
+          - --strip-components=1
+          - --same-owner
+
+
+###############
+# Hastebin Data
+###############
+- name: restore hastebin data
+  hosts: pastebin_servers
+  vars_files: ../../roles/hastebin/vars/main.yml
+  vars:
+    hastebin_backup_tarball: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-hastebin.tar.gz'
+  tags: hastebin,pastebin
+  tasks:
+    - name: extract backup tarball
+      unarchive:
+        src: '{{ hastebin_backup_tarball }}'
+        dest: '{{ hastebin_data_dir }}'
+        extra_opts:
+          - --strip-components=1
+          - --same-owner
+
+
+##################
+# Psitransfer Data
+##################
+- name: restore psitransfer data
+  hosts: filedrop_servers
+  vars_files: ../../roles/psitransfer/vars/main.yml
+  vars:
+    psitransfer_backup_tarball: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-psitransfer.tar.gz'
+  tags: psitransfer
+  tasks:
+    - name: extract backup tarball
+      unarchive:
+        src: '{{ psitransfer_backup_tarball }}'
+        dest: '{{ psitransfer_data_dir }}'
+        extra_opts:
+          - --strip-components=1
+          - --same-owner
+
+
+##################
+# Apache WWW Files
+##################
+- name: restore public apache files
+  hosts: web_servers
+  vars_files: ../../roles/apache/vars/main.yml
+  vars:
+    apache_backup_tarball: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-www.tar.gz'
+  tags: apache,www
+  tasks:
+    - name: extract backup tarball
+      unarchive:
+        src: '{{ apache_backup_tarball }}'
+        dest: '{{ apache_public_dir }}'
+        extra_opts:
+          - --same-owner
+
+
+################
+# FreeIPA Domain
+################
+- name: restore freeipa domain
+  hosts: freeipa_master
+  vars_files: ../../roles/freeipa_server/vars/main.yml
+  vars:
+    freeipa_backup_tarball: '{{ backup_path }}/{{ backup_name }}-ipa-{{ freeipa_realm }}.tar.gz'
+    freeipa_remote_backup_path: '{{ freeipa_backup_dir }}/{{ backup_name }}'
+  tags: ipa,freeipa
+  tasks:
+    # Only restore FreeIPA when explicitly requested - it is quite disruptive.
+    - when: ansible_run_tags | intersect(['ipa','freeipa']) | length > 0
+      block:
+      - name: create backup directory on remote host
+        file:
+          path: '{{ freeipa_remote_backup_path }}'
+          state: directory
+          mode: 0700
+
+      - name: extract backup tarball
+        unarchive:
+          src: '{{ freeipa_backup_tarball }}'
+          dest: '{{ freeipa_remote_backup_path }}'
+          extra_opts:
+            - --strip-components=1
+            - --same-owner
+
+      - name: restore freeipa domain from backup
+        command: ipa-restore {{ backup_name | quote }} --unattended --password={{ freeipa_ds_password | quote }}
+
+      - name:  clear sssd cache
+        command: sss_cache -E
+
+      - name: delete backup files from remote host
+        file:
+          path: '{{ freeipa_remote_backup_path }}'
+          state: absent

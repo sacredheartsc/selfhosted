@@ -1,0 +1,13 @@
+certificate_postcmd_path: /etc/pki/tls/certbot-post.sh
+
+certificate_postcmd_argv: >-
+  {{ certificate_postcmd_path }}
+  -o {{ certificate_owner }}
+  -m {{ '%0o' % certificate_mode }}
+  -k {{ certificate_key_path }}
+  -c {{ certificate_path }}
+  {% if certificate_hook is defined %}
+  {{ certificate_hook }}
+  {% endif %}
+
+certificate_webroot_path: /var/www/letsencrypt

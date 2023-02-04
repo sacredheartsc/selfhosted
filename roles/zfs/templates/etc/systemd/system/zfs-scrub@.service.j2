@@ -1,0 +1,11 @@
+[Unit]
+Description=zpool scrub for %i
+
+[Service]
+Nice=19
+IOSchedulingClass=idle
+KillSignal=SIGINT
+ExecStart=zpool scrub %i
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,32 @@
+- name: install php
+  dnf:
+    name: '{{ php_packages[ansible_distribution_major_version] }}'
+    state: present
+
+# TODO: we should support multiple pools
+- name: generate php configuration
+  template:
+    src: '{{ item[1:] }}.j2'
+    dest: '{{ item }}'
+  loop:
+    - /etc/php.ini
+    - /etc/php-fpm.conf
+    - /etc/php-fpm.d/www.conf
+  notify: restart php-fpm
+
+- name: create systemd override directory
+  file:
+    path: /etc/systemd/system/php-fpm.service.d
+    state: directory
+
+- name: create systemd override file
+  copy:
+    src: etc/systemd/system/php-fpm.service.d/override.conf
+    dest: /etc/systemd/system/php-fpm.service.d/override.conf
+  notify: restart php-fpm
+  register: php_fpm_systemd_unit
+
+- name: reload systemd daemon
+  systemd:
+    daemon_reload: yes
+  when: php_fpm_systemd_unit.changed

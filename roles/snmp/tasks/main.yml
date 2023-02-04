@@ -1,0 +1,51 @@
+- name: install packages
+  dnf:
+    name: '{{ snmp_packages }}'
+    state: present
+
+- name: generate config file
+  template:
+    src: etc/snmp/snmpd.conf.j2
+    dest: /etc/snmp/snmpd.conf
+    mode: 0600
+  notify: restart snmpd
+
+- name: open firewall ports
+  firewalld:
+    permanent: yes
+    immediate: yes
+    service: snmp
+    state: enabled
+  tags: firewalld
+
+- name: check if snmp users are defined
+  command: grep -q usmUser /var/lib/net-snmp/snmpd.conf
+  failed_when: no
+  changed_when: no
+  register: snmp_users_exist
+
+- name: add snmp users
+  block:
+  - name: stop snmpd
+    systemd:
+      name: snmpd
+      state: stopped
+
+  - name: add snmpv3 users
+    lineinfile:
+      path: /var/lib/net-snmp/snmpd.conf
+      line: 'createUser {{ item.name }} SHA "{{ item.auth_pass }}" AES "{{ item.priv_pass }}"'
+      insertafter: EOF
+      create: yes
+      mode: 0600
+    loop: '{{ snmp_v3_users }}'
+    loop_control:
+      label: '{{ item.name }}'
+
+  - name: enable and start snmpd
+    systemd:
+      name: snmpd
+      enabled: yes
+      state: started
+
+  when: snmp_users_exist.rc != 0 or snmp_force_users

@@ -1,0 +1,6 @@
+# Each user with a dedicated syncthing instance must have his or her own unique
+# port number for the sync traffic.
+---
+syncthing_users:
+  johndoe: 22001
+  janedoe: 22002

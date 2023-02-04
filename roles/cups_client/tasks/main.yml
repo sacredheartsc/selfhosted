@@ -1,0 +1,19 @@
+- name: install cups
+  dnf:
+    name: '@print-client'
+    state: present
+
+- name: generate cups client configuration
+  template:
+    src: etc/cups/client.conf.j2
+    dest: /etc/cups/client.conf
+    owner: root
+    group: lp
+    mode: 0644
+  notify: restart cups
+
+- name: enable cups
+  systemd:
+    name: cups
+    enabled: yes
+    state: started

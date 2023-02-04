@@ -1,0 +1,62 @@
+AnonIPLimit = 10
+AuthOnlyViaModule = true
+ConfigWriteDelay = 0
+ConnectDelay = 5
+HideVersion = false
+LoadModule = cyrusauth saslauthd
+LoadModule = webadmin
+MaxBufferSize = 500
+ProtectWebSessions = true
+SSLCertFile = {{ znc_certificate_path }}
+SSLDHParamFile = {{ znc_dhparams_path }}
+SSLKeyFile = {{ znc_certificate_key_path }}
+ServerThrottle = 30
+Version = 1.8.2
+
+<Listener web>
+  AllowIRC = false
+  AllowWeb = true
+  IPv4 = true
+  IPv6 = true
+  Port = {{ znc_https_port }}
+  SSL = true
+</Listener>
+
+<Listener irc>
+  AllowIRC = true
+  AllowWeb = false
+  IPv4 = true
+  IPv6 = true
+  Port = {{ znc_irc_port }}
+  SSL = true
+</Listener>
+
+<User admin>
+  Admin = true
+  Nick = znc_admin
+  AltNick = znc_admin_
+  Ident = znc_admin
+  RealName = ZNC Administrator
+
+  <Pass password>
+    Hash = ::
+    Method = MD5
+    Salt = ::
+  </Pass>
+</User>
+
+<User {{ znc_clone_user }}>
+  Admin = false
+  Nick = znc_user
+  AltNick = znc_user_
+  Ident = znc_user
+  RealName = ZNC User
+  MaxNetworks = {{ znc_max_networks }}
+  LoadModule = chansaver
+
+  <Pass password>
+    Hash = ::
+    Method = MD5
+    Salt = ::
+  </Pass>
+</User>

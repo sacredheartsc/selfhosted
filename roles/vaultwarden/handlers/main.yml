@@ -1,0 +1,4 @@
+- name: restart vaultwarden
+  systemd:
+    name: vaultwarden
+    state: restarted

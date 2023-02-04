@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Strip realm from REMOTE_USER.
+# This is a hack around GssapiLocalName not working on RHEL 8:
+#  https://bugzilla.redhat.com/show_bug.cgi?id=1787630
+if [ -v REMOTE_USER ]; then
+  export REMOTE_USER=${REMOTE_USER%@*}
+fi
+
+export GIT_PROJECT_ROOT='{{ gitolite_home }}/repositories'
+export GITOLITE_HTTP_HOME='{{ gitolite_home }}'
+export GIT_HTTP_EXPORT_ALL=1
+
+exec {{ gitolite_shell }}

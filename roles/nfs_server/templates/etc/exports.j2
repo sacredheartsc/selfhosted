@@ -1,0 +1,20 @@
+{% for export in nfs_exports %}
+{{ zfs_mountpoints[export.dataset] if export.dataset is defined else export.path }} {% if (export.options | default([])) %}-{% if export.options is string %}{{ export.options }}{% else %}{{ export.options | join(',') }}{% endif %}{%endif %} {% for client in export.clients %}{% if client is string %}{{ client }} {% else %}{{ client.client }}{% if (client.options | default([])) %}({% if client.options is string %}{{ client.options }}{% else %}{{ client.options | join(',') }}{% endif %}){% endif %}{% endif %} {% endfor %}
+
+{% endfor %}
+
+# user exports
+{% for export in nfs_homedirs | selectattr('user', 'defined') %}
+{% for subdir in ['pub', 'priv'] %}
+{{ zfs_mountpoints[nfs_homedir_user_dataset] }}/{{ export.user }}/{{ subdir }} {% if (nfs_homedir_options | default([])) %}-{% if nfs_homedir_options is string %}{{ nfs_homedir_options }}{% else %}{{ nfs_homedir_options | join(',') }}{% endif %}{%endif %} {% for client in nfs_homedir_clients %}{% if client is string %}{{ client }} {% else %}{{ client.client }}{% if (client.options | default([])) %}({% if client.options is string %}{{ client.options }}{% else %}{{ client.options | join(',') }}{% endif %}){% endif %}{% endif %} {% endfor %}
+
+{% endfor %}
+{% endfor %}
+
+# group exports
+{% for export in nfs_homedirs | selectattr('group', 'defined') %}
+{% for subdir in ['pub', 'priv'] %}
+{{ zfs_mountpoints[nfs_homedir_group_dataset] }}/{{ export.group }}/{{ subdir }} {% if (nfs_homedir_options | default([])) %}-{% if nfs_homedir_options is string %}{{ nfs_homedir_options }}{% else %}{{ nfs_homedir_options | join(',') }}{% endif %}{%endif %} {% for client in nfs_homedir_clients %}{% if client is string %}{{ client }} {% else %}{{ client.client }}{% if (client.options | default([])) %}({% if client.options is string %}{{ client.options }}{% else %}{{ client.options | join(',') }}{% endif %}){% endif %}{% endif %} {% endfor %}
+
+{% endfor %}
+{% endfor %}

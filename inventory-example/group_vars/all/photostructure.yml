@@ -1,0 +1,3 @@
+photostructure_access_group: role-photo-admin
+photostructure_scan_paths:
+  - /nfs/media/pictures

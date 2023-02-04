@@ -1,0 +1,23 @@
+[Unit]
+Description={{ timer_description | default(timer_name) }}
+{% if timer_after is defined %}
+After={{ timer_after if timer_after is string else (timer_after | join(' ')) }}
+{% endif %}
+
+[Service]
+Type=oneshot
+User={{ timer_user }}
+{% if timer_group is defined %}
+Group={{ timer_group }}
+{% endif %}
+{% if timer_chdir is defined %}
+WorkingDirectory={{ timer_chdir }}
+{% endif %}
+{% if timer_shell %}
+ExecStart=/bin/bash -Eeu -o pipefail -c {{ timer_exec | replace('%', '%%') | replace('$', '$$') | replace('\\', '\\\\') | quote }}
+{% else %}
+ExecStart={{ timer_exec | replace('%', '%%') | replace(';', '\;') }}
+{% endif %}
+
+[Install]
+WantedBy=multi-user.target

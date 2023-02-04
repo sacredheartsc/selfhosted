@@ -1,0 +1,4 @@
+- name: generate default polkit rules
+  template:
+    src: etc/polkit-1/rules.d/40-default.rules.j2
+    dest: /etc/polkit-1/rules.d/40-default.rules

@@ -1,0 +1,9 @@
+cgit_packages:
+  - cgit
+  - highlight
+  - python3-markdown
+  - python3-pygments
+
+cgit_static_dir: /usr/share/cgit
+cgit_cgi_script: /var/www/cgi-bin/cgit
+cgit_cache_dir: /var/cache/cgit

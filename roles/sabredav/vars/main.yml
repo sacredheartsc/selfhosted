@@ -1,0 +1,60 @@
+sabredav_packages:
+  - php
+  - php-json
+  - php-ldap
+  - php-mbstring
+  - php-opcache
+  - php-pdo
+  - php-pgsql
+  - php-pecl-zip
+  - php-xml
+  - python3-psycopg2
+  - git
+
+sabredav_composer_url: https://getcomposer.org/installer
+
+sabredav_git_repo: https://github.com/sacredheartsc/sabredav-freeipa
+
+sabredav_home: /var/www/sabredav
+sabredav_keytab: /var/lib/gssproxy/clients/{{ sabredav_user }}.keytab
+
+sabredav_writable_dirs:
+  - webdav
+  - tmpdata
+
+sabredav_php_environment:
+  GSS_USE_PROXY: 'yes'
+
+sabredav_php_flags:
+  output_buffering: no
+  always_populate_raw_post_data: no
+  mbstring.func_overload: no
+
+sabredav_archive_shell: >-
+  TIMESTAMP=$(date +%Y%m%d%H%M%S);
+  tar czf "webdav-${TIMESTAMP}.tar.gz"
+  --transform "s|^\.|webdav-${TIMESTAMP}|"
+  -C "{{ sabredav_home }}/webdav" .
+
+sabredav_apache_config: |
+  Redirect /.well-known/caldav  /server.php
+  Redirect /.well-known/carddav /server.php
+
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} !^/\.well-known/
+  RewriteRule .* /server.php [E=HTTP_AUTHORIZATION:%{HTTP:Authorization},L]
+
+  <Location />
+    AuthName "FreeIPA Single Sign-On"
+    <If "{% for cidr in sabredav_kerberized_cidrs %}-R '{{ cidr }}'{% if not loop.last %} || {% endif %}{% endfor %}">
+      AuthType GSSAPI
+      GssapiLocalName On
+      {{ apache_gssapi_session_config }}
+    </If>
+    <Else>
+      AuthType Basic
+      AuthBasicProvider ldap
+    </Else>
+    {{ apache_ldap_config }}
+    Require ldap-attribute memberof=cn={{ sabredav_access_group }},{{ freeipa_group_basedn }}
+  </Location>

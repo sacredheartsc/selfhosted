@@ -1,0 +1,144 @@
+# This file contains a bunch of example data for populating your FreeIPA
+# domain with users, groups, sudo rules, etc.
+---
+freeipa_workgroup: ACME
+freeipa_nfs_homedirs: yes
+freeipa_dns_forwarders:
+  - 10.10.12.1
+
+freeipa_users:
+  - name: johndoe
+    givenname: John
+    sn: Doe
+    mail: john@example.com
+    jid: john@example.com
+    mail_aliases:
+      - john.nickname@example.com
+      - john.alias@exmaple.com
+
+  - name: bobbytables
+    givenname: Bobby
+    sn: Tables
+    mail: btables@example.com
+    jid: btables@example.com
+
+  - name: janedoe
+    givenname: Jane
+    sn: Doe
+    mail: jane@example.com
+    jid: jane@example.com
+
+freeipa_groups:
+  # built-in freeipa admin group - be careful!
+  - name: admins
+    append: yes
+    user:
+      - johndoe
+
+  - name: sysadmins
+    mail: sysadmins@example.com
+    mail_aliases:
+      - root@example.com
+      - postmaster@example.com
+      - hostmaster@example.com
+      - webmaster@example.com
+      - abuse@example.com
+    description: System Administrators
+    user:
+      - johndoe
+      - btables
+
+  - name: webmasters
+    user:
+      - johndoe
+
+  - name: doefamily
+    description: Doe Family
+    mail: doefamily@example.com
+    user:
+      - johndoe
+      - janedoe
+
+  - name: role-nagios-access
+    group: sysadmins
+
+  - name: role-bitwarden-admin
+    group: sysadmins
+
+  - name: role-cups-admin
+    group: sysadmins
+
+  - name: role-ttrss-admin
+    group: sysadmins
+
+  - name: role-music-admin
+    group: sysadmins
+    append: yes
+
+  - name: role-rspamd-admin
+    group: sysadmins
+
+  - name: role-imap-access
+    group: doefamily
+
+  - name: role-music-access
+    group: doefamily
+    append: yes
+
+  - name: role-dav-access
+    group: doefamily
+
+  - name: role-linux-desktop-access
+    group: doefamily
+
+  - name: role-ttrss-access
+    group: doefamily
+
+  - name: role-znc-access
+    group: doefamily
+
+  - name: role-wiki-access
+    group: doefamily
+
+  - name: role-wiki-admin
+    group: sysadmins
+
+  - name: role-wifi-access
+    group: doefamily
+
+  - name: role-media-admin
+    group: sysadmins
+
+  - name: role-media-access
+    group: doefamily
+
+  - name: role-photo-admin
+    group: doefamily
+    append: yes
+
+  - name: role-xmpp-access
+    group: doefamily
+
+  - name: role-git-access
+    group: doefamily
+
+  - name: role-git-admin
+    group: sysadmins
+
+freeipa_hbac_rules:
+  - name: sysadmins_ssh_and_console_to_all
+    description: allow sysadmins to ssh to all hosts
+    usergroup: sysadmins
+    hostcategory: all
+    service:
+      - sshd
+      - login
+
+freeipa_sudo_rules:
+  - name: sysadmins_all
+    description: allow sysadmins to run anything as any user
+    cmdcategory: all
+    hostcategory: all
+    runasusercategory: all
+    runasgroupcategory: all
+    usergroup: sysadmins

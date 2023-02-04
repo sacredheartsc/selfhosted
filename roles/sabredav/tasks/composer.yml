@@ -1,0 +1,10 @@
+- name: download composer installer
+  get_url:
+    url: '{{ sabredav_composer_url }}'
+    dest: /tmp/composer-setup.php
+
+- name: install composer
+  command: >-
+    php /tmp/composer-setup.php
+    --install-dir=/usr/local/bin
+    --filename=composer

@@ -1,0 +1,57 @@
+- name: create automount maps for exports
+  ipaautomountmap:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ item }}'
+    location: default
+    state: present
+  loop: "{{ nfs_exports | selectattr('automount_map', 'defined') | map(attribute='automount_map') | unique }}"
+
+- name: create automount keys for exports
+  ipaautomountkey:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    location: default
+    mapname: '{{ item.automount_map }}'
+    key: '{{ item.automount_key | default(zfs_mountpoints[item.dataset] | basename) }}'
+    info: '-fstype=nfs4 {{ ansible_fqdn }}:{{ zfs_mountpoints[item.dataset] }}'
+    state: present
+  loop: "{{ nfs_exports | selectattr('automount_map', 'defined') }}"
+  loop_control:
+    label: '{{ item.dataset }}'
+
+- name: create automount maps for homedirs
+  ipaautomountmap:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ item }}'
+    location: default
+    state: present
+  loop:
+    -  '{{ nfs_homedir_home_automount_map }}'
+    -  '{{ nfs_homedir_user_automount_map }}'
+    -  '{{ nfs_homedir_group_automount_map }}'
+
+- name: create automount keys for homedirs
+  ipaautomountkey:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    location: default
+    mapname: '{{ nfs_homedir_group_automount_map if item.group is defined else nfs_homedir_user_automount_map }}'
+    key: '{{ item.group if item.group is defined else item.user }}'
+    info: >-
+      /priv -fstype=nfs4 {{ ansible_fqdn }}:{{ zfs_mountpoints[nfs_homedir_group_dataset if item.group is defined else nfs_homedir_user_dataset] }}/{{ item.group if item.group is defined else item.user }}/priv
+      /pub  -fstype=nfs4 {{ ansible_fqdn }}:{{ zfs_mountpoints[nfs_homedir_group_dataset if item.group is defined else nfs_homedir_user_dataset] }}/{{ item.group if item.group is defined else item.user }}/pub
+    state: present
+  loop: '{{ nfs_homedirs }}'
+
+- name: create /home automount keys
+  ipaautomountkey:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    location: default
+    mapname: '{{ nfs_homedir_home_automount_map }}'
+    key: '{{ item }}'
+    info: '-fstype=nfs4 {{ ansible_fqdn }}:{{ zfs_mountpoints[nfs_homedir_user_dataset] }}/{{ item }}/priv'
+    state: present
+  loop: "{{ nfs_homedirs | selectattr('user', 'defined') | map(attribute='user') }}"

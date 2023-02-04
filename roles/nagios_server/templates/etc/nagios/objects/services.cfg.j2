@@ -1,0 +1,375 @@
+###############
+# Local checks
+###############
+
+# Upstream packet loss
+define service {
+  service_description upstream-packet-loss
+  host_name           {{ inventory_hostname }}
+  use                 generic-service
+  check_command       check_ping!{{ nagios_connectivity_check_host }}!{{ nagios_connectivity_check_count }}!{{ nagios_connectivity_check_rtt_warn }},{{ nagios_connectivity_check_loss_warn | replace('%', '') }}%!{{ nagios_connectivity_check_rtt_crit }},{{ nagios_connectivity_check_loss_crit | replace('%', '') }}%
+}
+
+# Nagios web gui
+define service {
+  service_description https
+  host_name           {{ inventory_hostname }}
+  use                 generic-service
+  check_command       check_https!$_HOSTFQDN$!{{ nagios_certificate_warn }}!{{ nagios_certificate_crit }}!{{ nagios_http_warn }}!{{ nagios_http_crit }}!-e 'HTTP/1.1 401'
+  servicegroups       https
+}
+
+###############
+# DNS checks
+###############
+
+{% for item in nagios_check_dns %}
+# {{ item.name }} - {{ item.qtype | default('A') | upper }}
+define service {
+  {% if (item.qtype | default('A') | upper) == 'A' %}
+  service_description dns-{{ item.name }}
+  {% else %}
+  service_description dns-{{ item.name }}-{{ item.qtype | lower }}
+  {% endif %}
+  host_name           {{ inventory_hostname }}
+  use                 generic-service
+  check_command       check_dns_response!{{ item.server }}!{{ item.name }}!{{ item.qtype | default('A') | upper }}!{{ item.expect }}
+  servicegroups       dns
+}
+
+{% endfor %}
+
+
+###############
+# Common checks
+###############
+
+# SSH
+define service {
+  service_description  ssh
+  hostgroups           nagios_check_ssh
+  use                  generic-service
+  check_command        check_ssh
+}
+
+# Systemd
+define service {
+  service_description  systemd
+  hostgroups           nagios_check_systemd
+  use                  generic-service
+  check_command        check_systemd_by_ssh
+  servicegroups        ssh
+}
+
+# Check if services need restart or system needs reboot
+define service {
+  service_description      needs-restart
+  hostgroups               nagios_el_clients
+  use                      generic-service
+  check_command            check_needs_restart_by_ssh
+  servicegroups            ssh
+  check_interval           60
+  # only alert if needs-restart doesn't resolve within 24h
+  first_notification_delay 1440
+}
+
+{% for host in groups.nagios_check_load %}
+# Load - {{ host }}
+define service {
+  service_description  load
+  host_name            {{ host }}
+  use                  generic-service
+  check_command        check_snmp_load!{{ hostvars[host].nagios_load_1m_warn }},{{ hostvars[host].nagios_load_5m_warn }},{{ hostvars[host].nagios_load_15m_warn }}!{{ hostvars[host].nagios_load_1m_crit }},{{ hostvars[host].nagios_load_5m_crit }},{{ hostvars[host].nagios_load_15m_crit }}
+  servicegroups        snmp
+}
+
+{% endfor %}
+
+{% for host in groups.nagios_check_mem %}
+# Memory / Swap - {{ host }}
+{% if host in groups.nagios_check_zfs %}
+define service {
+  service_description  mem
+  host_name            {{ host }}
+  use                  generic-service
+  check_command        check_mem_by_ssh!{{ hostvars[host].nagios_mem_warn | replace('%', '') }}!{{ hostvars[host].nagios_mem_crit | replace('%', '') }}
+  servicegroups        ssh
+}
+define service {
+  service_description  swap
+  host_name            {{ host }}
+  use                  generic-service
+  check_command        check_swap_by_ssh!{{ 100 - (hostvars[host].nagios_swap_warn | replace('%', '') | int) }}%!{{ 100 - (hostvars[host].nagios_swap_crit | replace('%', '') | int) }}%
+  servicegroups        ssh
+}
+{% else %}
+define service {
+  service_description  mem
+  host_name            {{ host }}
+  use                  generic-service
+  check_command        check_snmp_mem!{{ hostvars[host].nagios_mem_warn | replace('%', '') }},{{ hostvars[host].nagios_swap_warn | replace('%', '') }}!{{ hostvars[host].nagios_mem_crit | replace('%', '') }},{{ hostvars[host].nagios_swap_crit | replace('%', '') }}
+  servicegroups        snmp
+}
+{% endif %}
+
+{% endfor %}
+
+{% for host in groups.nagios_check_disk %}
+# Disk Usage - {{ host }}
+{% for disk in hostvars[host].nagios_disks %}
+define service {
+  service_description {% if disk is string %}{{ disk }}{% elif disk.description is defined %}{{ disk.description }}{% else %}{{ disk.path }}{% endif %}
+
+  host_name      {{ host }}
+  use            generic-service
+  check_command  check_snmp_storage{% if disk.terse | default(false) %}_terse{% endif %}!{% if disk is string %}{{ disk }}{% elif disk.regex is defined %}{{ disk.regex | replace('!', '\\!') }}{% else %}{{ disk.path }}{% endif %}!{{ disk.warn | default(hostvars[host].nagios_disk_warn) }}!{{ disk.crit | default(hostvars[host].nagios_disk_crit) }}!{% if disk.exclude | default(false) %}--exclude{% endif %} {% if disk.regex is not defined %}--noregexp{% endif %}
+
+  servicegroups  snmp
+}
+
+{% endfor %}
+{% endfor %}
+
+{% for host in groups.nagios_check_interfaces %}
+# Network Interfaces - {{ host }}
+{% for intf in hostvars[host].nagios_interfaces %}
+define service {
+  service_description  {% if intf is string %}{{ intf }}{% elif intf.description is defined %}{{ intf.description }}{% else %}{{ intf.name }}{% endif %}
+
+  host_name            {{ host }}
+  use                  generic-service
+  check_interval       5
+  retry_interval       5
+  check_command        check_snmp_interface!{% if intf is string %}{{ intf }}{% elif intf.regex is defined %}{{ intf.regex | replace('!', '\\!') }}{% else %}{{ intf.name }}{% endif %}!{{ intf.bandwidth_warn | default(hostvars[host].nagios_interface_bandwidth_warn) }},{{ intf.bandwidth_warn | default(hostvars[host].nagios_interface_bandwidth_warn) }},{{ intf.error_warn | default(hostvars[host].nagios_interface_error_warn) }},{{ intf.error_warn | default(hostvars[host].nagios_interface_error_warn) }},{{ intf.discard_warn | default(hostvars[host].nagios_interface_discard_warn) }},{{ intf.discard_warn | default(hostvars[host].nagios_interface_discard_warn) }}!{{ intf.bandwidth_crit | default(hostvars[host].nagios_interface_bandwidth_crit) }},{{ intf.bandwidth_crit | default(hostvars[host].nagios_interface_bandwidth_crit) }},{{ intf.error_crit | default(hostvars[host].nagios_interface_error_crit) }},{{ intf.error_crit | default(hostvars[host].nagios_interface_error_crit) }},{{ intf.discard_crit | default(hostvars[host].nagios_interface_discard_crit) }},{{ intf.discard_crit | default(hostvars[host].nagios_interface_discard_crit) }}!{% if intf.down_ok | default(false) %}--down{% endif %} {% if intf.regex is not defined %}--noregexp{% endif %}
+  servicegroups        snmp
+}
+
+{% endfor %}
+{% endfor %}
+
+
+############
+# ZFS Checks
+############
+
+{% for host in groups.nagios_check_zfs %}
+# zpools - {{ host }}
+define service {
+  service_description  zpool
+  host_name            {{ host }}
+  use                  generic-service
+  check_command        check_zpools_by_ssh!{{ 100 - (hostvars[host].nagios_disk_warn|replace('%','') | int) }}!{{ 100 - (hostvars[host].nagios_disk_crit|replace('%','') | int) }}
+  servicegroups        ssh
+}
+
+{% endfor %}
+
+
+#######################
+# Infrastructure Checks
+#######################
+
+# UPS
+define service {
+  service_description  status
+  hostgroups           ups
+  use                  generic-service
+  check_command        check_cyberpower!status
+  servicegroups        snmp
+}
+
+define service {
+  service_description  health
+  hostgroups           ups
+  use                  generic-service
+  check_command        check_cyberpower!health
+  servicegroups        snmp
+}
+
+define service {
+  service_description  battery
+  hostgroups           ups
+  use                  generic-service
+  check_command        check_cyberpower!battery
+  servicegroups        snmp
+}
+
+define service {
+  service_description  transfer
+  hostgroups           ups
+  use                  generic-service
+  check_command        check_cyberpower!transfer
+  servicegroups        snmp
+}
+
+{% for host in groups.ups %}
+# UPS Temp - {{ host }}
+define service {
+  service_description  temp
+  host_name            {{ host }}
+  use                  generic-service
+  check_command        check_cyberpower!temp!-w {{ hostvars[host].nagios_temp_warn }} -c {{ hostvars[host].nagios_temp_crit }}
+  servicegroups        snmp
+}
+
+define service {
+# UPS Load - {{ host }}
+  service_description  load
+  host_name            {{ host }}
+  use                  generic-service
+  check_command        check_cyberpower!load! -w {{ hostvars[host].nagios_power_draw_warn | replace('%', '') }} -c {{ hostvars[host].nagios_power_draw_crit | replace('%', '') }}
+  servicegroups        snmp
+}
+
+{% endfor %}
+
+
+#################
+# Asterisk Checks
+#################
+
+{% for host in groups.asterisk_servers %}
+# endpoints - {{ host }}
+define service {
+  service_description endpoints
+  host_name           {{ host }}
+  use                 generic-service
+  check_command       check_asterisk_endpoints!{{ hostvars[host].asterisk_https_port | default(8089) }}!nagios!{{ hostvars[host].asterisk_ari_users | selectattr('name', '==', 'nagios') | map(attribute='password') | first }}!{{ (hostvars[host].asterisk_sip_trunks + hostvars[host].asterisk_sip_extensions) | map(attribute='name') | join(' ' ) }}
+}
+{% endfor %}
+
+
+######################
+# SMTP Checks
+######################
+
+{% for host in groups.mail_servers %}
+define service {
+  service_description smtp
+  host_name           {{ host }}
+  use                 generic-service
+  check_command       check_smtp!{{ hostvars[host].nagios_certificate_warn }}!{{ hostvars[host].nagios_certificate_crit }}!{{ hostvars[host].nagios_smtp_warn }}!{{ hostvars[host].nagios_smtp_crit }}
+}
+
+define service {
+  service_description mailq
+  host_name           {{ host }}
+  use                 generic-service
+  check_command       check_mailq!{{ hostvars[host].nagios_mailq_warn }}!{{ hostvars[host].nagios_mailq_crit }}
+}
+
+{% endfor %}
+
+
+######################
+# IMAP Checks
+######################
+
+{% for host in groups.imap_servers %}
+define service {
+  service_description imap
+  host_name           {{ host }}
+  use                 generic-service
+  check_command       check_imap!{{ hostvars[host].nagios_certificate_warn }}!{{ hostvars[host].nagios_certificate_crit }}!{{ hostvars[host].nagios_imap_warn }}!{{ hostvars[host].nagios_imap_crit }}
+}
+
+{% endfor %}
+
+
+######################
+# XMPP Checks
+######################
+
+{% for host in groups.xmpp_servers %}
+{% for vhost in hostvars[host].prosody_vhosts %}
+define service {
+  service_description xmpp-{{ vhost }}
+  host_name           {{ host }}
+  use                 generic-service
+  check_command       check_xmpp!{{ vhost }}!{{ hostvars[host].nagios_certificate_warn }}!{{ hostvars[host].nagios_certificate_crit }}
+}
+
+{% endfor %}
+{% for vhost in hostvars[host].prosody_conference_vhosts | default(['conference.'] | product(hostvars[host].prosody_vhosts) | map('join') | list) %}
+define service {
+  service_description xmpp-{{ vhost }}
+  host_name           {{ host }}
+  use                 generic-service
+  check_command       check_xmpp!{{ vhost }}!{{ hostvars[host].nagios_certificate_warn }}!{{ hostvars[host].nagios_certificate_crit }}
+}
+
+{% endfor %}
+{% endfor %}
+
+
+######################
+# PostgreSQL Checks
+######################
+
+{% for host in groups.postgresql_servers %}
+define service {
+  service_description postgres
+  host_name           {{ host }}
+  use                 generic-service
+  check_command       check_postgres!{{ hostvars[host].nagios_certificate_warn }}!{{ hostvars[host].nagios_certificate_crit }}
+}
+
+{% endfor %}
+
+
+######################
+# HTTPS Checks
+######################
+
+{% for host in groups.nagios_check_https %}
+# {{ host }}
+{% for vhost in hostvars[host].nagios_https_vhosts | default(['$_HOSTFQDN$']) %}
+define service {
+  service_description {{ 'https' if loop.length == 1 else 'https-'~(vhost if vhost is string else vhost.name) }}
+  host_name           {{ host }}
+  use                 generic-service
+  check_command       check_https!{{ vhost if vhost is string else vhost.name }}!{{ hostvars[host].nagios_certificate_warn }}!{{ hostvars[host].nagios_certificate_crit }}!{{ hostvars[host].nagios_http_warn }}!{{ hostvars[host].nagios_http_crit }}!{{ '-e HTTP/1.1 '~vhost.status if vhost.status is defined else '-e HTTP/1.1 '~hostvars[host].nagios_http_status if hostvars[host].nagios_http_status is defined else '' }}
+  servicegroups       https
+}
+{% endfor %}
+
+{% endfor %}
+
+
+######################
+# DNS Checks
+######################
+
+{% for host in groups.authoritative_nameservers %}
+{% for zone in hostvars[host].nsd_zones | map(attribute='name') %}
+define service {
+  service_description dns-{{ zone }}
+  host_name           {{ host }}
+  use                 generic-service
+  check_command       check_dns!{{ zone }}!SOA
+}
+
+{% endfor %}
+{% endfor %}
+
+
+######################
+# FreeIPA Checks
+######################
+
+define service {
+  service_description dns
+  hostgroups          freeipa_servers
+  use                 generic-service
+  check_command       check_dns!{{ domain }}!SOA
+}
+
+{% for host in groups.freeipa_servers %}
+define service {
+  service_description ldap
+  hostgroups          freeipa_servers
+  use                 generic-service
+  check_command       check_ldaps!{{ freeipa_basedn }}!{{ hostvars[host].nagios_certificate_warn }}!{{ hostvars[host].nagios_certificate_crit }}
+}
+
+{% endfor %}

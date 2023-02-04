@@ -1,0 +1,17 @@
+- name: generate gssproxy configuration
+  template:
+    src: etc/gssproxy/client.conf.j2
+    dest: /etc/gssproxy/{{ gssproxy_priority }}-{{ gssproxy_name }}.conf
+  register: gssproxy_config
+
+- name: enable gssproxy
+  systemd:
+    name: gssproxy
+    enabled: yes
+    state: started
+
+- name: restart gssproxy
+  systemd:
+    name: gssproxy
+    state: restarted
+  when: gssproxy_config.changed

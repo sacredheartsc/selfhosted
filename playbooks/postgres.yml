@@ -1,0 +1,15 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: postgresql_servers
+
+- name: configure postgresql
+  hosts: postgresql_servers
+  tags: postgres,postgresql
+  roles:
+    - role: postgresql_server
+
+    - role: archive_job
+      archive_name: postgres
+      archive_user: '{{ postgresql_user }}'
+      archive_shell: '{{ postgresql_archive_shell }}'
+      tags: archive

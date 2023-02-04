@@ -1,0 +1,11 @@
+[general]
+enabled = yes
+pretty  = no
+
+{% for user in asterisk_ari_users %}
+[{{ user.name }}]
+type            = user
+read_only       = {{ 'yes' if (user.readonly | default(true)) else 'no' }}
+password        = {{ user.password | password_hash('sha512', asterisk_password_salt, rounds=5000) }}
+password_format = crypt
+{% endfor %}

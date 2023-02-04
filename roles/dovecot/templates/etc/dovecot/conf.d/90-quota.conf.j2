@@ -1,0 +1,34 @@
+plugin {
+  quota = count:User quota
+  quota_vsizes = yes
+  quota_rule = *:storage={{ dovecot_default_user_quota }}
+  quota_grace = {{ dovecot_quota_grace_percent }}%%
+
+  quota_max_mail_size = {{ dovecot_max_mail_size }}
+
+  quota_status_success = DUNNO
+  quota_status_nouser = DUNNO
+  quota_status_overquota = "552 5.2.2 Mailbox is full"
+
+  {% for percent in dovecot_quota_warning_percent | sort(reverse=True) %}
+  quota_warning{% if not loop.first %}{{ loop.index }}{% endif %} = storage={{ percent }}%% quota-warning {{ percent }} %u
+  {% endfor %}
+}
+
+service quota-warning {
+  executable = script {{ dovecot_quota_warning_script }}
+  user = {{ dovecot_vmail_user }}
+  unix_listener quota-warning {
+    user = dovecot
+    group = {{ dovecot_vmail_user }}
+    mode = 0660
+  }
+}
+
+service quota-status {
+  executable = quota-status -p postfix
+  inet_listener {
+    port = {{ dovecot_quota_status_port }}
+  }
+  client_limit = 5
+}

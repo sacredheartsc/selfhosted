@@ -1,0 +1,9 @@
+# Administrator user group, used to match @SYSTEM in cupsd.conf policy rules...
+SystemGroup {{ cups_admin_group }}
+
+ServerKeychain /etc/pki/tls/cups
+CreateSelfSignedCerts no
+
+AccessLog syslog
+ErrorLog syslog
+PageLog syslog

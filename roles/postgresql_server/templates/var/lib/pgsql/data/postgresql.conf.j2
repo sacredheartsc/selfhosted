@@ -1,0 +1,34 @@
+listen_addresses = '*'
+max_connections = {{ postgresql_max_connections }}
+
+ssl = on
+ssl_cert_file = '{{ postgresql_certificate_path }}'
+ssl_key_file = '{{ postgresql_certificate_key_path }}'
+ssl_dh_params_file = '{{ postgresql_dhparams_path }}'
+ssl_ciphers = '{{ postgresql_ssl_ciphers }}'
+
+password_encryption = scram-sha-256
+
+krb_caseins_users = on
+
+shared_buffers = {{ postgresql_shared_buffers_mb }}MB
+dynamic_shared_memory_type = posix	# the default is the first option
+
+log_destination = 'stderr'
+logging_collector = off
+log_min_messages = info
+log_min_error_statement = warning
+log_connections = off
+log_disconnections = off
+log_line_prefix = '%q%u@%d '
+log_timezone = '{{ postgresql_timezone }}'
+
+datestyle = 'iso, mdy'
+timezone = '{{ postgresql_timezone }}'
+
+lc_messages = 'en_US.UTF-8'
+lc_monetary = 'en_US.UTF-8'
+lc_numeric = 'en_US.UTF-8'
+lc_time = 'en_US.UTF-8'
+
+default_text_search_config = 'pg_catalog.english'

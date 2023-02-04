@@ -1,0 +1,24 @@
+- name: restart chrony
+  systemd:
+    name: chronyd
+    state: restarted
+
+- name: restart postfix
+  systemd:
+    name: postfix
+    state: restarted
+
+- name: restart rsyslog
+  systemd:
+    name: rsyslog
+    state: restarted
+
+- name: restart zfs-zed
+  systemd:
+    name: zfs-zed
+    state: restarted
+
+- name: restart snmpd
+  systemd:
+    name: snmpd
+    state: restarted

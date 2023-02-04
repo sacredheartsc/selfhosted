@@ -1,0 +1,76 @@
+- name: install packages
+  dnf:
+    name: '{{ rspamd_packages }}'
+    state: present
+
+- name: generate config files
+  template:
+    src: '{{ item.src }}'
+    dest: /etc/rspamd/{{ item.path | splitext | first }}
+  loop: "{{ lookup('filetree', '../templates/etc/rspamd', wantlist=True) }}"
+  loop_control:
+    label: '{{ item.path }}'
+  when: item.state == 'file'
+  notify: restart rspamd
+
+- name: create dkim directory
+  file:
+    path: '{{ rspamd_data_dir }}/dkim'
+    state: directory
+    owner: root
+    group: '{{ rspamd_group }}'
+    mode: 0750
+
+- name: generate dkim keys
+  copy:
+    content: '{{ item.value }}'
+    dest: '{{ rspamd_data_dir }}/dkim/{{ item.key }}.{{ rspamd_dkim_selector }}.key'
+    owner: root
+    group: '{{ rspamd_group }}'
+    mode: 0440
+  loop: '{{ rspamd_dkim_keys | dict2items }}'
+  loop_control:
+    label: '{{ item.key }}'
+
+- name: generate domain whitelist
+  copy:
+    content: |
+      {% for domain in rspamd_domain_whitelist %}
+      {{ domain }}
+      {% endfor %}
+    dest: /etc/rspamd/maps.d/domain-whitelist.map
+  tags: whitelist
+
+- name: open firewall ports
+  firewalld:
+    port: '{{ item }}/tcp'
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop:
+    - '{{ rspamd_milter_port }}'
+    - '{{ rspamd_controller_port }}'
+  tags: firewalld
+
+- name: set http_port_t selinux context for http port
+  seport:
+    ports: '{{ rspamd_controller_port }}'
+    proto: tcp
+    setype: http_port_t
+    state: present
+  tags: selinux
+
+- name: enable rspamd
+  systemd:
+    name: rspamd
+    enabled: yes
+    state: started
+
+- name: create rspamd admin group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ rspamd_admin_group }}'
+    nonposix: yes
+    state: present
+  run_once: yes

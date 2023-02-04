@@ -1,0 +1,3 @@
+teddit_port: 8081
+teddit_redis_port: 6379
+teddit_reddit_app_id: '{{ vault_teddit_reddit_app_id }}'

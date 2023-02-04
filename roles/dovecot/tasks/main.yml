@@ -1,0 +1,127 @@
+- name: install dovecot
+  dnf:
+    name: '{{ dovecot_packages }}'
+    state: present
+
+- name: add vmail user
+  user:
+    name: '{{ dovecot_vmail_user }}'
+    system: yes
+    home: '{{ dovecot_vmail_dir }}'
+    shell: /sbin/nologin
+    create_home: no
+  register: dovecot_vmail_user_result
+
+- name: create vmail directory
+  file:
+    path: '{{ dovecot_vmail_dir }}'
+    state: directory
+    owner: '{{ dovecot_vmail_user }}'
+    group: '{{ dovecot_vmail_user }}'
+    setype: mail_spool_t
+    mode: 0770
+
+- name: set selinux context for vmail directory
+  sefcontext:
+    target: '{{ dovecot_vmail_dir }}(/.*)?'
+    setype: mail_spool_t
+    state: present
+  register: dovecot_vmail_sefcontext
+
+- name: apply selinux context to vmail directory
+  command: 'restorecon -R {{ dovecot_vmail_dir }}'
+  when: dovecot_vmail_sefcontext.changed
+
+- name: set up FreeIPA integration for IMAP
+  import_tasks: freeipa.yml
+
+- name: request TLS certificate
+  include_role:
+    name: getcert_request
+  vars:
+    certificate_service: imap
+    certificate_path: '{{ dovecot_certificate_path }}'
+    certificate_key_path: '{{ dovecot_certificate_key_path }}'
+    certificate_owner: dovecot
+    certificate_hook: systemctl reload dovecot
+
+- name: generate dhparams
+  openssl_dhparam:
+    path: '{{ dovecot_dhparams_path }}'
+    size: 2048
+
+- name: configure Apache Solr for full-text search
+  import_tasks: solr.yml
+  tags: solr
+
+- name: create virtual config directory
+  file:
+    path: /etc/dovecot/virtual
+    state: directory
+
+- name: create global sieve directories
+  file:
+    path: '{{ item }}'
+    state: directory
+    recurse: yes
+  loop:
+    - '{{ dovecot_sieve_dir }}'
+    - '{{ dovecot_sieve_before_dir }}'
+    - '{{ dovecot_sieve_pipe_bin_dir }}'
+
+- name: create virtual mailbox definitions
+  copy:
+    src: etc/dovecot/virtual/
+    dest: /etc/dovecot/virtual/
+
+- name: generate dovecot configuration
+  template:
+    src: '{{ item.src }}'
+    dest: /etc/dovecot/{{ item.path | splitext | first }}
+  loop: "{{ lookup('filetree', '../templates/etc/dovecot', wantlist=True) }}"
+  loop_control:
+    label: '{{ item.path }}'
+  when: item.state == 'file'
+  notify: restart dovecot
+
+- name: copy quota warn script
+  template:
+    src: '{{ dovecot_quota_warning_script[1:] }}.j2'
+    dest: '{{ dovecot_quota_warning_script }}'
+    mode: 0555
+
+- name: start dovecot
+  systemd:
+    name: dovecot
+    enabled: yes
+    state: started
+
+- import_tasks: rspamd.yml
+
+- name: open firewall ports
+  firewalld:
+    service: '{{ item }}'
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop:
+    - imaps
+    - managesieve
+  tags: firewalld
+
+- name: open firewall ports
+  firewalld:
+    port: '{{ item }}'
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop:
+    - '{{ dovecot_quota_status_port }}/tcp'
+    - '{{ dovecot_lmtp_port }}/tcp'
+  tags: firewalld
+
+- name: generate archive script
+  template:
+    src: '{{ dovecot_archive_script[1:] }}.j2'
+    dest: '{{ dovecot_archive_script }}'
+    mode: 0555

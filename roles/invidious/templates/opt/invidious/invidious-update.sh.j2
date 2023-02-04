@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+set -eu
+
+SRCDIR={{ invidious_install_dir | quote }}
+INVIDIOUS_USER={{ invidious_user | quote }}
+CRYSTAL_HOME={{ invidious_crystal_install_dir | quote }}
+
+export PATH="${PATH}:${CRYSTAL_HOME}/bin"
+
+as-invidious() {
+  runuser -u "$INVIDIOUS_USER" -- "$@"
+}
+
+if (( $EUID != 0 )); then
+  echo 'must be superuser' 1>&2
+  exit 1
+fi
+
+cd "$SRCDIR"
+
+old_rev=$(git rev-list --max-count=1 --abbrev-commit HEAD)
+
+as-invidious git fetch
+
+local_rev=$(git rev-parse HEAD)
+upstream_rev=$(git rev-parse '@{u}')
+
+echo "local: $local_rev"
+echo "upstream: $upstream_rev"
+
+if [ "$local_rev" != "$upstream_rev" ]; then
+  as-invidious git pull --ff-only
+
+  echo "building invidious..."
+  as-invidious shards install --production
+  as-invidious crystal build src/invidious.cr -Ddisable_quic --release
+
+  systemctl restart invidious
+else
+  echo "invidious is already up to date"
+fi

@@ -1,0 +1,33 @@
+proxmox_api_user: ansible@pam
+proxmox_api_password: changeme
+
+proxmox_ntp_servers: '{{ vlan.ntp_servers }}'
+
+proxmox_mail_origin: '{{ email_domain }}'
+proxmox_relayhost: '{{ email_domain }}'
+
+proxmox_syslog_host: '{{ syslog_host_ip }}'
+proxmox_syslog_port: 514
+proxmox_syslog_proto: tcp
+
+proxmox_sudo_mailto: root
+
+proxmox_bridge: vmbr0
+proxmox_storage: local-zfs
+
+proxmox_zfs_trim_on_calendar: monthly
+proxmox_zfs_scrub_on_calendar: monthly
+
+proxmox_zed_email: root
+proxmox_zed_verbose: yes
+proxmox_zed_notify_interval_sec: 3600
+
+proxmox_nagios_ssh_pubkey: '{{ nagios_ssh_pubkey }}'
+
+proxmox_snmp_location: unknown
+proxmox_snmp_contact: '{{ organization }} Sysadmins <root@{{ email_domain }}>'
+
+snmp_v3_users:
+  - name: '{{ nagios_snmp_user }}'
+    auth_pass: '{{ nagios_snmp_auth_pass }}'
+    priv_pass: '{{ nagios_snmp_priv_pass }}'

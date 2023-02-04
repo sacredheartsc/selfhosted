@@ -1,0 +1,54 @@
+vaultwarden_packages:
+  - mariadb-connector-c
+  - libpq
+  - libpq-devel
+  - openssl-devel
+  - git
+  - npm
+  - nodejs
+  - gcc
+
+vaultwarden_home: /opt/vaultwarden
+
+vaultwarden_git_repo: https://github.com/dani-garcia/vaultwarden
+vaultwarden_source_dir: '{{ vaultwarden_home }}/vaultwarden'
+
+vaultwarden_web_url: https://github.com/dani-garcia/bw_web_builds/releases/download/v{{ vaultwarden_web_version }}/bw_web_v{{ vaultwarden_web_version }}.tar.gz
+vaultwarden_web_dir: '{{ vaultwarden_home }}/web-vault'
+
+vaultwarden_data_dir: /var/lib/vaultwarden
+vaultwarden_keytab: /var/lib/gssproxy/clients/{{ vaultwarden_user }}.keytab
+
+vaultwarden_admin_hbac_hostgroup: bitwarden_servers
+vaultwarden_admin_hbac_service: bitwarden-admin
+
+vaultwarden_apache_config: |
+  {{ apache_proxy_config }}
+  <Location />
+    ProxyPass        http://127.0.0.1:{{ vaultwarden_port }}/
+    ProxyPassReverse http://127.0.0.1:{{ vaultwarden_port }}/
+  </Location>
+
+  <Location /notifications/hub>
+      ProxyPass        http://127.0.0.1:{{ vaultwarden_websocket_port }}/
+      ProxyPassReverse http://127.0.0.1:{{ vaultwarden_websocket_port }}/
+
+      RewriteEngine on
+      RewriteCond %{HTTP:Upgrade} websocket [NC]
+      RewriteCond %{HTTP:Connection} upgrade [NC]
+      RewriteRule ^/?(.*) "ws://127.0.0.1:{{ vaultwarden_websocket_port }}/$1" [P,L]
+  </Location>
+
+  <Location /notifications/hub/negotiate>
+      ProxyPass        http://127.0.0.1:{{ vaultwarden_port }}/
+      ProxyPassReverse http://127.0.0.1:{{ vaultwarden_port }}/
+  </Location>
+
+  <Location /admin>
+      AuthType GSSAPI
+      AuthName "FreeIPA Single Sign-On"
+      GssapiLocalName On
+      {{ apache_gssapi_session_config }}
+      {{ apache_ldap_config }}
+      Require ldap-attribute memberof=cn={{ vaultwarden_admin_group }},{{ freeipa_group_basedn }}
+  </Location>

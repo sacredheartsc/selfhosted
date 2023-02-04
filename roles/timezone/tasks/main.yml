@@ -1,0 +1,12 @@
+- name: check if system clock uses localtime
+  command: timedatectl show --property LocalRTC --value
+  changed_when: false
+  register: timezone_localrtc
+
+- name: set system clock to UTC
+  command: timedatectl --adjust-system-clock set-local-rtc 0
+  when: timezone_localrtc.stdout != "no"
+
+- name: set timezone
+  timezone:
+    name: '{{ timezone }}'

@@ -1,0 +1,4 @@
+- name: restart dnf-automatic
+  systemd:
+    name: dnf-automatic.timer
+    state: restarted

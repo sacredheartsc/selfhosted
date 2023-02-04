@@ -1,0 +1,9 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: syslog_servers
+
+- name: configure rsyslog server
+  hosts: syslog_servers
+  tags: rsyslog,syslog
+  roles:
+    - rsyslog_server

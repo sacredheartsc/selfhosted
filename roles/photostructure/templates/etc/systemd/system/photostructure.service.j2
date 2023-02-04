@@ -1,0 +1,19 @@
+[Unit]
+Description=PhotoStructure for Servers
+Documentation=https://photostructure.com/servers/
+Requires=network.target nss-user-lookup.target autofs.service
+After=network.target nss-user-lookup.target autofs.service
+
+[Service]
+User={{ photostructure_user }}
+Group={{ photostructure_user }}
+EnvironmentFile=/etc/sysconfig/photostructure
+WorkingDirectory={{ photostructure_install_dir }}
+ExecStart=/usr/bin/node ./photostructure
+Type=simple
+Restart=on-failure
+TimeoutSec=2min
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

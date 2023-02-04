@@ -1,0 +1,32 @@
+- name: download the disk image
+  get_url:
+    url: '{{ image.url }}'
+    checksum: 'sha256:{{ image.sha256 }}'
+    dest: '{{ proxmox_kvm_image_dir }}/{{ image.name }}.{{ image.type | default("qcow2") }}'
+
+- name: create a new VM
+  command: >
+    qm create {{ image.vmid }}
+    --name {{ image.name  }}
+    --ostype {{ image.ostype | default('l26')  }}
+    --scsihw virtio-scsi-pci
+    --memory 2048
+    --net0 virtio,bridge={{ proxmox_bridge }}
+    --serial0 socket
+    --vga serial0
+    --scsi1 {{ proxmox_storage }}:cloudinit
+
+- name: import the disk image
+  command: >
+    qm importdisk {{ image.vmid  }}
+    {{ proxmox_kvm_image_dir }}/{{ image.name }}.{{ image.type | default("qcow2") }}
+    {{ proxmox_storage }}
+
+- name: attach disk to VM
+  command: qm set {{ image.vmid  }} --scsi0 {{ proxmox_storage }}:vm-{{ image.vmid }}-disk-0
+
+- name: set boot order
+  command: qm set {{ image.vmid  }} --boot order=scsi0
+
+- name: convert VM to template
+  command: qm template {{ image.vmid  }}

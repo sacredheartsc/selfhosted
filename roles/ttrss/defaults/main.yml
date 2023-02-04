@@ -1,0 +1,16 @@
+ttrss_freeipa_plugin_version: HEAD
+
+ttrss_update_on_calendar: weekly
+
+ttrss_server_name: '{{ ansible_fqdn }}'
+ttrss_url: https://{{ ttrss_server_name }}
+
+ttrss_user: s-ttrss
+ttrss_db_host: '{{ postgresql_host }}'
+ttrss_db_name: ttrss
+ttrss_session_lifetime_sec: 604800
+ttrss_email_from_name: Tiny Tiny RSS
+ttrss_email_from_address: ttrss-noreply@{{ email_domain }}
+
+ttrss_access_group: role-ttrss-access
+ttrss_admin_group: role-ttrss-admin

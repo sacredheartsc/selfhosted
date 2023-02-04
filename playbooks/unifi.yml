@@ -1,0 +1,15 @@
+- import_playbook: common.yml
+  tags: common
+  vars:
+    hostlist: unifi_controllers
+
+- name: configure unifi controller
+  hosts: unifi_controllers
+  tags: unifi
+  roles:
+    - role: unifi
+
+    - role: archive_job
+      archive_name: unifi
+      archive_shell: '{{ unifi_archive_shell }}'
+      tags: archive

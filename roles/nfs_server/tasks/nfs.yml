@@ -1,0 +1,41 @@
+- name: create nfs service
+  ipaservice:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: 'nfs/{{ ansible_fqdn }}'
+    state: present
+
+- name: retrieve nfs service keytab
+  include_role:
+    name: freeipa_keytab
+  vars:
+    keytab_principal: 'nfs/{{ ansible_fqdn }}'
+
+- name: generate nfs.conf
+  template:
+    src: etc/nfs.conf.j2
+    dest: /etc/nfs.conf
+  notify: restart nfs-server
+
+- name: generate export list
+  template:
+    src: etc/exports.j2
+    dest: /etc/exports
+  notify: reload nfs-server
+
+- name: start nfs server
+  systemd:
+    name: nfs-server
+    state: started
+    enabled: yes
+
+- name: open firewall ports
+  firewalld:
+    service: '{{ item }}'
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop:
+    - nfs
+    - rpc-bind
+    - mountd

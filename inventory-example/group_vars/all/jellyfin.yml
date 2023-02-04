@@ -1,0 +1,1 @@
+jellyfin_sysaccount_password: '{{ vault_jellyfin_sysaccount_password }}'

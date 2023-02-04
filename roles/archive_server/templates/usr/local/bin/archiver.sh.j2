@@ -1,0 +1,99 @@
+#!/bin/bash
+
+set -Eeu -o pipefail
+
+shopt -s dotglob
+
+CLIENT_HOSTGROUP={{ archive_clients_hbac_hostgroup | quote}}
+ARCHIVE_SRC={{ archive_source_path | quote }}
+ARCHIVE_DEST={{ archive_dest_path | quote }}
+ARCHIVE_PLUGIN_DIR={{ archive_plugin_dir | quote }}
+ARCHIVE_CONFIG={{ archive_config_path }}
+ARCHIVE_HOME={{ archive_home | quote }}
+ARCHIVE_RETENTION_DAYS={{ archive_retention_days | quote }}
+DOMAIN={{ ansible_domain }}
+{% raw %}
+export GSS_USE_PROXY=yes
+
+RSYNC_ARGS=(
+  --recursive
+  --ignore-existing
+  --links
+  --perms
+  --no-group
+  --chmod=D2770,F440
+  --times
+  --omit-dir-times
+  --prune-empty-dirs
+  --remove-source-files
+  --human-readable
+  --itemize-changes
+)
+
+FAILED_HOSTS=()
+
+trap 'rm -rf "$TMPDIR"' EXIT
+
+############
+# First, archive the /var/spool/archive directory for all hosts in the
+# archive clients host group via ssh.
+############
+readarray -t HOSTS < <(ipa hostgroup-show "$CLIENT_HOSTGROUP" --raw \
+  | awk '$1 == "member:" { match($2, /^fqdn=([^,]+),/, m); print m[1] }')
+
+for HOST in "${HOSTS[@]}"; do
+  echo "archiving ${HOST}..."
+  TMPDIR=$(mktemp -d "${ARCHIVE_HOME}/.archiver-XXXXXX")
+  rsync "${RSYNC_ARGS[@]}" "${HOST}:${ARCHIVE_SRC}/" "$TMPDIR" && RC=$? || RC=$?
+
+  if (( RC == 0 )); then
+    mkdir -p "${ARCHIVE_DEST}/${HOST}"
+    find "$TMPDIR" -mindepth 2 -maxdepth 2 -print0 | xargs -0 -I{} cp -rpn {} "${ARCHIVE_DEST}/${HOST}"
+  else
+    FAILED_HOSTS+=("$HOST")
+  fi
+
+  rm -rf "$TMPDIR"
+done
+
+
+############
+# Next, we archive hosts that don't support pull via ssh. For each line in
+# $ARCHIVE_CONFIG, we run the plugin command inside of a temporary directory and
+# then rsync any created files to the archive directory.
+############
+grep -v '^\s*$\|^\s*\#' "$ARCHIVE_CONFIG" | while read -r HOST CMD ARGS; do
+  echo "archiving ${HOST} via script..."
+
+  TMPDIR=$(mktemp -d "${ARCHIVE_HOME}/.archiver-XXXXXX")
+  pushd "$TMPDIR" > /dev/null
+  "${ARCHIVE_PLUGIN_DIR}/${CMD}" "$HOST" ${ARGS:-} && RC=$? || RC=$?
+  popd > /dev/null
+
+  if [[ $HOST = *.* ]]; then
+    FQDN=$HOST
+  else
+    FQDN="${HOST}.${DOMAIN}"
+  fi
+
+  if (( RC == 0 )); then
+    mkdir -p "${ARCHIVE_DEST}/${FQDN}"
+    rsync "${RSYNC_ARGS[@]}" "${TMPDIR}/" "${ARCHIVE_DEST}/${FQDN}"
+  else
+    FAILED_HOSTS+=("$HOST")
+  fi
+
+  rm -rf "$TMPDIR"
+done
+
+
+############
+# Prune old archive files.
+############
+find "$ARCHIVE_DEST" -type f -mtime "+${ARCHIVE_RETENTION_DAYS}" -delete
+
+if (( ${#FAILED_HOSTS[@]} )); then
+  echo "the following hosts had errors: ${FAILED_HOSTS[*]}" 1>&2
+  exit 1
+fi
+{% endraw %}

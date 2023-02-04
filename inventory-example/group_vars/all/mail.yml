@@ -1,0 +1,21 @@
+dovecot_default_user_quota: 20G
+
+# accept mail for these domains:
+postfix_virtual_domains:
+  - example.com
+  - example.net
+
+rspamd_domain_whitelist:
+  - badly.configured.domain.com
+  - dont.mark.mail.from.this.domain.as.spam.com
+
+rspamd_password: '{{ vault_rspamd_password }}'
+rspamd_password_hash: '{{ vault_rspamd_password_hash }}'
+rspamd_dkim_keys: '{{ vault_rspamd_dkim_keys }}'
+
+# generate with `rspamadm keypair`
+rspamd_privkey: '{{ vault_rspamd_privkey }}'
+rspamd_pubkey: AAAAAAAAAAAAAchangeme
+
+rspamd_redis_port: 6379
+rspamd_redis_bayes_port: 6380

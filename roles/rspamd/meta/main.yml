@@ -1,0 +1,19 @@
+dependencies:
+  - role: yum
+    yum_repositories:
+      - epel
+      - rspamd
+    tags: yum
+
+  - role: redis
+    redis_port: '{{ rspamd_redis_port }}'
+    vars:
+      redis_max_memory: '{{ rspamd_redis_max_memory }}'
+    tags: redis
+
+  - role: redis
+    redis_port: '{{ rspamd_redis_bayes_port }}'
+    vars:
+      redis_max_memory: '{{ rspamd_redis_max_memory }}'
+      redis_max_memory_policy: volatile-ttl
+    tags: redis

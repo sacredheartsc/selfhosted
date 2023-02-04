@@ -1,0 +1,67 @@
+- name: create user
+  ipauser:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ jellyfin_user }}'
+    loginshell: /sbin/nologin
+    homedir: '{{ jellyfin_home }}'
+    givenname: Jellyfin
+    sn: Service Account
+    state: present
+  run_once: True
+
+- name: retrieve user keytab
+  include_role:
+    name: freeipa_keytab
+  vars:
+    keytab_principal: '{{ jellyfin_user }}'
+    keytab_path: '{{ jellyfin_keytab }}'
+    keytab_owner: '{{ jellyfin_user }}'
+
+- name: create media access group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ jellyfin_media_access_group }}'
+    nonposix: no
+    action: group
+    state: present
+  run_once: True
+
+- name: add user to media access group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ jellyfin_media_access_group }}'
+    user: '{{ jellyfin_user }}'
+    action: member
+    state: present
+  run_once: True
+
+- name: create access group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ jellyfin_access_group }}'
+    action: group
+    state: present
+  run_once: True
+
+- name: create admin group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ jellyfin_admin_group }}'
+    state: present
+  run_once: True
+
+- name: configure gssproxy for kerberized NFS
+  include_role:
+    name: gssproxy_client
+  vars:
+    gssproxy_name: jellyfin
+    gssproxy_section: service/jellyfin
+    gssproxy_keytab: /etc/krb5.keytab
+    gssproxy_client_keytab: '{{ jellyfin_keytab }}'
+    gssproxy_cred_usage: initiate
+    gssproxy_euid: '{{ jellyfin_user }}'

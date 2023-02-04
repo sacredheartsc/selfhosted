@@ -1,0 +1,31 @@
+- name: configure NTP
+  import_tasks: chrony.yml
+  tags: ntp,chrony
+
+- name: configure postfix
+  import_tasks: postfix.yml
+  tags: mail,postfix
+
+- name: configure rsyslog
+  import_tasks: rsyslog.yml
+  tags: syslog,rsyslog
+
+- name: configure sudo
+  import_tasks: sudo.yml
+  tags: sudo,sudoers
+
+- name: configure unattended upgrades
+  import_tasks: unattended_upgrades.yml
+  tags: apt,packages
+
+- name: configure ZFS
+  import_tasks: zfs.yml
+  tags: zfs
+
+- name: configure proxmox VE
+  import_tasks: pve.yml
+  tags: pve
+
+- name: configure nagios plugins
+  import_tasks: nagios.yml
+  tags: nagios

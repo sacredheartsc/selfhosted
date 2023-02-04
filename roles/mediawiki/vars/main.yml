@@ -1,0 +1,125 @@
+mediawiki_tarball: https://releases.wikimedia.org/mediawiki/{{ mediawiki_version | splitext | first }}/mediawiki-{{ mediawiki_version }}.tar.gz
+mediawiki_home: /var/www/mediawiki
+mediawiki_keytab: /var/lib/gssproxy/clients/{{ mediawiki_user }}.keytab
+
+mediawiki_packages:
+  - php
+  - php-json
+  - php-ldap
+  - php-mbstring
+  - php-opcache
+  - php-pdo
+  - php-pgsql
+  - php-xml
+  - php-intl
+  - php-gd
+  - php-pecl-apcu
+  - php-pecl-igbinary
+  - python3-psycopg2
+  - python3
+  - ImageMagick
+  - poppler-utils
+  - ghostscript
+  - varnish
+
+mediawiki_php_environment:
+  GSS_USE_PROXY: 'yes'
+
+mediawiki_php_admin_values:
+  post_max_size: '{{ mediawiki_max_upload_size }}'
+  upload_max_filesize: '{{ mediawiki_max_upload_size }}'
+  max_file_uploads: '{{ mediawiki_max_upload_count }}'
+
+mediawiki_writable_dirs:
+  - images
+  - cache
+
+mediawiki_executable_dirs:
+  - extensions/SyntaxHighlight_GeSHi/pygments
+
+mediawiki_builtin_extensions:
+  - WikiEditor
+  - VisualEditor
+  - MobileFrontend
+  - MultimediaViewer
+  - Math
+  - PageImages
+  - SyntaxHighlight_GeSHi
+  - PdfHandler
+
+mediawiki_extensions:
+  - PluggableAuth
+  - LDAPAuthorization
+  - LDAPAuthentication2
+  - LDAPProvider
+  - MobileFrontend
+  - LDAPGroups
+  - LDAPUserInfo
+  - Auth_remoteuser
+  - CodeMirror
+  - RelatedArticles
+  - UploadWizard
+  - Lockdown
+
+mediawiki_builtin_groups:
+  - user
+  - autoconfirmed
+  - bot
+  - sysop
+  - interface-admin
+  - bureaucrat
+  - suppress
+
+mediawiki_apache_config: |
+  AllowEncodedSlashes NoDecode
+
+  RewriteEngine On
+
+  RewriteCond %{REQUEST_URI} ^/({{ mediawiki_rewrite_blacklist | map("regex_escape") | join("|") }})$
+  RewriteRule ^(.*)$ %{DOCUMENT_ROOT}/index.php [L]
+
+  RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !\.php/
+  RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-f
+  RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-d
+  RewriteRule ^(.*)$ %{DOCUMENT_ROOT}/index.php [L]
+
+  RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !\.php/
+  RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-f
+  RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-d
+  RewriteRule ^(.*)/([a-z]*)$ %{DOCUMENT_ROOT}/index.php [L,QSA]
+
+  <Location />
+    AuthName "FreeIPA Single Sign-On"
+    AuthType GSSAPI
+    <If "({% for cidr in kerberized_cidrs %}-R '{{ cidr }}'{% if not loop.last %} || {% endif %}{% endfor %}) && ! -R '{{ ansible_default_ipv4.address }}'">
+      {{ apache_gssapi_session_config }}
+      Require valid-user
+    </If>
+  </Location>
+
+  <Directory "{{ mediawiki_home }}/cache">
+    AllowOverride None
+    Require all denied
+  </Directory>
+
+# Since we're using pretty URLs, page titles can clash with real files in the
+# mediawiki directory. If this ever happens, add the file path to this list.
+mediawiki_rewrite_blacklist:
+  - CODE_OF_CONDUCT.md
+  - COPYING
+  - CREDITS
+  - FAQ
+  - HISTORY
+  - INSTALL
+  - README.md
+  - SECURITY
+  - UPGRADE
+  - composer.json
+  - jsduck.json
+
+mediawiki_archive_shell: >-
+  TIMESTAMP=$(date +%Y%m%d%H%M%S);
+  tar czf "mediawiki-${TIMESTAMP}.tar.gz"
+  --transform "s|^\.|mediawiki-${TIMESTAMP}|"
+  -C "{{ mediawiki_home }}"
+  images

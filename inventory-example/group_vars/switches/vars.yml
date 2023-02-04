@@ -1,0 +1,6 @@
+nagios_snmp_priv_proto: DES
+nagios_snmp_priv_pass: '{{ vault_nagios_snmp_priv_pass }}'
+nagios_snmp_auth_pass: '{{ vault_nagios_snmp_auth_pass }}'
+
+nagios_interface_discard_warn: 1000
+nagios_interface_discard_crit: 2000

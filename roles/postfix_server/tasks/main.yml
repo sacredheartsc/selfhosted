@@ -1,0 +1,61 @@
+- name: install postfix
+  dnf:
+    name: '{{ postfix_packages }}'
+    state: present
+
+- name: request TLS certificate
+  include_role:
+    name: certbot
+  vars:
+    certificate_sans: ['{{ postfix_myhostname }}']
+    certificate_path: '{{ postfix_certificate_path }}'
+    certificate_key_path: '{{ postfix_certificate_key_path }}'
+    certificate_owner: postfix
+    certificate_hook: systemctl reload postfix
+
+- import_tasks: freeipa.yml
+  tags: freeipa
+
+- name: generate dhparams
+  openssl_dhparam:
+    path: '{{ postfix_dhparams_path }}'
+    size: 2048
+
+- name: generate postifx configuration
+  template:
+    src: etc/postfix/{{ item }}.j2
+    dest: /etc/postfix/{{ item }}
+  loop:
+    - main.cf
+    - master.cf
+    - virtual_mailboxes.cf
+    - virtual_aliases.cf
+  notify: restart postfix
+
+- name: configure saslauthd for smtpd
+  copy:
+    src: etc/sasl2/smtpd.conf
+    dest: /etc/sasl2/smtpd.conf
+  notify: restart saslauthd
+
+- name: enable saslauthd
+  systemd:
+    name: saslauthd
+    enabled: yes
+    state: started
+
+- name: enable postfix
+  systemd:
+    name: postfix
+    enabled: yes
+    state: started
+
+- name: open firewall ports
+  firewalld:
+    service: '{{ item }}'
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop:
+    - smtp
+    - smtp-submission

@@ -1,0 +1,90 @@
+- name: install packages
+  dnf:
+    name: '{{ nagios_packages }}'
+    state: present
+
+- name: generate nagios configuration
+  template:
+    src: '{{ item[1:] }}.j2'
+    dest: '{{ item }}'
+  loop:
+    - /etc/nagios/cgi.cfg
+    - /etc/nagios/nagios.cfg
+    - /usr/share/nagios/html/config.inc.php
+  notify: restart nagios
+
+- name: remove default nagios config files
+  copy:
+    content: |
+      # This file intentionally empty to avoid being clobbered on package updates.
+    dest: /etc/nagios/objects/{{ item }}
+  loop:
+    - printer.cfg
+    - switch.cfg
+    - windows.cfg
+    - localhost.cfg
+  notify: reload nagios
+
+- name: clone manubulon repo
+  git:
+    repo: '{{ nagios_manubulon_repo }}'
+    dest: '{{ nagios_manubulon_install_dir }}'
+    version: '{{ nagios_manubulon_version }}'
+    force: yes
+    update: yes
+  register: nagios_manubulon_git
+
+- name: install manubulon plugins
+  shell: install -o root -g root -m755 {{ nagios_manubulon_install_dir }}/plugins/*.pl {{ nagios_plugin_dir }}/
+  when: nagios_manubulon_git.changed
+
+- import_tasks: objects.yml
+  tags: nagios_config
+
+- name: download thirdparty plugins
+  get_url:
+    url: '{{ item.url }}'
+    dest: '{{ nagios_plugin_dir }}/{{ item.name }}'
+    mode: 0555
+  loop: '{{ nagios_thirdparty_plugins | dict2items(key_name="name", value_name="url") }}'
+  tags: nagios_config
+
+- name: download thirdparty MIBs
+  get_url:
+    url: '{{ item.url }}'
+    dest: '{{ nagios_mib_dir }}/MIB-{{ item.name | upper }}.txt'
+  loop: '{{ nagios_thirdparty_mibs | dict2items(key_name="name", value_name="url") }}'
+
+- name: create nagios ssh directory
+  file:
+    path: '{{ nagios_home }}/.ssh'
+    owner: nagios
+    group: nagios
+    mode: 0700
+    state: directory
+
+- name: copy nagios ssh key
+  copy:
+    content: '{{ nagios_ssh_privkey }}'
+    dest: "{{ nagios_home }}/.ssh/id_{{ nagios_ssh_pubkey | regex_replace('^ssh-(\\w+).*', '\\1') }}"
+    owner: nagios
+    group: nagios
+    mode: 0600
+
+- import_tasks: freeipa.yml
+
+- name: create SELinux policy for php-fpm to access nagios contexts
+  include_role:
+    name: selinux_policy
+    apply:
+      tags: selinux
+  vars:
+    selinux_policy_name: php_nagios
+    selinux_policy_te: '{{ nagios_selinux_policy_te }}'
+  tags: selinux
+
+- name: enable nagios
+  systemd:
+    name: nagios
+    enabled: yes
+    state: started

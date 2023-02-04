@@ -1,0 +1,3 @@
+[submodule "vendor/ansible-freeipa"]
+	path = vendor/ansible-freeipa
+	url = https://github.com/freeipa/ansible-freeipa

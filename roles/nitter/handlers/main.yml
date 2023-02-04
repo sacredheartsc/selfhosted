@@ -1,0 +1,4 @@
+- name: restart nitter
+  systemd:
+    name: nitter
+    state: restarted

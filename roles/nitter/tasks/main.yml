@@ -1,0 +1,97 @@
+- name: install dependencies
+  dnf:
+    name: '{{ nitter_packages }}'
+    state: present
+
+- name: create local user
+  user:
+    name: '{{ nitter_user }}'
+    system: yes
+    home: '{{ nitter_home }}'
+    shell: /sbin/nologin
+    create_home: no
+
+- name: create home directory
+  file:
+    path: '{{ nitter_home }}'
+    owner: '{{ nitter_user }}'
+    group: '{{ nitter_user }}'
+    mode: 0755
+    state: directory
+
+- name: clone repository
+  git:
+    repo: '{{ nitter_git_repo }}'
+    dest: '{{ nitter_install_dir }}'
+    version: '{{ nitter_version }}'
+    force: yes
+    update: yes
+  register: nitter_git
+  become: yes
+  become_user: '{{ nitter_user }}'
+
+- name: build nitter
+  command:
+    chdir: '{{ nitter_install_dir }}'
+    cmd: 'nimble --accept {{ item }}'
+  environment:
+    PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:{{ nim_install_dir }}/bin
+  loop:
+    - build -d:release
+    - scss
+    - md
+  become: yes
+  become_user: '{{ nitter_user }}'
+  when: nitter_git.changed
+  notify: restart nitter
+
+- name: generate config file
+  template:
+    src: '{{ nitter_install_dir[1:] }}/nitter.conf.j2'
+    dest: '{{ nitter_install_dir }}/nitter.conf'
+    owner: '{{ nitter_user }}'
+    group: '{{ nitter_user }}'
+    mode: 0600
+  notify: restart nitter
+
+- name: create systemd unit
+  template:
+    src: etc/systemd/system/nitter.service.j2
+    dest: /etc/systemd/system/nitter.service
+  register: nitter_unit
+  notify: restart nitter
+
+- name: reload systemd daemons
+  systemd:
+    daemon_reload: yes
+  when: nitter_unit.changed
+
+- name: start nitter
+  systemd:
+    name: nitter
+    enabled: yes
+    state: started
+
+- name: set http_port_t context for nitter port
+  seport:
+    ports: '{{ nitter_port }}'
+    proto: tcp
+    setype: http_port_t
+    state: present
+  tags: selinux
+
+- name: generate update script
+  template:
+    src: '{{ nitter_home[1:] }}/nitter-update.sh.j2'
+    dest: '{{ nitter_home }}/nitter-update.sh'
+    mode: 0555
+
+- name: create nitter-update systemd timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: nitter-update
+    timer_description: Update nitter
+    timer_after: network.target
+    timer_on_calendar: '{{ nitter_update_on_calendar }}'
+    timer_exec: '{{ nitter_home }}/nitter-update.sh'

@@ -1,0 +1,32 @@
+ESSID={{ linux_laptop_wifi_ssid }}
+MODE=Managed
+KEY_MGMT=WPA-EAP
+MAC_ADDRESS_RANDOMIZATION=never
+TYPE=Wireless
+IEEE_8021X_EAP_METHODS=TLS
+IEEE_8021X_IDENTITY=anonymous
+IEEE_8021X_CA_CERT={{ linux_laptop_wifi_certificate_ca_path }}
+IEEE_8021X_PRIVATE_KEY={{ linux_laptop_wifi_certificate_key_path }}
+IEEE_8021X_CLIENT_CERT={{ linux_laptop_wifi_certificate_path }}
+PROXY_METHOD=none
+BROWSER_ONLY=no
+BOOTPROTO=none
+IPADDR={{ linux_laptop_wifi_ip }}
+PREFIX={{ linux_laptop_wifi_prefix }}
+GATEWAY={{ linux_laptop_wifi_gateway }}
+{% for server in linux_laptop_wifi_dns_servers %}
+DNS{{ loop.index }}={{ server }}
+{% endfor %}
+DOMAIN={{ linux_laptop_wifi_domain }}
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=yes
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME={{ linux_laptop_wifi_ssid }}
+UUID={{ linux_laptop_wifi_networkmanager_uuid.stdout }}
+DEVICE={{ linux_laptop_wlan_device }}
+ONBOOT=yes
+MACADDR=permanent

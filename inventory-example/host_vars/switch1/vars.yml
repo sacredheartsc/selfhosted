@@ -1,0 +1,15 @@
+edgeswitch_backup_username: changeme
+edgeswitch_backup_password: '{{ vault_edgeswitch_backup_password }}'
+
+nagios_interfaces: # changeme (or delete)
+  - 0/1
+  - 0/2
+  - 0/3
+  - 0/4
+  - 0/5
+  - 0/6
+  - 0/7
+  - 0/8
+  - 0/9
+  - 0/10
+  - 3/1

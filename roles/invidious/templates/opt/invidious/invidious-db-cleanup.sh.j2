@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -eu
+
+PG_HOST={{ invidious_db_host | quote }}
+PG_USER={{ invidious_db_user | quote }}
+PG_NAME={{ invidious_db_name | quote }}
+
+export PGPASSFILE={{ invidious_home | quote }}/.pgpass
+
+psql -qtA -h "$PG_HOST" "$PG_NAME" "$PG_USER" -c {{ invidious_db_cleanup_sql | join('; ') | quote }}

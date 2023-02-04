@@ -1,0 +1,65 @@
+linux_desktop_packages:
+  - '@gnome-desktop'
+  - '@fonts'
+  - '@hardware-support'
+  - '@internet-browser'
+  - '@base-x'
+  - '@networkmanager-submodules'
+  - '@print-client'
+  - gnome-tweaks
+  - evolution
+  - libreoffice-calc
+  - libreoffice-draw
+  - libreoffice-impress
+  - libreoffice-math
+  - libreoffice-writer
+  - ffmpeg-libs
+  - ffmpeg
+  - nfs4-acl-tools
+  - hexchat
+  - vlc
+  - youtube-dl
+  - gstreamer1-plugins-ugly
+  - gstreamer1-plugins-bad-freeworld
+  - gstreamer1-libav
+  - gstreamer1-vaapi
+  - libva-utils
+  - intel-media-driver
+  - seahorse
+  - inkscape
+  - dconf-editor
+  - libdvdcss
+  - gimp
+  - brasero
+  - ntfs-3g
+  - ntfsprogs
+  - exfatprogs
+  - gnome-shell-extension-appindicator
+  - gnome-shell-extension-dash-to-dock
+  - chromium
+  - gnome-extensions-app
+
+linux_desktop_excluded_packages:
+  - gnome-software
+  - libva-intel-driver
+
+linux_desktop_hbac_hostgroup: linux_desktops
+
+linux_desktop_flathub_repo: https://dl.flathub.org/repo/flathub.flatpakrepo
+
+linux_desktop_flatpaks:
+  - org.signal.Signal
+  - com.bitwarden
+  - org.libretro.RetroArch
+  - ca.littlesvr.asunder
+  - org.gnome.EasyTAG
+  - com.makemkv.MakeMKV
+  - org.gnucash.GnuCash
+  - org.gnome.Rhythmbox3
+  - org.gajim.Gajim
+  - org.gajim.Gajim.Plugin.omemo
+
+linux_desktop_flatpak_overrides:
+  org.gnome.EasyTAG:    --filesystem=host
+  org.gnome.Rhythmbox3: --filesystem=host
+  org.signal.Signal:    --env=SIGNAL_USE_TRAY_ICON=1

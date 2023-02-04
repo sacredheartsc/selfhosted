@@ -1,0 +1,285 @@
+#################
+### Notifications
+#################
+define command {
+  command_name notify-host-by-email
+  command_line /usr/bin/printf "%b" "Notification Type: $NOTIFICATIONTYPE$\n\nHost: $HOSTNAME$\nAddress: $HOSTADDRESS$\nState: $HOSTSTATE$\n\nDate/Time: $LONGDATETIME$\n\n$HOSTOUTPUT$\n\n$LONGHOSTOUTPUT$" \
+                 | /usr/bin/mail -s "$NOTIFICATIONTYPE$: $HOSTNAME$ is $HOSTSTATE$" $CONTACTEMAIL$
+}
+
+define command {
+  command_name notify-service-by-email
+  command_line /usr/bin/printf "%b" "Notification Type: $NOTIFICATIONTYPE$\n\nHost: $HOSTALIAS$\nService: $SERVICEDESC$\nState: $SERVICESTATE$\n\nDate/Time: $LONGDATETIME$\n\n$SERVICEOUTPUT$\n\n$LONGSERVICEOUTPUT$" \
+                 | /usr/bin/mail -s "$NOTIFICATIONTYPE$: $HOSTALIAS$/$SERVICEDESC$ is $SERVICESTATE$" $CONTACTEMAIL$
+}
+
+
+###############
+### Host Checks
+###############
+define command {
+  command_name check_ping
+  command_line $USER1$/check_ping \
+                 --hostname='$ARG1$' \
+                 --packets='$ARG2$' \
+                 --warning='$ARG3$' \
+                 --critical='$ARG4$'
+}
+
+define command {
+  command_name check_dummy
+  command_line $USER1$/check_dummy 0
+}
+
+
+##########################
+### Service Checks: Common
+##########################
+define command {
+  command_name check_ssh
+  command_line $USER1$/check_ssh '$HOSTADDRESS$'
+}
+
+define command {
+  command_name check_systemd_by_ssh
+  command_line $USER1$/check_by_ssh \
+                 {{ nagios_check_by_ssh_args }} \
+                 --command='check_systemd'
+}
+
+define command {
+  command_name check_needs_restart_by_ssh
+  command_line $USER1$/check_by_ssh \
+                 {{ nagios_check_by_ssh_args }} \
+                 --command='check_needs_restart'
+}
+
+define command {
+  command_name check_mem_by_ssh
+  command_line $USER1$/check_by_ssh \
+                 {{ nagios_check_by_ssh_args }} \
+                 --command='check_mem -u -C -z -w $ARG1$ -c $ARG2$'
+}
+
+define command {
+  command_name check_swap_by_ssh
+  command_line $USER1$/check_by_ssh \
+                 {{ nagios_check_by_ssh_args }} \
+                 --command='check_swap -n ok -w $ARG1$ -c $ARG2$'
+}
+
+define command {
+  command_name check_snmp_interface
+  command_line $USER1$/check_snmp_int.pl \
+                 {{ nagios_manubulon_args }} \
+                 --ign-admindown \
+                 --use-ifname \
+                 --perfdata \
+                 --error \
+                 --perfspeed \
+                 --perfcheck \
+                 --extperfcheck \
+                 --64bits \
+                 --label \
+                 --kbits \
+                 --mega \
+                 --name='$ARG1$' \
+                 --warning='$ARG2$' \
+                 --critical='$ARG3$' \
+                 --octetlength={{ nagios_snmp_max_size }} \
+                 $ARG4$
+}
+
+define command {
+  command_name check_snmp_storage
+  command_line $USER1$/check_snmp_storage.pl \
+                 {{ nagios_manubulon_args }} \
+                 --name='$ARG1$' \
+                 --warn='$ARG2$' \
+                 --crit='$ARG3$' \
+                 --storagetype=FixedDisk \
+                 --perfdata \
+                 --gigabyte \
+                 --short=1,1 \
+                 --octetlength={{ nagios_snmp_max_size }} \
+                 $ARG4$
+}
+
+define command {
+  command_name check_snmp_storage_terse
+  command_line $USER1$/check_snmp_storage.pl \
+                 {{ nagios_manubulon_args }} \
+                 --name='$ARG1$' \
+                 --warn='$ARG2$' \
+                 --crit='$ARG3$' \
+                 --storagetype=FixedDisk \
+                 --gigabyte \
+                 --short=0,1 \
+                 --octetlength={{ nagios_snmp_max_size }} \
+                 $ARG4$
+}
+
+define command {
+  command_name check_snmp_load
+  command_line $USER1$/check_snmp_load.pl \
+                 {{ nagios_manubulon_args }} \
+                 --perfdata \
+                 --type=netsl \
+                 --warn='$ARG1$' \
+                 --crit='$ARG2$'
+}
+
+define command {
+  command_name check_snmp_mem
+  command_line $USER1$/check_snmp_mem.pl \
+                 {{ nagios_manubulon_args }} \
+                 --perfdata \
+                 --warn='$ARG1$' \
+                 --crit='$ARG2$'
+}
+
+
+#######################
+### Service Checks: ZFS
+#######################
+define command {
+  command_name check_zpools_by_ssh
+  command_line $USER1$/check_by_ssh \
+                 {{ nagios_check_by_ssh_args }} \
+                 --command='check_zpools -w $ARG1$ -c $ARG2$'
+}
+
+
+##################################
+### Service Checks: Infrastructure
+##################################
+define command {
+  command_name check_cyberpower
+  command_line $USER1$/check_cyberpower -u -H $HOSTADDRESS$ -C {{ nagios_snmp_community | quote }} -l $ARG1$ $ARG2$
+}
+
+
+##########################
+# Service Checks: Asterisk
+##########################
+define command {
+  command_name check_asterisk_endpoints
+  command_line $USER1$/check_asterisk_endpoints -H '$_HOSTFQDN$' -P '$ARG1$' -u '$ARG2$' -p '$ARG3$' $ARG4$
+}
+
+
+######################################
+# Service Checks: Certificate Validity
+######################################
+define command {
+  command_name check_ssl_validity
+  command_line $USER1$/check_ssl_validity -I '$HOSTADDRESS$' -C 3600 -p '$ARG1$' -H '$ARG2$' -w '$ARG3$' -c '$ARG4$'
+}
+
+
+######################
+# Service Checks: SMTP
+######################
+define command {
+  command_name check_smtp
+  command_line $USER1$/check_smtp -H '$HOSTADDRESS$' -p 25 -S -D '$ARG1$,$ARG2$' -w '$ARG3$' -c '$ARG4$'
+}
+
+define command {
+  command_name check_mailq
+  command_line $USER1$/check_by_ssh \
+                 {{ nagios_check_by_ssh_args }} \
+                 --command='check_mailq -M postfix -w $ARG1$ -c $ARG2$'
+}
+
+######################
+# Service Checks: IMAP
+######################
+define command {
+  command_name check_imap
+  command_line $USER1$/check_imap -H '$HOSTADDRESS$' -p 993 -S -D '$ARG1$,$ARG2$' -w '$ARG3$' -c '$ARG4$'
+}
+
+######################
+# Service Checks: XMPP
+######################
+define command {
+  command_name check_xmpp
+  command_line $USER1$/check_ssl_cert \
+                 --host '$HOSTADDRESS$' \
+                 --protocol xmpp-server \
+                 --ignore-sct \
+                 --timeout 60 \
+                 --xmpphost '$ARG1$' \
+                 --warning '$ARG2$' \
+                 --critical '$ARG3$'
+}
+
+############################
+# Service Checks: PostgreSQL
+############################
+define command {
+  command_name check_postgres
+  command_line $USER1$/check_ssl_cert \
+                 --host '$HOSTADDRESS$' \
+                 --protocol postgres \
+                 --ignore-sct \
+                 --timeout 60 \
+                 --warning '$ARG1$' \
+                 --critical '$ARG2$'
+}
+
+############################
+# Service Checks: LDAP
+############################
+define command {
+  command_name check_ldaps
+  command_line $USER1$/check_ldaps \
+                 --hostname='$_HOSTFQDN$' \
+                 --ver3 \
+                 --base='$ARG1$' \
+                 --age='$ARG2$,$ARG3$'
+}
+
+######################################
+# Service Checks: HTTPS
+######################################
+define command {
+  command_name check_https
+  command_line $USER1$/check_http \
+                 --IP-address='$HOSTADDRESS$' \
+                 --hostname='$ARG1$' \
+                 --port=443 \
+                 --ssl=1.2 \
+                 --sni \
+                 --verify-host \
+                 --certificate '$ARG2$,$ARG3$' \
+                 --continue-after-certificate \
+                 --no-body \
+                 --onredirect=ok \
+                 --warning='$ARG4$' \
+                 --critical='$ARG5$' \
+                 $ARG6$
+}
+
+######################################
+# Service Checks: DNS
+######################################
+define command {
+  command_name check_dns
+  command_line $USER1$/check_dns \
+                 --accept-cname \
+                 --server='$HOSTADDRESS$' \
+                 --hostname='$ARG1$' \
+                 --querytype='$ARG2$'
+}
+
+define command {
+  command_name check_dns_response
+  command_line $USER1$/check_dns \
+                 --accept-cname \
+                 --server='$ARG1$' \
+                 --hostname='$ARG2$' \
+                 --querytype='$ARG3$' \
+                 --expected-address='$ARG4$'
+}

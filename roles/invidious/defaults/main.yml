@@ -1,0 +1,38 @@
+invidious_version: master
+invidious_crystal_version: 1.5.0-1
+
+invidious_server_name: '{{ ansible_fqdn }}'
+invidious_port: 8080
+invidious_user: invidious
+invidious_db_user: s-invidious
+invidious_db_name: invidious
+invidious_db_host: '{{ postgresql_host }}'
+
+invidious_db_cleanup_on_calendar: weekly
+invidious_update_on_calendar: weekly
+
+invidious_channel_threads: 1
+invidious_feed_threads: 1
+invidious_admin_email: 'root@{{ email_domain }}'
+invidious_registration_enabled: yes
+invidious_popular_enabled: no
+invidious_full_refresh: no
+invidious_hmac_key: secretKey
+invidious_use_pubsub_feeds: no
+
+invidious_default_locale: en-US
+invidious_default_region: US
+invidious_default_dark_mode: auto
+invidious_default_autoplay: no
+invidious_default_continue: yes
+invidious_default_continue_autoplay: no
+invidious_default_local: yes
+invidious_default_quality: dash
+invidious_default_quality_dash: 1080p
+invidious_default_related_videos: yes
+invidious_default_video_loop: no
+invidious_default_player_style: invidious
+invidious_default_home: Subscriptions
+invidious_feed_menu:
+  - Subscriptions
+  - Playlists

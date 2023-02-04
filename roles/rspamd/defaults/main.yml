@@ -1,0 +1,12 @@
+rspamd_milter_port: 11332
+rspamd_milter_process_count: '{{ ansible_processor_vcpus }}'
+rspamd_controller_port: 11334
+rspamd_redis_port: 6379
+rspamd_redis_bayes_port: 6380
+rspamd_redis_max_memory: 512mb
+rspamd_admin_group: role-rspamd-admin
+
+rspamd_dkim_keys: {}
+rspamd_dkim_selector: dkim
+
+rspamd_domain_whitelist: []

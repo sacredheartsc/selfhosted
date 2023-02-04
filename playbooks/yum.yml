@@ -1,0 +1,33 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: yum_mirrors
+
+- name: configure yum mirrors
+  hosts: yum_mirrors
+  tags: yum
+  roles:
+    - role: yum_mirror
+
+    - role: apache_vhost
+      apache_default_vhost: yes
+      apache_document_root: '{{ yum_mirror_webroot }}'
+      apache_autoindex: yes
+      apache_redirect_to_https: no
+      tags: apache
+
+- name: configure mirror for local packages
+  hosts: yum_mirrors
+  tags: yum
+  roles:
+    - role: yum_disable_default_repos
+
+    - role: yum
+      yum_repositories:
+        - rocky-baseos
+        - rocky-appstream
+        - rocky-extras
+        - epel
+
+    # nagios_client has to run *after* EPEL repository has been configured.
+    - role: nagios_client
+      tags: nagios

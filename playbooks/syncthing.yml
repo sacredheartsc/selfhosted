@@ -1,0 +1,19 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: syncthing_servers
+
+- name: configure syncthing
+  hosts: syncthing_servers
+  tags: syncthing
+  roles:
+    - role: syncthing
+
+    - role: archive_job
+      archive_name: syncthing
+      archive_shell: '{{ syncthing_archive_shell }}'
+      tags: archive
+
+    - role: apache_vhost
+      apache_default_vhost: yes
+      apache_config: '{{ syncthing_apache_config }}'
+      tags: apache

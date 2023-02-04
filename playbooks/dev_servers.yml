@@ -1,0 +1,9 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: dev_servers
+
+- name: configure development environment
+  hosts: dev_servers
+  tags: dev
+  roles:
+    - dev_environment

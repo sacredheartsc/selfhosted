@@ -1,0 +1,12 @@
+freeradius_packages:
+  - freeradius
+  - freeradius-ldap
+  - freeradius-utils
+
+freeradius_certificate_path: /etc/pki/tls/certs/radiusd.pem
+freeradius_certificate_key_path: /etc/pki/tls/private/radiusd.key
+freeradius_certificate_ca_path: /etc/ipa/ca.crt
+freeradius_dhparams_path: /etc/raddb/certs/dh
+freeradius_tlscache_dir: /var/lib/radiusd/tlscache
+
+freeradius_keytab: /var/lib/gssproxy/clients/freeradius.keytab

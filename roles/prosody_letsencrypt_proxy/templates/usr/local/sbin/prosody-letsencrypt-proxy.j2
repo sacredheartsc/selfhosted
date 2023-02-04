@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# Copyright (c) 2023 stonewall@sacredheartsc.com
+# MIT License https://opensource.org/licenses/MIT
+#
+# Pulls certificate files from another host over sftp, and restarts prosody
+# if any certificate files were modified.
+
+set -Eeu -o pipefail
+
+shopt -s nullglob
+
+SSH_KEY={{ prosody_le_ssh_privkey_path | quote }}
+LETSENCRYPT_PROXY_USER={{ prosody_le_user | quote }}
+LETSENCRYPT_PROXY_HOST={{ prosody_le_proxy_host | quote }}
+CERT_DIR=/etc/prosody/certs
+
+CHECKSUM_FILE=certs.md5
+
+cd "${CERT_DIR}"
+
+if [ -f "$CHECKSUM_FILE" ]; then
+  md5_orig=$(<"$CHECKSUM_FILE")
+else
+  md5_orig=''
+fi
+
+sftp -i "$SSH_KEY" "${LETSENCRYPT_PROXY_USER}@${LETSENCRYPT_PROXY_HOST}" <<EOT
+get *.crt
+get *.key
+quit
+EOT
+
+chgrp prosody "${CERT_DIR}"/*.{crt,key}
+chmod 640 "${CERT_DIR}"/*.{crt,key}
+
+> "$CHECKSUM_FILE"
+for file in *.{crt,key} ; do
+  md5sum "$file" >> "$CHECKSUM_FILE"
+done
+
+md5_new=$(<"$CHECKSUM_FILE")
+
+if [ "$md5_orig" != "$md5_new" ]; then
+  echo 'found new certificates, reloading prosody.'
+  if systemctl is-active prosody > /dev/null; then
+    systemctl reload prosody
+  fi
+else
+  echo 'certificates unchanged.'
+fi

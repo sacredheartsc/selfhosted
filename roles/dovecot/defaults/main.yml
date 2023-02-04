@@ -1,0 +1,24 @@
+dovecot_recipient_delimiter: '+'
+dovecot_default_user_quota: 5G
+dovecot_quota_grace_percent: 5
+dovecot_default_domain: '{{ email_domain }}'
+
+dovecot_rspamd_host: '{{ rspamd_host }}'
+dovecot_rspamd_password: '{{ rspamd_password }}'
+dovecot_rspamd_pubkey: '{{ rspamd_pubkey }}'
+
+dovecot_access_group: role-imap-access
+
+dovecot_archive_on_calendar: weekly
+
+dovecot_lmtp_port: 24
+dovecot_quota_status_port: 10993
+
+dovecot_tika_port: 9998
+dovecot_solr_port: 8983
+
+dovecot_max_mail_size: 64M
+dovecot_quota_warning_percent:
+  - 95
+  - 90
+  - 80

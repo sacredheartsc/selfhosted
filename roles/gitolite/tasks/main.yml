@@ -1,0 +1,119 @@
+- name: install gitolite
+  dnf:
+    name: '{{ gitolite_packages }}'
+    state: present
+
+- import_tasks: freeipa.yml
+
+- name: disable gitolite user
+  user:
+    name: gitolite3
+    shell: /sbin/nologin
+
+- name: get apache uid
+  getent:
+    database: passwd
+    key: '{{ gitolite_user }}'
+
+- name: create git ssh user
+  user:
+    name: '{{ gitolite_ssh_user }}'
+    comment: Git Pseudo-User
+    uid: '{{ ansible_facts.getent_passwd[gitolite_user][1] }}'
+    group: '{{ gitolite_user }}'
+    home: '{{ gitolite_home }}'
+    create_home: no
+    non_unique: yes
+    shell: '{{ gitolite_shell }}'
+
+- name: create git home
+  file:
+    path: '{{ gitolite_home }}'
+    mode: 0750
+    owner: '{{ gitolite_user }}'
+    group: '{{ gitolite_user }}'
+    state: directory
+    setype: _default
+
+- name: copy gitolite wrapper script
+  template:
+    src: '{{ gitolite_cgi_script[1:] }}.j2'
+    dest: '{{ gitolite_cgi_script }}'
+    mode: 0555
+    setype: httpd_unconfined_script_exec_t
+  tags: selinux
+
+- name: set unconfined selinux context on gitolite wrapper
+  sefcontext:
+    target: '{{ gitolite_cgi_script }}'
+    setype: httpd_unconfined_script_exec_t
+    state: present
+  tags: selinux
+  register: gitolite_cgi_sefcontext
+
+- name: apply selinux context to gitolite wrapper
+  command: 'restorecon -R {{ gitolite_cgi_script }}'
+  when: gitolite_cgi_sefcontext.changed
+  tags: selinux
+
+- name: generate gitolite scripts
+  template:
+    src: '{{ item[1:] }}.j2'
+    dest: '{{ item }}'
+    mode: 0555
+  loop:
+    - '{{ gitolite_groups_script }}'
+    - '{{ gitolite_authorizedkeys_script }}'
+
+- import_tasks: sshd.yml
+
+- name: create SELinux policy for gitolite
+  include_role:
+    name: selinux_policy
+    apply:
+      tags: selinux
+  vars:
+    selinux_policy_name: gitolite_sshd_httpd
+    selinux_policy_te: '{{ gitolite_selinux_policy_te }}'
+  tags: selinux
+
+- name: generate gitolite.rc
+  template:
+    src: '{{ gitolite_home[1:] }}/.gitolite.rc.j2'
+    dest: '{{ gitolite_home }}/.gitolite.rc'
+    owner: '{{ gitolite_user }}'
+    group: '{{ gitolite_user }}'
+    mode: 0600
+    setype: _default
+
+- name: create gitolite config directories
+  file:
+    path: '{{ gitolite_home }}/{{ item }}'
+    state: directory
+    owner: '{{ gitolite_user }}'
+    group: '{{ gitolite_user }}'
+    mode: 0750
+    setype: _default
+  loop:
+    - .gitolite
+    - .gitolite/conf
+    - .gitolite/logs
+
+- name: create initial gitolite.conf
+  template:
+    src: '{{ gitolite_home[1:] }}/.gitolite/conf/gitolite.conf.j2'
+    dest: '{{ gitolite_home }}/.gitolite/conf/gitolite.conf'
+    owner: '{{ gitolite_user }}'
+    group: '{{ gitolite_user }}'
+    mode: 0640
+    force: no
+
+- name: initialize gitolite
+  command:
+    cmd: gitolite setup
+    chdir: '{{ gitolite_home }}'
+    creates: '{{ gitolite_home }}/.gitolite/conf/gitolite.conf-compiled.pm'
+  environment:
+    HOME: '{{ gitolite_home }}'
+  become: yes
+  become_user: '{{ gitolite_user }}'

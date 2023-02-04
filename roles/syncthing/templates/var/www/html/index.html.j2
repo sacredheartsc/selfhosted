@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang='en'>
+ <head>
+  <title>Syncthing</title>
+  <meta charset='utf-8'>
+ </head>
+ <body>
+  <h1>Choose your username.</h1>
+  <ul>
+{% for user in syncthing_users.keys() %}
+   <li><a href="/{{ user }}/">{{ user }}</a></li>
+{% endfor %}
+  </ul>
+ </body>
+</html>

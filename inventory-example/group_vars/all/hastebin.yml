@@ -1,0 +1,3 @@
+hastebin_upload_cidrs:
+  - '{{ vlans.trusted.cidr }}'
+  - '{{ vlans.vpn.cidr }}'

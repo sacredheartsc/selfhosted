@@ -1,0 +1,143 @@
+- name: clone proxmox template
+  proxmox_kvm:
+    node: '{{ proxmox_node }}'
+    api_host: localhost
+    api_user: '{{ proxmox_api_user }}'
+    api_password: '{{ proxmox_api_password }}'
+    name: '{{ proxmox_hostname }}'
+    storage: '{{ proxmox_storage }}'
+    clone: '{{ proxmox_template }}'
+    full: yes
+    format: unspecified
+    state: present
+  delegate_to: '{{ proxmox_api_host }}'
+  register: vm_clone
+
+- name: wait for PVE to settle
+  pause:
+    seconds: 5
+  when: vm_clone.changed
+
+- name: get new vmid
+  shell: >-
+    qm list | awk -v name={{ proxmox_hostname }} '$2 == name { print $1; rc=1 } END { exit !rc }'
+  changed_when: False
+  register: proxmox_vmid
+  until: proxmox_vmid.stdout | int > 0
+  retries: 5
+  delay: 2
+  delegate_to: '{{ proxmox_api_host }}'
+
+- name: update VM properties
+  proxmox_kvm:
+    node: '{{ proxmox_node }}'
+    api_host: localhost
+    api_user: '{{ proxmox_api_user }}'
+    api_password: '{{ proxmox_api_password }}'
+    bios: '{{ proxmox_bios }}'
+    efidisk0:
+      storage: '{{ proxmox_storage }}'
+      efitype: 4m
+      pre_enrolled_keys: 1
+      format: unspecified
+    name: '{{ proxmox_hostname }}'
+    agent: '{{ proxmox_kvm_guest_agent }}'
+    storage: '{{ proxmox_storage }}'
+    onboot: '{{ proxmox_onboot }}'
+    cpu: '{{ proxmox_cpu }}'
+    sockets: '{{ proxmox_sockets }}'
+    cores: '{{ proxmox_cores }}'
+    vcpus: '{{ proxmox_sockets * proxmox_cores }}'
+    memory: '{{ proxmox_memory }}'
+    vga: '{{ proxmox_kvm_vga }}'
+    scsihw: '{{ proxmox_kvm_scsihw }}'
+    nameservers: "{{ proxmox_nameservers | join(',') }}"
+    searchdomains: '{{ proxmox_searchdomain }}'
+    sshkeys: "{{ proxmox_pubkeys | join('\n') }}"
+    ciuser: '{{ proxmox_kvm_ciuser }}'
+    cipassword: '{{ proxmox_password }}'
+    cicustom: 'user={{ proxmox_userdata }}'
+    ipconfig:
+      ipconfig0: 'ip={{ (proxmox_ip ~ "/" ~ proxmox_netmask) | ansible.utils.ipaddr("cidr") }},gw={{ proxmox_gateway }}'
+    update: yes
+  delegate_to: '{{ proxmox_api_host }}'
+  # The proxox_kvm module is not smart enough to report when the VM remains unchanged - sad!
+  changed_when: false
+
+- name: query the virtual NIC configuration
+  shell: >
+    qm config {{ proxmox_vmid.stdout }}
+    | awk '$1 == "net0:" {print $2}'
+    | sed -e 's/=/: /g' -e 's/,/\n/g'
+  register: qm_config_net0
+  changed_when: False
+  delegate_to: '{{ proxmox_api_host }}'
+
+- name: convert NIC to YAML dictionary
+  set_fact:
+    vm_nic: '{{ qm_config_net0.stdout | from_yaml }}'
+
+- name: set the virtual NIC vlan tag
+  command: >
+    qm set {{ proxmox_vmid.stdout }}
+    -net0 virtio={{ vm_nic.virtio }},bridge={{ vm_nic.bridge }},firewall={{ proxmox_firewall | int }},tag={{ proxmox_vlan }}
+  when: (proxmox_vlan | int) != (vm_nic.tag | default(1) | int)
+  delegate_to: '{{ proxmox_api_host }}'
+
+- name: query the virtual disk configuration
+  shell: >
+    qm config {{ proxmox_vmid.stdout }}
+    | awk '$1 == "scsi0:" {print $2}'
+    | sed -e 's/[=:]/: /g' -e 's/,/\n/g'
+  register: qm_config_scsi0
+  changed_when: False
+  delegate_to: '{{ proxmox_api_host }}'
+
+- name: convert disk to YAML dictionary
+  set_fact:
+    vm_disk: '{{ qm_config_scsi0.stdout | trim | from_yaml }}'
+
+- name: grow the virtual disk
+  command: qm resize {{ proxmox_vmid.stdout }} scsi0 {{ proxmox_disk ~ 'G' }}
+  when: (proxmox_disk ~ 'G') != vm_disk.size
+  delegate_to: '{{ proxmox_api_host }}'
+
+- name: set virtual disk properties
+  command: >
+    qm set {{ proxmox_vmid.stdout }}
+    -scsi0 {{ proxmox_storage }}:{{ vm_disk[proxmox_storage] }},discard={{ 'on' if proxmox_discard else 'off' }},ssd={{ proxmox_ssd | int }}
+  when: >-
+    vm_disk.discard is not defined
+    or vm_disk.discard != proxmox_discard
+    or vm_disk.ssd is not defined
+    or (vm_disk.ssd | int | bool) != proxmox_ssd
+  delegate_to: '{{ proxmox_api_host }}'
+
+- name: configure efidisk
+  block:
+    - name: query the efi disk configuration
+      shell: "qm config {{ proxmox_vmid.stdout }} | grep -q '^efidisk0:'"
+      register: qm_config_efidisk0
+      changed_when: no
+      failed_when: no
+      delegate_to: '{{ proxmox_api_host }}'
+
+    - name: create efidisk
+      command: qm set {{ proxmox_vmid.stdout }} -efidisk0 {{ proxmox_storage }}:1,efitype=4m,pre-enrolled-keys=1
+      delegate_to: '{{ proxmox_api_host }}'
+      when: qm_config_efidisk0.rc != 0
+  when: "proxmox_bios == 'ovmf'"
+
+- name: start the VM
+  proxmox_kvm:
+    node: '{{ proxmox_node }}'
+    api_host: localhost
+    api_user: '{{ proxmox_api_user }}'
+    api_password: '{{ proxmox_api_password }}'
+    vmid: '{{ proxmox_vmid.stdout }}'
+    state: started
+  delegate_to: '{{ proxmox_api_host }}'
+
+- name: wait for VM to become reachable
+  wait_for_connection:
+    timeout: 120

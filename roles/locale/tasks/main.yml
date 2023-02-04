@@ -1,0 +1,10 @@
+- name: set default locale
+  lineinfile:
+    dest: /etc/locale.conf
+    regexp: ^LANG=
+    line: 'LANG={{ locale }}'
+
+- name: install glibc language pack
+  dnf:
+    name: "glibc-langpack-{{ locale | split('_') | first }}"
+    state: present

@@ -1,0 +1,27 @@
+cgit_clone_prefixes:
+  - https://{{ ansible_fqdn }}
+  - ssh://{{ ansible_fqdn }}
+
+cgit_title: '{{ organization }} Git Repository'
+cgit_description: Source code of various {{ organization }} projects.
+
+cgit_cache_size: 1000
+cgit_user: git
+cgit_project_list: /var/www/git/projects.list
+cgit_scan_path: /var/www/git/repositories
+
+cgit_enable_http_clone: no
+
+cgit_repository_sort: name
+cgit_branch_sort: name
+
+# cgit_favicon: /path/to/favicon.ico
+# cgit_logo: /path/to/logo.png
+# cgit_css: /path/to/style.css
+# cgit_head_include: /path/to/head/include.html
+# cgit_header: /path/to/header.html
+
+cgit_about_html: >
+  This is a git repository for various projects hosted by {{ organization }}.
+  To request commit access or report technical issues,
+  <a href="mailto:root@{{ email_domain }}">contact the administrator</a>.

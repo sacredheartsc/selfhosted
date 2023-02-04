@@ -1,0 +1,8 @@
+# gssproxy_section: service/name
+# gssproxy_client_keytab: path/to/client/keytab
+# gssproxy_keytab: path/to/keytab
+# gssproxy_cred_usage: initiate
+# gssproxy_euid: apache
+# gssproxy_program: /usr/sbin/httpd
+gssproxy_priority: 50
+gssproxy_cred_usage: both

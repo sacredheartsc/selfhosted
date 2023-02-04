@@ -1,0 +1,73 @@
+- name: install packages
+  dnf:
+    name: '{{ syncthing_packages }}'
+    state: present
+
+- name: mask global syncthing service
+  systemd:
+    name: syncthing
+    scope: global
+    state: stopped
+    enabled: no
+    masked: yes
+
+- name: increase udp buffer size
+  sysctl:
+    name: net.core.rmem_max
+    value: '{{ syncthing_max_udp_buffer_size }}'
+    state: present
+
+- name: create syncthing directory
+  file:
+    path: '{{ syncthing_home }}'
+    state: directory
+
+- name: generate systemd unit
+  template:
+    src: 'etc/systemd/system/syncthing-user@.service.j2'
+    dest: '/etc/systemd/system/syncthing-user@.service'
+  register: syncthing_unit
+
+- name: reload systemd units
+  systemd:
+    daemon_reload: yes
+  when: syncthing_unit.changed
+
+- name: set httpd_var_run_t selinux context for runtime directory
+  sefcontext:
+    target: '{{ syncthing_runtime_dir }}(/.*)?'
+    setype: httpd_var_run_t
+    state: present
+
+- name: generate user directories
+  include_tasks: syncthing_user.yml
+  loop: '{{ syncthing_users | dict2items }}'
+  loop_control:
+    index_var: syncthing_user_index
+  vars:
+    syncthing_user: '{{ item.key }}'
+    syncthing_port: '{{ item.value }}'
+
+- name: open firewall ports
+  firewalld:
+    port: '{{ item.0 }}/{{ item.1 }}'
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop: "{{ syncthing_users.values() | product(['tcp', 'udp']) }}"
+  tags: firewalld
+
+- name: generate landing page
+  template:
+    src: var/www/html/index.html.j2
+    dest: /var/www/html/index.html
+
+- name: create selinux policy for apache to connect to unix socket
+  include_role:
+    name: selinux_policy
+    apply:
+      tags: selinux
+  vars:
+    selinux_policy_name: syncthing_httpd
+    selinux_policy_te: '{{ syncthing_selinux_policy_te }}'
+  tags: selinux

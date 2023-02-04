@@ -1,0 +1,119 @@
+- name: install packages
+  dnf:
+    name: '{{ hastebin_packages }}'
+    state: present
+
+- name: create local user
+  user:
+    name: '{{ hastebin_user }}'
+    system: yes
+    home: '{{ hastebin_home }}'
+    shell: /sbin/nologin
+    create_home: no
+
+- name: create home directory
+  file:
+    path: '{{ item }}'
+    owner: '{{ hastebin_user }}'
+    group: '{{ hastebin_user }}'
+    mode: 0700
+    state: directory
+  loop:
+    - '{{ hastebin_home }}'
+    - '{{ hastebin_data_dir }}'
+
+- name: disable npm package lock
+  lineinfile:
+    regexp: ^package-lock=
+    line: package-lock=false
+    path: '{{ hastebin_home }}/.npmrc'
+    create: yes
+    owner: '{{ hastebin_user }}'
+    group: '{{ hastebin_user }}'
+    mode: 0600
+    state: present
+
+- name: clone git repository
+  git:
+    repo: '{{ hastebin_git_repo }}'
+    dest: '{{ hastebin_install_dir }}'
+    version: '{{ hastebin_version }}'
+    force: yes
+    update: yes
+  become: yes
+  become_user: '{{ hastebin_user }}'
+  register: hastebin_git
+  notify: restart hastebin
+
+- name: install npm dependencies
+  npm:
+    path: '{{ hastebin_install_dir }}'
+    production: yes
+    no_optional: yes
+  become: yes
+  become_user: '{{ hastebin_user }}'
+  when: hastebin_git.changed
+  notify: restart hastebin
+
+- name: create systemd unit
+  template:
+    src: etc/systemd/system/hastebin.service.j2
+    dest: /etc/systemd/system/hastebin.service
+  register: hastebin_unit
+  notify: restart hastebin
+
+- name: reload systemd daemons
+  systemd:
+    daemon_reload: yes
+  when: hastebin_unit.changed
+
+- name: generate config file
+  template:
+    src: '{{ hastebin_install_dir[1:] }}/config.js.j2'
+    dest: '{{ hastebin_install_dir }}/config.js'
+    owner: '{{ hastebin_user }}'
+    group: '{{ hastebin_user }}'
+    mode: 0600
+  notify: restart hastebin
+
+- name: copy custom index.html
+  copy:
+    src: '{{ hastebin_install_dir[1:] }}/static/index.html'
+    dest: '{{ hastebin_install_dir }}/static/index.html'
+    owner: '{{ hastebin_user }}'
+    group: '{{ hastebin_user }}'
+    mode: 0644
+
+- name: download jquery
+  get_url:
+    url: '{{ hastebin_jquery_url }}'
+    dest: '{{ hastebin_install_dir }}/static/jquery.min.js'
+    owner: '{{ hastebin_user }}'
+    group: '{{ hastebin_user }}'
+    mode: 0644
+
+- name: start hastebin
+  systemd:
+    name: hastebin
+    enabled: yes
+    state: started
+
+- name: set http_port_t selinux context for hastebin port
+  seport:
+    ports: '{{ hastebin_port }}'
+    proto: tcp
+    setype: http_port_t
+    state: present
+  tags: selinux
+
+- name: create hastebin-cleanup timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: hastebin-cleanup
+    timer_description: Delete expired hastebin files
+    timer_after: nss-user-lookup.target
+    timer_on_calendar: daily
+    timer_user: '{{ hastebin_user }}'
+    timer_exec: find {{ hastebin_data_dir }} -type f -mtime +{{ hastebin_expire_days }} -exec rm -v {} +
+    timer_enabled: '{{ true if hastebin_expire_days > 0 else false }}'

@@ -1,0 +1,7 @@
+if prifilt("*.info") then {
+  action(type="omfwd"
+    target="{{ proxmox_syslog_host }}"
+    port="{{ proxmox_syslog_port }}"
+    protocol="{{ proxmox_syslog_proto }}"
+  )
+}

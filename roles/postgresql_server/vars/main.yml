@@ -1,0 +1,40 @@
+postgresql_packages:
+  - postgresql-server
+  - python3-psycopg2
+
+postgresql_user: postgres
+
+postgresql_data_dir: /var/lib/pgsql/data
+postgresql_keytab: /var/lib/gssproxy/postgresql.keytab
+
+postgresql_certificate_path: /etc/pki/tls/certs/postgres.pem
+postgresql_certificate_key_path: /etc/pki/tls/private/postgres.key
+postgresql_dhparams_path: /etc/pki/tls/certs/postgres-dhparams.pem
+postgresql_ssl_ciphers: 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384'
+
+postgresql_hbac_hostgroup: postgresql_servers
+postgresql_hbac_service: postgresql
+
+postgresql_archive_shell: >-
+  pg_dumpall | gzip > "pg_dumpall-$(date +%Y%m%d%H%M%S).sql.gz"
+
+postgresql_selinux_policy_te: |
+  require {
+    type postgresql_t;
+    type postgresql_exec_t;
+    type gssproxy_t;
+    type gssproxy_var_lib_t;
+    class dir search;
+    class sock_file write;
+    class unix_stream_socket connectto;
+    class file getattr;
+  }
+
+  #============= postgresql_t ==============
+  allow postgresql_t gssproxy_var_lib_t:dir search;
+  allow postgresql_t gssproxy_var_lib_t:sock_file write;
+  allow postgresql_t gssproxy_t:unix_stream_socket connectto;
+  allow postgresql_t gssproxy_var_lib_t:dir search;
+
+  #============= gssproxy_t ==============
+  allow gssproxy_t postgresql_exec_t:file getattr;

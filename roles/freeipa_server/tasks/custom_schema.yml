@@ -1,0 +1,101 @@
+- name: create custom schema directory
+  file:
+    path: '{{ freeipa_custom_schema_dir }}'
+    state: directory
+    recurse: yes
+
+- name: copy jid schema
+  copy:
+    src: '{{ freeipa_custom_schema_dir[1:] }}/jid.ldif'
+    dest: '{{ freeipa_custom_schema_dir }}/jid.ldif'
+
+- name: check if JIDObject exists in schema
+  shell: ldapsearch -QLLL -s base -b cn=schema objectclasses | grep -q JIDObject
+  changed_when: no
+  failed_when: no
+  register: ldapsearch_jidobject
+
+- block:
+    - name: extend freeipa schema for JIDs
+      command: ipa-ldap-updater --schema-file '{{ freeipa_custom_schema_dir }}/jid.ldif'
+
+    - name: restart httpd
+      systemd:
+        name: httpd
+        state: restarted
+  when: ldapsearch_jidobject.rc != 0
+
+- name: add index to jid attribute
+  ldap_entry:
+    dn: 'cn=jid,cn=index,cn=userRoot,cn=ldbm database,cn=plugins,cn=config'
+    objectClass:
+      - top
+      - nsIndex
+    attributes:
+      cn: jid
+      nsSystemIndex: false
+      nsIndexType: eq
+    bind_dn: cn=Directory Manager
+    bind_pw: '{{ freeipa_ds_password }}'
+    server_uri: ldaps://{{ ipa_host }}
+  register: jid_index
+
+- name: regenerate indexes for jid attribute
+  ldap_entry:
+    dn: cn=jidindex,cn=index,cn=tasks,cn=config
+    objectClass:
+      - top
+      - extensibleObject
+    attributes:
+      cn: jidindex
+      nsInstance: userRoot
+      nsIndexAttribute: 'jid:eq'
+    bind_dn: cn=Directory Manager
+    bind_pw: '{{ freeipa_ds_password }}'
+    server_uri: ldaps://{{ ipa_host }}
+  when: jid_index.changed
+
+- name: add default user object classes
+  ldap_attrs:
+    dn: cn=ipaConfig,cn=etc,{{ freeipa_basedn }}
+    attributes:
+      ipaUserObjectClasses:
+        - mailRecipient
+        - JIDObject
+    state: present
+    bind_dn: cn=Directory Manager
+    bind_pw: '{{ freeipa_ds_password }}'
+    server_uri: ldaps://{{ ipa_host }}
+
+- name: add default group object classes
+  ldap_attrs:
+    dn: cn=ipaConfig,cn=etc,{{ freeipa_basedn }}
+    attributes:
+      ipaGroupObjectClasses:
+        - mailRecipient
+    state: present
+    bind_dn: cn=Directory Manager
+    bind_pw: '{{ freeipa_ds_password }}'
+    server_uri: ldaps://{{ ipa_host }}
+
+- name: allow read access to custom user attributes
+  ipapermission:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: 'System: Read User Addressbook Attributes'
+    attrs:
+      - mailAlternateAddress
+      - jid
+    action: member
+    state: present
+
+- name: allow read access to custom group attributes
+  ipapermission:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: 'System: Read Groups'
+    attrs:
+      - mail
+      - mailAlternateAddress
+    action: member
+    state: present

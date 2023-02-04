@@ -1,0 +1,73 @@
+# Managed firefox settings go in this file.
+---
+firefox_offer_to_save_logins_default: no
+
+firefox_extensions:
+  - name: ublock-origin
+    id: uBlock0@raymondhill.net
+    mode: force_installed
+    policy:
+      toOverwrite:
+        filterLists:
+          - user-filters
+          - ublock-filters
+          - ublock-badware
+          - ublock-privacy
+          - ublock-abuse
+          - ublock-unbreak
+          - ublock-annoyances
+          - easylist
+          - easyprivacy
+          - urlhaus-1
+          - plowe-0
+          - fanboy-annoyance
+          - fanboy-thirdparty_social
+          - adguard-spyware-url
+          - ublock-quick-fixes
+      toAdd:
+        trustedSiteDirectives:
+          - id.spectrum.net
+          - '{{ domain }}'
+
+  - name: bitwarden-password-manager
+    id: '{446900e4-71c2-419f-a6a7-df9c091e268b}'
+
+  - name: libredirect
+    id: 7esoorv3@alefvanoon.anonaddy.me
+
+firefox_preferences:
+  - name: dom.security.https_only_mode
+    value: true
+    status: locked
+
+firefox_managed_bookmarks:
+  - name: Bitwarden
+    url: 'https://bitwarden.{{ domain }}'
+  - name: Git
+    url: 'https://git.example.com'
+  - name: Invidious
+    url: 'https://invidious.{{ domain }}'
+  - name: Jellyfin
+    url: 'https://jellyfin.{{ domain }}'
+  - name: Nagios
+    url: 'https://nagios.{{ domain }}'
+  - name: Nitter
+    url: 'https://nitter.{{ domain }}'
+  - name: Photostructure
+    url: 'https://photos.{{ domain }}/'
+  - name: Printers
+    url: 'https://cups.{{ domain }}/printers/'
+  - name: Rspamd
+    url: 'https://rspamd.{{ domain }}'
+  - name: Syncthing
+    url: 'https://syncthing.{{ domain }}'
+  - name: Teddit
+    url: 'https://teddit.{{ domain }}'
+  - name: TinyTinyRSS
+    url: 'https://ttrss.{{ domain }}'
+  - name: Unifi
+    url: 'https://unifi.{{ domain }}'
+  - name: Wiki
+    url: 'https://wiki.{{ domain }}'
+  - name: ZNC
+    url: 'https://znc.{{ domain }}'

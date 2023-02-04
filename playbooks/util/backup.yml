@@ -1,0 +1,606 @@
+#################
+# Set backup name
+#################
+- hosts: localhost
+  tags: always
+  tasks:
+    - name: get current timestamp
+      setup:
+        filter: ansible_date_time
+
+    - name: create backup directory
+      file:
+        path: '{{ backup_path }}'
+        state: directory
+
+- hosts: all:localhost:!unmanaged
+  tags: always
+  tasks:
+    - name: set backup name
+      set_fact:
+        backup_name: '{{ backup_name | default(hostvars.localhost.ansible_date_time.iso8601_basic_short) }}'
+
+
+################
+# IMAP Mailboxes
+################
+- name: backup dovecot mailboxes
+  hosts: imap_servers
+  vars_files: ../../roles/dovecot/vars/main.yml
+  vars:
+    dovecot_backup_dir: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-mailboxes
+    dovecot_backup_tarball: '{{ dovecot_backup_dir }}.tar.gz'
+    dovecot_backup_sieve_tarball: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-sieve.tar.gz
+  tags: dovecot,imap
+  tasks:
+    - name: create backup directory
+      file:
+        path: '{{ dovecot_backup_dir }}'
+        owner: '{{ dovecot_vmail_user }}'
+        group: '{{ dovecot_vmail_user }}'
+        mode: 0770
+        state: directory
+
+    - name: collect dovecot users
+      command: doveadm user *
+      register: dovecot_users
+      changed_when: no
+
+    - name: export mailboxes
+      command: >-
+        doveadm -o plugin/quota= backup -n inbox -f -u {{ item | quote }}
+        mdbox:{{ dovecot_backup_dir | quote }}/{{ item | quote }}/mdbox:LAYOUT=fs
+      loop: '{{ dovecot_users.stdout_lines }}'
+
+    - name: compress backup directory
+      archive:
+        path: '{{ dovecot_backup_dir }}'
+        dest: '{{ dovecot_backup_tarball }}'
+        mode: 0400
+        remove: yes
+
+    - name: fetch mailbox tarball
+      fetch:
+        src: '{{ dovecot_backup_tarball }}'
+        dest: '{{ backup_path }}/'
+        flat: yes
+
+    - name: delete mailbox tarball from remote host
+      file:
+        path: '{{ dovecot_backup_tarball }}'
+        state: absent
+
+    - name: compress sieve scripts
+      archive:
+        path:
+          - '{{ dovecot_vmail_dir }}/*/sieve'
+          - '{{ dovecot_vmail_dir }}/*/.dovecot.sieve'
+        dest: '{{ dovecot_backup_sieve_tarball }}'
+        mode: 0400
+
+    - name: fetch sieve tarball
+      fetch:
+        src: '{{ dovecot_backup_sieve_tarball }}'
+        dest: '{{ backup_path }}/'
+        flat: yes
+
+    - name: delete sieve tarball from remote host
+      file:
+        path: '{{ dovecot_backup_sieve_tarball }}'
+        state: absent
+
+
+##################
+# Rspamd Databases
+##################
+- name: backup rspamd databases
+  hosts: rspamd_servers
+  vars_files:
+    - ../../roles/redis/vars/main.yml
+    - ../../roles/rspamd/vars/main.yml
+  vars:
+    rspamd_backup_tarball: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-rspamd.tar.gz
+  tags: rspamd
+  tasks:
+    - name: dump redis databases to disk
+      command:
+        cmd: redis-cli -p {{ item }}
+        stdin: save
+      loop:
+        - '{{ rspamd_redis_port }}'
+        - '{{ rspamd_redis_bayes_port }}'
+
+    - name: compress redis directory
+      archive:
+        path: '{{ redis_home }}'
+        dest: '{{ rspamd_backup_tarball }}'
+        mode: 0400
+
+    - name: fetch backup tarball
+      fetch:
+        src: '{{ rspamd_backup_tarball }}'
+        dest: '{{ backup_path }}/'
+        flat: yes
+
+    - name: delete backup tarball from remote host
+      file:
+        path: '{{ rspamd_backup_tarball }}'
+        state: absent
+
+
+###################
+# ZNC Configuration
+###################
+- name: backup znc configuration
+  hosts: znc_servers
+  vars_files: ../../roles/znc/vars/main.yml
+  vars:
+    znc_backup_tarball: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-znc.tar.gz
+  tags: znc
+  tasks:
+    - name: compress znc directory
+      archive:
+        path: '{{ znc_home }}'
+        dest: '{{ znc_backup_tarball }}'
+        mode: 0400
+
+    - name: fetch backup tarball
+      fetch:
+        src: '{{ znc_backup_tarball }}'
+        dest: '{{ backup_path }}/'
+        flat: yes
+
+    - name: delete backup tarball from remote host
+      file:
+        path: '{{ znc_backup_tarball }}'
+        state: absent
+
+
+#########################
+# Syncthing Configuration
+#########################
+- name: backup syncthing configuration
+  hosts: syncthing_servers
+  vars_files: ../../roles/syncthing/vars/main.yml
+  vars:
+    syncthing_backup_tarball: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-syncthing.tar.gz
+  tags: syncthing
+  tasks:
+    - name: compress syncthing directory
+      archive:
+        path: '{{ syncthing_home }}'
+        dest: '{{ syncthing_backup_tarball }}'
+        exclusion_patterns:
+          - '*/index-*.db*'
+        mode: 0400
+
+    - name: fetch backup tarball
+      fetch:
+        src: '{{ syncthing_backup_tarball }}'
+        dest: '{{ backup_path }}/'
+        flat: yes
+
+    - name: delete backup tarball from remote host
+      file:
+        path: '{{ syncthing_backup_tarball }}'
+        state: absent
+
+
+##################
+# Git Repositories
+##################
+- name: backup git respositories
+  hosts: git_servers
+  vars_files: ../../roles/gitolite/vars/main.yml
+  vars:
+    git_backup_tarball: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-git.tar.gz
+  tags: git
+  tasks:
+    - name: compress git directory
+      archive:
+        path: '{{ gitolite_home }}'
+        dest: '{{ git_backup_tarball }}'
+        exclusion_patterns:
+          - git/.ansible*
+        mode: 0400
+
+    - name: fetch backup tarball
+      fetch:
+        src: '{{ git_backup_tarball }}'
+        dest: '{{ backup_path }}/'
+        flat: yes
+
+    - name: delete backup tarball from remote host
+      file:
+        path: '{{ git_backup_tarball }}'
+        state: absent
+
+
+######################
+# PostgreSQL Databases
+######################
+- name: backup postgresql databases
+  hosts: postgresql_servers
+  vars_files: ../../roles/postgresql_server/vars/main.yml
+  vars:
+    postgresql_backup_file: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-pg_dumpall.sql
+    postgresql_backup_gzip: '{{ postgresql_backup_file }}.gz'
+  tags: postgres,postgresql
+  tasks:
+    - name: dump databases
+      command: pg_dumpall -f {{ postgresql_backup_file | quote }}
+      become: yes
+      become_user: '{{ postgresql_user }}'
+
+    - name: compress sql file
+      archive:
+        path: '{{ postgresql_backup_file }}'
+        dest: '{{ postgresql_backup_gzip }}'
+        mode: 0400
+        remove: yes
+
+    - name: fetch backup gzip
+      fetch:
+        src: '{{ postgresql_backup_gzip }}'
+        dest: '{{ backup_path }}/'
+        flat: yes
+
+    - name: delete backup gzip from remote
+      file:
+        path: '{{ postgresql_backup_gzip }}'
+        state: absent
+
+
+
+########################
+# Jellyfin Configuration
+########################
+- name: backup jellyfin configuration
+  hosts: jellyfin_servers
+  vars_files: ../../roles/jellyfin/vars/main.yml
+  vars:
+    jellyfin_backup_tarball: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-jellyfin.tar.gz
+  tags: jellyfin
+  tasks:
+    - name: compress jellyfin directories
+      archive:
+        path:
+          - '{{ jellyfin_home }}/data'
+          - '{{ jellyfin_home }}/metadata'
+          - '{{ jellyfin_home }}/plugins'
+          - '{{ jellyfin_home }}/root'
+          - '{{ jellyfin_conf_dir }}'
+        dest: '{{ jellyfin_backup_tarball }}'
+        mode: 0400
+
+    - name: fetch backup tarball
+      fetch:
+        src: '{{ jellyfin_backup_tarball }}'
+        dest: '{{ backup_path }}/'
+        flat: yes
+
+    - name: delete backup tarball from remote host
+      file:
+        path: '{{ jellyfin_backup_tarball }}'
+        state: absent
+
+
+##################
+# Mediawiki Images
+##################
+- name: backup mediawiki images
+  hosts: wiki_servers
+  vars_files: ../../roles/mediawiki/vars/main.yml
+  vars:
+    mediawiki_backup_tarball: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-mediawiki.tar.gz
+  tags: mediawiki,wiki
+  tasks:
+    - name: compress images directory
+      archive:
+        path: '{{ mediawiki_home }}/images'
+        dest: '{{ mediawiki_backup_tarball }}'
+        mode: 0400
+
+    - name: fetch backup tarball
+      fetch:
+        src: '{{ mediawiki_backup_tarball }}'
+        dest: '{{ backup_path }}/'
+        flat: yes
+
+    - name: delete backup tarball from remote host
+      file:
+        path: '{{ mediawiki_backup_tarball }}'
+        state: absent
+
+
+#########################
+# Photostructure Database
+#########################
+- name: backup photostructure database
+  hosts: photostructure_servers
+  vars_files: ../../roles/photostructure/vars/main.yml
+  vars:
+    photostructure_backup_tarball: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-photostructure.tar
+  tags: photostructure
+  tasks:
+    - name: stop photostructure
+      systemd:
+        name: photostructure
+        state: stopped
+
+    - name: archive photostructure library
+      archive:
+        path: '{{ photostructure_library }}'
+        dest: '{{ photostructure_backup_tarball }}'
+        format: tar
+        mode: 0400
+
+    - name: start photostructure
+      systemd:
+        name: photostructure
+        state: started
+
+    - name: fetch backup tarball
+      fetch:
+        src: '{{ photostructure_backup_tarball }}'
+        dest: '{{ backup_path }}/'
+        flat: yes
+        validate_checksum: no  # The tarball is way too big.
+
+    - name: delete backup tarball from remote host
+      file:
+        path: '{{ photostructure_backup_tarball }}'
+        state: absent
+
+
+###############
+# Asterisk Data
+###############
+- name: backup asterisk data
+  hosts: asterisk_servers
+  vars_files: ../../roles/asterisk/vars/main.yml
+  vars:
+    asterisk_backup_tarball: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-asterisk.tar.gz
+  tags: asterisk
+  tasks:
+    - name: stop asterisk
+      systemd:
+        name: asterisk
+        state: stopped
+
+    - name: compress asterisk directory
+      archive:
+        path: '{{ asterisk_data_dir }}'
+        dest: '{{ asterisk_backup_tarball }}'
+        mode: 0400
+
+    - name: start asterisk
+      systemd:
+        name: asterisk
+        state: started
+
+    - name: fetch backup tarball
+      fetch:
+        src: '{{ asterisk_backup_tarball }}'
+        dest: '{{ backup_path }}/'
+        flat: yes
+
+    - name: delete backup tarball from remote host
+      file:
+        path: '{{ asterisk_backup_tarball }}'
+        state: absent
+
+
+####################
+# Cups Configuration
+####################
+- name: backup cups configuration
+  hosts: cups_servers
+  vars:
+    cups_backup_tarball: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-cups.tar.gz
+  tags: cups
+  tasks:
+    - name: compress cups configuration
+      archive:
+        path:
+          - /etc/cups/ppd
+          - /etc/cups/printers.conf
+        dest: '{{ cups_backup_tarball }}'
+        mode: 0400
+
+    - name: fetch backup tarball
+      fetch:
+        src: '{{ cups_backup_tarball }}'
+        dest: '{{ backup_path }}/'
+        flat: yes
+
+    - name: delete backup tarball from remote host
+      file:
+        path: '{{ cups_backup_tarball }}'
+        state: absent
+
+
+####################
+# WebDAV Directories
+####################
+- name: backup webdav directories
+  hosts: dav_servers
+  vars_files: ../../roles/sabredav/vars/main.yml
+  vars:
+    sabredav_backup_tarball: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-webdav.tar.gz
+  tags: dav,sabredav,webdav
+  tasks:
+    - name: compress webdav directory
+      archive:
+        path: '{{ sabredav_home }}/webdav'
+        dest: '{{ sabredav_backup_tarball }}'
+        mode: 0400
+
+    - name: fetch backup tarball
+      fetch:
+        src: '{{ sabredav_backup_tarball }}'
+        dest: '{{ backup_path }}/'
+        flat: yes
+
+    - name: delete backup tarball from remote host
+      file:
+        path: '{{ sabredav_backup_tarball }}'
+        state: absent
+
+
+###############
+# Hastebin Data
+###############
+- name: backup hastebin data
+  hosts: pastebin_servers
+  vars_files: ../../roles/hastebin/vars/main.yml
+  vars:
+    hastebin_backup_tarball: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-hastebin.tar.gz
+  tags: pastebin,hastebin
+  tasks:
+    - name: compress paste directory
+      archive:
+        path: '{{ hastebin_data_dir }}'
+        dest: '{{ hastebin_backup_tarball }}'
+        mode: 0400
+
+    - name: fetch backup tarball
+      fetch:
+        src: '{{ hastebin_backup_tarball }}'
+        dest: '{{ backup_path }}/'
+        flat: yes
+
+    - name: delete backup tarball from remote host
+      file:
+        path: '{{ hastebin_backup_tarball }}'
+        state: absent
+
+
+##################
+# Psitransfer Data
+##################
+- name: backup psitransfer data
+  hosts: filedrop_servers
+  vars_files: ../../roles/psitransfer/vars/main.yml
+  vars:
+    psitransfer_backup_tarball: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-psitransfer.tar.gz
+  tags: psitransfer
+  tasks:
+    - name: compress files directory
+      archive:
+        path: '{{ psitransfer_data_dir }}'
+        dest: '{{ psitransfer_backup_tarball }}'
+        mode: 0400
+
+    - name: fetch backup tarball
+      fetch:
+        src: '{{ psitransfer_backup_tarball }}'
+        dest: '{{ backup_path }}/'
+        flat: yes
+
+    - name: delete backup tarball from remote host
+      file:
+        path: '{{ psitransfer_backup_tarball }}'
+        state: absent
+
+
+##################
+# Apache WWW files
+##################
+- name: backup public apache files
+  hosts: web_servers
+  vars_files:
+    - ../../roles/apache/vars/main.yml
+  vars:
+    apache_backup_tarball: /var/tmp/{{ backup_name }}-{{ inventory_hostname }}-www.tar.gz
+  tags: apache,www
+  tasks:
+    - when: apache_backup_dirs | default([]) | length > 0
+      block:
+        - name: compress www directory
+          archive:
+            path: "{{ apache_backup_dirs | map('regex_replace', '^', apache_public_dir~'/') }}"
+            dest: '{{ apache_backup_tarball }}'
+            mode: 0400
+
+        - name: fetch backup tarball
+          fetch:
+            src: '{{ apache_backup_tarball }}'
+            dest: '{{ backup_path }}/'
+            flat: yes
+
+        - name: delete backup tarball from remote host
+          file:
+            path: '{{ apache_backup_tarball }}'
+            state: absent
+
+
+####################
+# Unifi Controllers
+####################
+- name: backup unifi controllers
+  hosts: unifi_controllers
+  vars_files: ../../roles/unifi/vars/main.yml
+  tags: unifi
+  tasks:
+    - name: collect autobackup files
+      find:
+        paths: '{{ unifi_autobackup_dir }}'
+        patterns: '*.unf'
+        file_type: file
+      register: unifi_autobackups
+
+    - name: fetch most recent autobackup file
+      fetch:
+        src: "{{ unifi_autobackups.files | sort(attribute='mtime') | map(attribute='path') | last }}"
+        dest: '{{ backup_path }}/{{ backup_name }}-{{ inventory_hostname }}-unifi.unf'
+        flat: yes
+
+
+################
+# FreeIPA Domain
+################
+- name: backup freeipa domain
+  hosts: freeipa_master
+  vars_files: ../../roles/freeipa_server/vars/main.yml
+  vars:
+    freeipa_backup_tarball: /var/tmp/{{ backup_name }}-ipa-{{ freeipa_realm }}.tar.gz
+  tags: ipa,freeipa
+  tasks:
+    - name: create full ipa backup
+      command: ipa-backup
+
+    - name: collect files in backup directory
+      find:
+        paths: '{{ freeipa_backup_dir }}'
+        patterns: ipa-full-*
+        file_type: directory
+      register: freeipa_backups
+
+    - name: compress latest backup
+      archive:
+        path: "{{ freeipa_backups.files | sort(attribute='mtime') | map(attribute='path') | last }}"
+        dest: '{{ freeipa_backup_tarball }}'
+        mode: 0400
+        remove: yes
+
+    - name: fetch backup archive
+      fetch:
+        src: '{{ freeipa_backup_tarball }}'
+        dest: '{{ backup_path }}/'
+        flat: yes
+
+    - name: delete backup archive from remote host
+      file:
+        path: '{{ freeipa_backup_tarball }}'
+        state: absent
+
+
+###############
+# Print summary
+###############
+- hosts: localhost
+  tags: always
+  tasks:
+    - debug:
+        msg: Backup {{ backup_name }} written to {{ backup_path }}.

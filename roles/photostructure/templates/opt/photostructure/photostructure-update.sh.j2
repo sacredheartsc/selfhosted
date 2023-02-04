@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+set -Eeu -o pipefail
+
+SRCDIR={{ photostructure_install_dir | quote }}
+PHOTOSTRUCTURE_USER={{ photostructure_user | quote }}
+PHOTOSTRUCTURE_INSTALL_DIR={{ photostructure_install_dir | quote }}
+PHOTOSTRUCTURE_HOME={{ photostructure_home | quote }}
+
+as-photostructure() {
+  runuser -u "$PHOTOSTRUCTURE_USER" -- "$@"
+}
+
+if (( $EUID != 0 )); then
+  echo 'must be superuser' 1>&2
+  exit 1
+fi
+
+cd "$SRCDIR"
+
+as-photostructure git fetch
+
+local_rev=$(git rev-parse HEAD)
+upstream_rev=$(git rev-parse '@{u}')
+
+echo "local: $local_rev"
+echo "upstream: $upstream_rev"
+
+if [ "$local_rev" != "$upstream_rev" ]; then
+  systemctl stop photostructure
+
+  as-photostructure git pull --ff-only
+
+  echo "building photostructure..."
+  rm -rf "${PHOTOSTRUCTURE_INSTALL_DIR}/node_modules" \
+    "$PHOTOSTRUCTURE_HOME/.electron"                  \
+    "$PHOTOSTRUCTURE_HOME/.electron-gyp"              \
+    "$PHOTOSTRUCTURE_HOME/.npm/_libvips"              \
+    "$PHOTOSTRUCTURE_HOME/.node-gyp"                  \
+    "$PHOTOSTRUCTURE_HOME/.cache/yarn/*/*sharp*"
+
+  cd "$PHOTOSTRUCTURE_INSTALL_DIR"
+  as-photostructure npx yarn install --yes
+
+  systemctl start photostructure
+else
+  echo "photostructure is already up to date"
+fi

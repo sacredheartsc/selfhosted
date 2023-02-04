@@ -1,0 +1,22 @@
+archive_home: /var/spool/archive
+archive_source_path: /var/spool/archive
+
+archive_keytab: /var/lib/gssproxy/clients/{{ archive_user }}.keytab
+archive_clients_hbac_hostgroup: archive_clients
+archive_script_path: /usr/local/bin/archiver.sh
+archive_config_path: /etc/archiver.conf
+
+archive_plugin_dir: /usr/local/libexec/archiver
+
+archive_selinux_policy_te: |
+  require {
+    type gssd_t;
+    type ssh_exec_t;
+    type gssproxy_t;
+    class file getattr;
+    class key read;
+  }
+
+  #============= gssproxy_t ==============
+  allow gssproxy_t gssd_t:key read;
+  allow gssproxy_t ssh_exec_t:file getattr;

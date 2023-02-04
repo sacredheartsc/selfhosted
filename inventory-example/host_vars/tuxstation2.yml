@@ -1,0 +1,8 @@
+# When powersave is enabled on the communication controller of the Dell
+# Optiplex Micro, the onboad NIC drops a *huge* amount of packets.
+# see https://bugzilla.kernel.org/show_bug.cgi?id=213377
+udev_pci_powersave_blacklist:
+  - 8086:7ae8
+
+# This i915 parameter was required in EL8
+grub_cmdline: resume=/dev/mapper/rl-swap rd.lvm.lv=rl/root rd.lvm.lv=rl/swap i915.force_probe=4680

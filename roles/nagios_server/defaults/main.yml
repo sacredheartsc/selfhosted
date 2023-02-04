@@ -1,0 +1,34 @@
+nagios_admin_email: root@{{ email_domain }}
+nagios_admin_pager: root@{{ email_domain }}
+
+nagios_access_group: role-nagios-access
+
+nagios_email: root@{{ email_domain }}
+
+nagios_reboot_window: 03:00-05:00
+
+nagios_ssh_control_persist: 20m
+
+nagios_snmp_max_size: 10000
+
+nagios_check_dns:
+  - name: example.com
+    qtype: A
+    server: 8.8.8.8
+    expect: 1.2.3.4
+
+nagios_connectivity_check_host: 8.8.8.8
+nagios_connectivity_check_count: 20
+nagios_connectivity_check_rtt_warn: 50.0
+nagios_connectivity_check_rtt_crit: 100.0
+nagios_connectivity_check_loss_warn: 5%
+nagios_connectivity_check_loss_crit: 20%
+
+nagios_manubulon_repo: https://github.com/SteScho/manubulon-snmp
+nagios_manubulon_version: master
+
+# key: name, value: url
+nagios_thirdparty_plugins: {}
+
+# key: name, value: url
+nagios_thirdparty_mibs: {}

@@ -1,0 +1,20 @@
+- name: check if zpool exists
+  command: zpool list -Ho name {{ zpool.name }}
+  failed_when: no
+  changed_when: no
+  register: zpool_exists
+
+- name: create zpools
+  command: >
+    zpool create
+    {% for property in (zpool.properties | default({}) | dict2items) %}
+    -o {{ item.key }}={{ item.value }}
+    {% endfor %}
+    {% if zpool.mountpoint is defined %}
+    -m {{ zpool.mountpoint }}
+    {% endif %}
+    {{ zpool.name }}
+    {% for vdev in zpool.vdevs %}
+    {{ vdev.type }} {% if vdev.type == 'log' and vdev.devices | length > 1 %}mirror {% endif %}{{ vdev.devices | join(' ') }}
+    {% endfor %}
+  when: zpool_exists.rc == 1

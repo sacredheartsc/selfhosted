@@ -1,0 +1,4 @@
+- name: restart hastebin
+  systemd:
+    name: hastebin
+    state: restarted

@@ -1,0 +1,69 @@
+- name: create postgresql database
+  postgresql_db:
+    name: '{{ invidious_db_name }}'
+    state: present
+  delegate_to: "{{ postgresql_host.split('.')[0] }}"
+  become: True
+  become_user: postgres
+
+- name: create postgresql user
+  postgresql_user:
+    name: '{{ invidious_db_user }}'
+    db: '{{ invidious_db_name }}'
+    password: '{{ invidious_db_password }}'
+    priv: ALL
+    state: present
+  environment:
+    PGOPTIONS: "-c password_encryption=scram-sha-256"
+  delegate_to: "{{ postgresql_host.split('.')[0] }}"
+  become: True
+  become_user: postgres
+
+- name: check if database schema is initialized
+  postgresql_query:
+    login_user: '{{ invidious_db_user }}'
+    login_password: '{{ invidious_db_password }}'
+    login_host: '{{ invidious_db_host }}'
+    db: '{{ invidious_db_name }}'
+    query: SELECT 1 FROM channels LIMIT 1
+  register: invidious_check_db
+  failed_when: false
+
+- name: initialize database schema
+  postgresql_query:
+    login_user: '{{ invidious_db_user }}'
+    login_password: '{{ invidious_db_password }}'
+    login_host: '{{ invidious_db_host }}'
+    db: '{{ invidious_db_name }}'
+    path_to_script: '{{ invidious_install_dir }}/config/sql/{{ item }}.sql'
+    as_single_query: yes
+  loop: '{{ invidious_schema_files }}'
+  when:
+    - invidious_check_db.msg is defined
+    - invidious_check_db.msg is search('relation "channels" does not exist')
+
+- name: create pgpass file
+  copy:
+    content: |
+      {{ invidious_db_host }}:*:{{ invidious_db_name }}:{{ invidious_db_user }}:{{ invidious_db_password }}
+    dest: '{{ invidious_home }}/.pgpass'
+    mode: 0600
+    owner: '{{ invidious_user }}'
+    group: '{{ invidious_user }}'
+
+- name: generate database cleanup script
+  template:
+    src: '{{ invidious_home[1:] }}/invidious-db-cleanup.sh.j2'
+    dest: '{{ invidious_home }}/invidious-db-cleanup.sh'
+    mode: 0555
+
+- name: set up invidious-db-cleanup timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: invidious-db-cleanup
+    timer_description: Prune invidious database
+    timer_after: network.target
+    timer_user: '{{ invidious_user }}'
+    timer_on_calendar: '{{ invidious_db_cleanup_on_calendar }}'
+    timer_exec: '{{ invidious_home }}/invidious-db-cleanup.sh'

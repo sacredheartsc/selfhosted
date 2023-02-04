@@ -1,0 +1,37 @@
+- name: check if principal exists in keytab
+  shell:
+    cmd: >
+      klist -kt {{ keytab_path }}
+      | awk -v p={{ keytab_principal }}@{{ freeipa_realm }}
+      '$4 == p { rc=1 } END { exit !rc }'
+  failed_when: false
+  changed_when: false
+  register: keytab_principal_exists
+
+- name: retrieve keytab
+  shell:
+    cmd: >
+      kinit -fpa -l 1m {{ '-k' if use_system_keytab else ipa_user }} &&
+      ipa-getkeytab -p {{ keytab_principal }} -k {{ keytab_path }} &&
+      kdestroy
+    stdin: '{{ omit if use_system_keytab else ipa_pass }}'
+  when: keytab_principal_exists.rc != 0
+
+- name: set keytab owner
+  file:
+    path: '{{ keytab_path }}'
+    owner: '{{ keytab_owner }}'
+    group: '{{ keytab_group }}'
+    mode: '{{ keytab_mode }}'
+    setype: krb5_keytab_t
+
+- name: set selinux context for keytab
+  sefcontext:
+    target: '{{ keytab_path }}'
+    setype: krb5_keytab_t
+    state: present
+  register: keytab_sefcontext
+
+- name: apply selinux context to keytab
+  command: 'restorecon {{ keytab_path }}'
+  when: keytab_sefcontext.changed

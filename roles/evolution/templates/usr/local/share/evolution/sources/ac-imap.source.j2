@@ -1,0 +1,60 @@
+[Autoconfig]
+Revision=1
+
+[Data Source]
+DisplayName={{ evolution_mail_account_name }}
+Enabled=true
+Parent=
+
+[Offline]
+StaySynchronized=true
+
+[Refresh]
+Enabled=true
+IntervalMinutes=60
+
+[Authentication]
+Host={{ evolution_imap_host }}
+Method=GSSAPI
+Port=993
+ProxyUid=system-proxy
+RememberPassword=true
+User=${USER}
+CredentialName=
+
+[Mail Account]
+BackendName=imapx
+IdentityUid=ac-mail
+ArchiveFolder=folder://ac-imap/Archive
+NeedsInitialSetup=false
+
+[Security]
+Method=ssl-on-alternate-port
+
+[Imapx Backend]
+FilterInbox=true
+StoreChangesInterval=3
+LimitByAge=true
+LimitUnit=years
+LimitValue=1
+UseMultiFetch=false
+CheckAll=true
+CheckSubscribed=true
+ConcurrentConnections=3
+FetchOrder=ascending
+FilterAll=false
+FilterJunk=false
+FilterJunkInbox=false
+Namespace=
+RealJunkPath=Junk
+RealTrashPath=Trash
+ShellCommand=ssh -C -l %u %h exec /usr/sbin/imapd
+UseIdle=true
+UseNamespace=false
+UseQresync=true
+UseRealJunkPath=true
+UseRealTrashPath=true
+UseShellCommand=false
+UseSubscriptions=false
+IgnoreOtherUsersNamespace=false
+IgnoreSharedFoldersNamespace=false

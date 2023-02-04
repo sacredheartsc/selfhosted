@@ -1,0 +1,8 @@
+- name: disable default repositories
+  replace:
+    path: /etc/yum.repos.d/{{ repo }}.repo
+    regexp: '^enabled\s*=.*$'
+    replace: enabled=0
+  loop: '{{ yum_default_repository_files[ansible_distribution_major_version] }}'
+  loop_control:
+    loop_var: repo

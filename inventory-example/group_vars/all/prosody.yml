@@ -1,0 +1,16 @@
+prosody_http_host: xmpp.example.com  # changeme
+prosody_sysaccount_password: '{{ vault_prosody_sysaccount_password }}'
+prosody_vhosts: # changeme - your jabber domain(s)
+  - example.com
+
+# XMPP clients expect a certificate matching the domain of the given JID.
+# Unfortunately, this situation only works for LetsEncrypt if you run your XMPP
+# server on the same host as your webserver (or if you use the ACME DNS
+# challenge).
+#
+# Check out the prosody_letsencrypt_proxy role for how we get around this.
+# Basically, just specify the hostname of your public webserver here, along with
+# and ssh keypair.
+prosody_le_proxy_host: dmz-www1
+prosody_le_ssh_privkey: '{{ vault_prosody_le_ssh_privkey }}'
+prosody_le_ssh_pubkey: ssh-ed25519 AAAAAAAchangeme

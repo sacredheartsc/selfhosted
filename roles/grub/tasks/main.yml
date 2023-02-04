@@ -1,0 +1,23 @@
+- name: set grub timeout
+  lineinfile:
+    path: /etc/default/grub
+    regexp: ^GRUB_TIMEOUT=
+    line: 'GRUB_TIMEOUT={{ grub_timeout }}'
+  register: grub_timeout_line
+
+- name: set kernel cmdline
+  lineinfile:
+    path: /etc/default/grub
+    regexp: ^GRUB_CMDLINE_LINUX=
+    line: 'GRUB_CMDLINE_LINUX="{{ grub_cmdline }}"'
+  when: grub_cmdline is defined
+  register: grub_cmdline_line
+
+- name: rebuild grub config
+  command: grub2-mkconfig -o /boot/grub2/grub.cfg
+  when: grub_timeout_line.changed or grub_cmdline_line.changed
+
+- name: warn if reboot needed
+  debug:
+    msg: A reboot is required for changes to kernel cmdline to take effect.
+  when: grub_cmdline_line.changed

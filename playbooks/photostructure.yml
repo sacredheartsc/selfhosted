@@ -1,0 +1,20 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: photostructure_servers
+
+- name: configure photostructure
+  hosts: photostructure_servers
+  tags: photostructure
+  roles:
+    - role: photostructure
+
+    - role: apache_vhost
+      apache_default_vhost: yes
+      apache_config: '{{ photostructure_apache_config }}'
+      tags: apache
+
+    - role: archive_job
+      archive_name: photostructure
+      archive_shell: '{{ photostructure_archive_shell }}'
+      archive_on_calendar: monthly
+      tags: archive

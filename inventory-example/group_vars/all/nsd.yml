@@ -1,0 +1,54 @@
+# Put the desired contents of any zone files in nsd_zones.
+#
+# I only recommend self-hosting DNS if you're farming out your *real* query
+# traffic to a secondary DNS provider.
+---
+nsd_zones:
+  - name: example.com
+    slave_nameservers:
+      - 203.0.113.50
+      - 203.0.113.51
+    ttl: 3600
+    content: |
+      @    IN  NS    ns1.example.com.
+      @    IN  NS    ns2.example.com.
+      ns1  IN  A     203.0.113.52
+      ns1  IN  AAAA  2001:db8::2
+      ns2  IN  A     203.0.113.53
+      ns2  IN  AAAA  2001:db8::3
+
+      @  IN  CAA     0 issue "letsencrypt.org"
+
+      ; mail
+      @  IN  MX      10 mx1.example.com.
+      @  IN  TXT     "v=spf1 mx -all"
+      dkim._domainkey  IN  TXT  ( "v=DKIM1; k=rsa; "
+        "p=AAAAAAAAAAAAAAAAchangeme"
+        "AAAAAAAAAAAAAAAAAAchangeme"
+      ) ;
+      _dmarc  IN  TXT  "v=DMARC1; p=reject; ruf=mailto:postmaster@example.com"
+
+      @           IN  A      203.0.113.54
+      mx1         IN  A      203.0.113.55
+      www1        IN  A      203.0.113.56
+      xmpp1       IN  A      203.0.113.57
+      turn1       IN  A      203.0.113.58
+      pbx1        IN  A      203.0.113.59
+      www         IN  CNAME  www1
+      xmpp        IN  CNAME  xmpp1
+      conference  IN  CNAME  xmpp1
+      turn        IN  CNAME  turn1
+      pbx         IN  CNAME  pbx1
+
+      _xmpp-client._tcp             IN  SRV  0  5  5222  xmpp1
+      _xmpp-server._tcp             IN  SRV  0  5  5269  xmpp1
+      _xmpp-server._tcp.conference  IN  SRV  0  5  5269  xmpp1
+
+      _stun._tcp                    IN  SRV  0  5  3478  turn1
+      _stun._udp                    IN  SRV  0  5  3478  turn1
+      _turn._tcp                    IN  SRV  0  5  3478  turn1
+      _turn._udp                    IN  SRV  0  5  3478  turn1
+
+      _sip._udp                     IN  SRV  0  5  5060  pbx1
+      _sip._tcp                     IN  SRV  0  5  5060  pbx1
+      _sip._tls                     IN  SRV  0  5  5061  pbx1

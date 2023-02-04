@@ -1,0 +1,4 @@
+- name: restart psitransfer
+  systemd:
+    name: psitransfer
+    state: restarted

@@ -1,0 +1,76 @@
+- name: create /usr/local/home
+  file:
+    path: /usr/local/home
+    state: directory
+
+- name: copy homedir creation scripts
+  copy:
+    src: usr/local/sbin/create-local-homedir.sh
+    dest: '{{ item }}'
+    mode: 0555
+    setype: _default
+  loop:
+    - '{{ local_homedir_script_ssh }}'
+    - '{{ local_homedir_script_gdm }}'
+
+- name: set xdm_unconfined_exec_t sefcontext on homedir creation script
+  sefcontext:
+    target: '{{ local_homedir_script_gdm }}'
+    state: present
+    setype: xdm_unconfined_exec_t
+  tags: selinux
+  register: local_homedir_sefcontext
+
+- name: apply selinux context to homedir creation script
+  command: 'restorecon -R {{ local_homedir_script_gdm }}'
+  when: local_homedir_sefcontext.changed
+  tags: selinux
+
+- name: copy profile script
+  copy:
+    src: etc/profile.d/local-homedirs.sh
+    dest: /etc/profile.d/local-homedirs.sh
+
+- name: copy pam_env for XDG variables
+  copy:
+    src: '{{ local_homedir_pam_env_path[1:] }}'
+    dest: '{{ local_homedir_pam_env_path }}'
+
+- name: get fcontext equivalencies
+  command: semanage fcontext -l -C
+  changed_when: no
+  register: selinux_equivalencies
+
+- name: set selinux fcontext for /usr/local/home
+  command: semanage fcontext -a -e /home /usr/local/home
+  register: local_homedirs_fcontext
+  when: "'/usr/local/home = /home' not in selinux_equivalencies.stdout_lines"
+
+- name: apply selinux fcontext to /usr/local/home
+  command: restorecon -R /usr/local/home
+  when: local_homedirs_fcontext.changed
+
+- name: check if gdm is installed
+  package_facts:
+    manager: auto
+
+- name: modify GDM PAM configuration for local homedirs
+  lineinfile:
+    path: /etc/pam.d/gdm-password
+    line: '{{ item }}'
+    insertbefore: ^auth\s+optional\s+pam_gnome_keyring\.so$
+    state: present
+  loop:
+    - auth optional pam_exec.so {{ local_homedir_script_gdm }}
+    - auth optional pam_env.so conffile={{ local_homedir_pam_env_path }}
+  when: "'gdm' in ansible_facts.packages"
+
+- name: modify pam configs for sshd
+  lineinfile:
+    path: /etc/pam.d/sshd
+    line: '{{ item }}'
+    insertafter: EOF
+    state: present
+  loop:
+    - session optional pam_exec.so {{ local_homedir_script_ssh }}
+    - session optional pam_env.so conffile={{ local_homedir_pam_env_path }}

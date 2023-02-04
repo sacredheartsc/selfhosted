@@ -1,0 +1,19 @@
+- name: create archive client directory
+  file:
+    path: '{{ archive_path }}/{{ archive_name }}'
+    state: directory
+    owner: root
+    group: '{{ archive_group | default(archive_name) }}'
+    mode: 0770
+
+- name: create systemd timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: 'archive-{{ archive_name }}'
+    timer_description: '{{ archive_description }}'
+    timer_on_calendar: '{{ archive_on_calendar }}'
+    timer_user: '{{ archive_user }}'
+    timer_chdir: '{{ archive_path }}/{{ archive_name }}'
+    timer_shell: '{{ archive_shell is defined }}'
+    timer_exec: '{{ archive_shell | default(archive_command) }}'

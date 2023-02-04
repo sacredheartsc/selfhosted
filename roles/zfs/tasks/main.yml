@@ -1,0 +1,70 @@
+- name: install packages
+  dnf:
+    name: '{{ zfs_packages }}'
+    state: present
+
+- name: modprobe zfs
+  modprobe:
+    name: zfs
+    state: present
+
+- name: create systemd units
+  template:
+    src: etc/systemd/system/zfs-{{ item[0] }}@.{{ item[1] }}.j2
+    dest: /etc/systemd/system/zfs-{{ item[0] }}@.{{ item[1] }}
+  loop: "{{ ['scrub', 'trim'] | product(['service', 'timer']) }}"
+  register: zfs_units
+
+- name: reload systemd units
+  systemd:
+    daemon-reload: yes
+  when: zfs_units.changed
+
+- name: create zpools
+  include_tasks: create_zpool.yml
+  loop: '{{ zfs_pools }}'
+  loop_control:
+    loop_var: zpool
+    label: '{{ zpool.name }}'
+
+- name: create datasets
+  zfs:
+    name: '{{ item if item is string else item.name }}'
+    state: present
+    extra_zfs_properties: '{{ omit if item is string else (item.properties | default({})) }}'
+  loop: '{{ zfs_datasets }}'
+
+- name: enable periodic trim and scrub
+  systemd:
+    name: zfs-{{ item[1] }}@{{ item[0].name }}.timer
+    state: started
+    enabled: yes
+  loop: "{{ zfs_pools | product(['trim', 'scrub']) }}"
+  loop_control:
+    label: zfs-{{ item[1] }}@{{ item[0].name }}.timer
+
+- name: generate zed config file
+  template:
+    src: etc/zfs/zed.d/zed.rc.j2
+    dest: /etc/zfs/zed.d/zed.rc
+  notify: restart zfs-zed
+
+- name: enable zfs event daemon
+  systemd:
+    name: zfs-zed
+    enabled: yes
+    state: started
+
+- name: clone zfs-auto-snapshot
+  git:
+    repo: '{{ zfs_auto_snapshot_repo }}'
+    update: yes
+    version: '{{ zfs_auto_snapshot_version }}'
+    dest: '{{ zfs_auto_snapshot_dir }}'
+  register: zfs_auto_snapshot_git
+
+- name: install zfs-auto-snapshot
+  command:
+    cmd: make install PREFIX=/usr
+    chdir: '{{ zfs_auto_snapshot_dir }}'
+  when: zfs_auto_snapshot_git.changed

@@ -1,0 +1,54 @@
+- name: configure samba domain member
+  command:
+    cmd: ipa-client-samba --no-homes --unattended
+    creates: /etc/samba/samba.keytab
+
+- name: add include statement to smb.conf
+  lineinfile:
+    path: /etc/samba/smb.conf
+    line: include = /etc/samba/local.conf
+    insertafter: EOF
+  notify: restart samba
+
+- name: copy samba configuration
+  copy:
+    src: etc/samba/local.conf
+    dest: /etc/samba/local.conf
+  notify: restart samba
+
+- name: create samba shares
+  template:
+    src: etc/samba/shares.conf.j2
+    dest: /etc/samba/shares.conf
+  notify: reload samba
+
+- name: set selinux context for samba shares
+  sefcontext:
+    target: '{{ zfs_mountpoints[item.dataset] if item.dataset is defined else item.path }}(/.*)?'
+    setype: samba_share_t
+    state: present
+  loop: "{{ (nfs_exports | selectattr('smb_share', 'defined')) + smb_shares  }}"
+  register: nfs_export_sefcontext
+
+- name: apply selinux context to samba shares
+  command: 'restorecon -R {{ zfs_mountpoints[item.dataset] if item.dataset is defined else item.path }}'
+  when: nfs_export_sefcontext.results[index].changed
+  loop: "{{ (nfs_exports | selectattr('smb_share', 'defined')) + smb_shares }}"
+  loop_control:
+    index_var: index
+
+- name: start samba services
+  systemd:
+    name: '{{ item }}'
+    enabled: yes
+    state: started
+  loop:
+    - smb
+    - winbind
+
+- name: open firewall ports
+  firewalld:
+    service: samba
+    permanent: yes
+    immediate: yes
+    state: enabled

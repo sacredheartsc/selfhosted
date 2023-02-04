@@ -1,0 +1,16 @@
+- name: install packages
+  dnf:
+    name: '{{ postfix_packages[ansible_distribution_major_version] }}'
+    state: present
+
+- name: generate postifx configuration
+  template:
+    src: etc/postfix/main.cf.j2
+    dest: /etc/postfix/main.cf
+  notify: restart postfix
+
+- name: enable postfix
+  systemd:
+    name: postfix
+    enabled: yes
+    state: started

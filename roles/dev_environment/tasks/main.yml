@@ -1,0 +1,21 @@
+- name: install packages
+  dnf:
+    name: '{{ dev_packages }}'
+    state: present
+
+- name: install sieveconnect
+  unarchive:
+    src: '{{ dev_sieveconnect_url }}'
+    remote_src: yes
+    dest: /usr/local/bin
+    extra_opts:
+      - --strip=1
+      - --wildcards
+      - '*/sieve-connect.pl'
+      - --transform
+      - s/sieve-connect.pl/sieve-connect/
+
+- name: set sieveconnect permissions
+  file:
+    path: /usr/local/bin/sieve-connect
+    mode: 0555

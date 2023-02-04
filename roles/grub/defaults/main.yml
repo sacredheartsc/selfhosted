@@ -1,0 +1,2 @@
+# grub_cmdline: quiet ro
+grub_timeout: 1

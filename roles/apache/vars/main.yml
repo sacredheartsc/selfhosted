@@ -1,0 +1,37 @@
+apache_packages:
+  - httpd
+  - mod_ssl
+  - mod_auth_gssapi
+  - mod_session
+  - mod_ldap
+
+apache_public_dir: /var/www
+
+apache_session_dir: /var/lib/httpd/session
+apache_gssapi_session_key: '{{ apache_session_dir }}/gssapi.key'
+apache_letsencrypt_dir: '{{ apache_public_dir }}/letsencrypt'
+apache_keytab: /var/lib/gssproxy/clients/apache.keytab
+
+apache_gzip_types:
+  - application/javascript
+  - application/json
+  - application/rss+xml
+  - application/vnd.ms-fontobject
+  - application/x-font
+  - application/x-font-opentype
+  - application/x-font-otf
+  - application/x-font-truetype
+  - application/x-font-ttf
+  - application/x-javascript
+  - application/xhtml+xml
+  - application/xml
+  - font/opentype
+  - font/otf
+  - font/ttf
+  - image/svg+xml
+  - image/x-icon
+  - text/css
+  - text/html
+  - text/javascript
+  - text/plain
+  - text/xml

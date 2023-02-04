@@ -1,0 +1,14 @@
+cups_hostgroup: cups_servers
+cups_certificate_path: /etc/pki/tls/cups/{{ ansible_fqdn }}.crt
+cups_certificate_key_path: /etc/pki/tls/cups/{{ ansible_fqdn }}.key
+
+cups_hbac_hostgroup: cups-servers
+cups_hbac_service: cups
+
+cups_archive_shell: >-
+  TIMESTAMP=$(date +%Y%m%d%H%M%S);
+  tar czf "cups-${TIMESTAMP}.tar.gz"
+  --transform "s|^\.|cups-${TIMESTAMP}|"
+  -C /etc/cups
+  ./ppd
+  ./printers.conf

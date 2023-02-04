@@ -1,0 +1,6 @@
+# This is a sample file with fake secrets. For a real deployment, encrypt this
+# file with `ansible-vault encrypt` and add your own secrets.
+---
+# Unifi APs require the privpass and authpass to be identical...sad!
+vault_nagios_snmp_priv_pass: changeme
+vault_nagios_snmp_auth_pass: changeme

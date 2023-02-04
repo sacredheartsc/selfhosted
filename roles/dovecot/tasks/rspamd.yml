@@ -1,0 +1,43 @@
+- name: install rspamd
+  dnf:
+   name: rspamd
+   state: present
+
+- name: copy rspamd X-SPAM sieve script
+  copy:
+    src: '{{ dovecot_sieve_before_dir[1:] }}/10-rspamd.sieve'
+    dest: '{{ dovecot_sieve_before_dir }}/10-rspamd.sieve'
+  register: dovecot_rspamd_sieve_script
+
+- name: compile rspamd X-SPAM sieve script
+  command: sievec '{{ dovecot_sieve_before_dir }}/10-rspamd.sieve'
+  when: dovecot_rspamd_sieve_script.changed
+
+- name: copy rspamd sieve reporting scripts
+  copy:
+    src: '{{ dovecot_sieve_dir[1:] }}/{{ item }}'
+    dest: '{{ dovecot_sieve_dir }}/{{ item }}'
+  loop:
+    - report-spam.sieve
+    - report-ham.sieve
+  register: dovecot_rspamd_report_sieve_scripts
+
+- name: compile rspamd sieve reporting scripts
+  command: sievec {{ dovecot_sieve_dir }}/{{ item }}
+  when: dovecot_rspamd_report_sieve_scripts.results[index].changed
+  loop:
+    - report-spam.sieve
+    - report-ham.sieve
+  loop_control:
+    index_var: index
+
+- name: generate rpsmad bash reporting scripts
+  template:
+    src: '{{ dovecot_sieve_pipe_bin_dir[1:] }}/{{ item }}.j2'
+    dest: '{{ dovecot_sieve_pipe_bin_dir }}/{{ item }}'
+    owner: root
+    group: dovecot
+    mode: 0550
+  loop:
+    - report-spam.sh
+    - report-ham.sh

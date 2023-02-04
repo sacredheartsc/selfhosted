@@ -1,0 +1,50 @@
+- name: install certbot
+  dnf:
+    name: certbot
+    state: installed
+
+- name: allow HTTP through firewall
+  firewalld:
+    service: http
+    permanent: yes
+    immediate: yes
+    state: enabled
+  tags: firewalld
+
+- name: copy certbot hook script
+  copy:
+    src: etc/pki/tls/certbot-post.sh
+    dest: '{{ certificate_postcmd_path }}'
+    mode: 0555
+
+- name: create certbot webroot path
+  file:
+    path: '{{ certificate_webroot_path }}'
+    state: directory
+  when: certificate_use_apache
+
+- name: retrieve certificate from letsencrypt
+  command:
+    cmd: >-
+      certbot certonly
+      --noninteractive
+      --agree-tos
+      --no-eff-email
+      --key-type {{ certificate_type | lower }}
+      --rsa-key-size {{ certificate_size }}
+      --email {{ certificate_email }}
+      {% if certificate_use_apache %}
+      --webroot
+      --webroot-path {{ certificate_webroot_path }}
+      {% else %}
+      --standalone
+      {% endif %}
+      --deploy-hook {{ certificate_postcmd_argv | quote }}
+      --domains {{ certificate_sans | join(',') }}
+    creates: '{{ certificate_path }}'
+
+- name: enable certbot renew timer
+  systemd:
+    name: certbot-renew.timer
+    enabled: yes
+    state: started

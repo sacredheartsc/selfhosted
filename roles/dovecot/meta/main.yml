@@ -1,0 +1,12 @@
+dependencies:
+  - role: yum
+    yum_repositories:
+      - epel
+      - rspamd
+    tags: yum
+
+  - role: solr
+    tags: solr
+
+  - role: tika
+    tags: tika

@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+set -eu
+
+SRCDIR={{ nitter_install_dir | quote }}
+NITTER_USER={{ nitter_user | quote }}
+
+export PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:{{ nim_install_dir }}/bin'
+
+as-nitter() {
+  runuser -u "$NITTER_USER" -- "$@"
+}
+
+if (( $EUID != 0 )); then
+  echo 'must be superuser' 1>&2
+  exit 1
+fi
+
+cd "$SRCDIR"
+
+as-nitter git fetch
+
+local_rev=$(git rev-parse HEAD)
+upstream_rev=$(git rev-parse '@{u}')
+
+echo "local: $local_rev"
+echo "upstream: $upstream_rev"
+
+if [ "$local_rev" != "$upstream_rev" ]; then
+  as-nitter git pull --ff-only
+
+  echo "building nitter..."
+  as-nitter nimble --accept build -d:release
+  as-nitter nimble --accept scss
+  as-nitter nimble --accept md
+
+  systemctl restart nitter
+else
+  echo "nitter is already up to date"
+fi

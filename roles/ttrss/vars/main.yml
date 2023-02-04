@@ -1,0 +1,47 @@
+ttrss_packages:
+  - php
+  - php-pdo
+  - php-pgsql
+  - php-cli
+  - php-json
+  - php-xml
+  - php-intl
+  - php-mbstring
+  - php-process
+  - php-gd
+  - php-opcache
+  - php-ldap
+  - git
+
+ttrss_home: /var/www/ttrss
+ttrss_keytab: /var/lib/gssproxy/clients/{{ ttrss_user }}.keytab
+
+ttrss_git_repo: https://git.tt-rss.org/fox/tt-rss
+ttrss_version: HEAD
+
+ttrss_freeipa_plugin_url: https://raw.githubusercontent.com/sacredheartsc/ttrss-freeipa/master/auth_freeipa/init.php
+
+ttrss_writable_dirs:
+  - lock
+  - cache
+  - feed-icons
+  - cache/images
+  - cache/upload
+  - cache/export
+
+ttrss_php_environment:
+  GSS_USE_PROXY: 'yes'
+
+ttrss_apache_config: |
+  <LocationMatch "^/(index.php)?$">
+    <If "%{QUERY_STRING} != 'noext=1'">
+      AuthType GSSAPI
+      AuthName "FreeIPA Single Sign-On"
+      GssapiLocalName On
+      {{ apache_gssapi_session_config }}
+      {{ apache_ldap_config }}
+      Require ldap-attribute memberof=cn={{ ttrss_access_group }},{{ freeipa_group_basedn }}
+      Require ldap-attribute memberof=cn={{ ttrss_admin_group }},{{ freeipa_group_basedn }}
+      ErrorDocument 401 /index.php?noext=1
+    </If>
+  </LocationMatch>

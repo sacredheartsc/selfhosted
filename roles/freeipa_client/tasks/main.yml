@@ -1,0 +1,54 @@
+- name: install freeipa pacakges
+  dnf:
+    name: '{{ freeipa_packages[ansible_distribution_major_version] }}'
+    state: present
+
+- name: initialize freeipa client
+  command: >
+    ipa-client-install
+    --unattended
+    --principal={{ ipa_user }}
+    --password={{ ipa_pass | quote }}
+  args:
+    creates: /etc/ipa/default.conf
+
+- name: configure autofs
+  command: ipa-client-automount --unattended
+  register: ipa_client_automount
+  failed_when: ipa_client_automount.rc not in [0, 3]
+  changed_when: ipa_client_automount.rc != 3
+  when: freeipa_autofs
+
+- name: configure gssproxy
+  copy:
+    src: etc/gssproxy/99-nfs-client.conf
+    dest: /etc/gssproxy/99-nfs-client.conf
+  notify: restart gssproxy
+
+- name: enable krb5 hostname canonicalization
+  lineinfile:
+    path: /etc/krb5.conf
+    regexp: '^\s*{{ item }}\s*='
+    line: '  {{ item }} = true'
+    insertafter: '\[libdefaults\]'
+    state: present
+  loop:
+    - rdns
+    - dns_canonicalize_hostname
+
+# Disabling this until they figure out this bug. I don't use containers,
+# so the kernel KEYRING ccache is just fine.
+# https://bugzilla.redhat.com/show_bug.cgi?id=2035496
+- name: uninstall sssd-kcm
+  dnf:
+    name: sssd-kcm
+    state: absent
+  notify: restart sssd
+
+- name: send sssd logs to journald
+  lineinfile:
+    create: yes
+    path: /etc/sysconfig/sssd
+    regexp: ^DEBUG_LOGGER=
+    line: DEBUG_LOGGER=--logger=journald
+  notify: restart sssd

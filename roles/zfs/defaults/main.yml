@@ -1,0 +1,10 @@
+zfs_pools: []
+zfs_datasets: []
+zfs_trim_on_calendar: monthly
+zfs_scrub_on_calendar: monthly
+
+zfs_zed_email: root
+zfs_zed_verbose: yes
+zfs_zed_notify_interval_sec: 3600
+
+zfs_auto_snapshot_version: master

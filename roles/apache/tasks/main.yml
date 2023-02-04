@@ -1,0 +1,63 @@
+- name: install packages
+  dnf:
+    name: '{{ apache_packages }}'
+    state: present
+  notify: restart apache
+
+- name: remove default configuration
+  copy:
+    content: |
+      # this file intentionally empty to avoid clobbering during package upgrades
+    dest: /etc/httpd/conf.d/welcome.conf
+  notify: reload apache
+
+- name: generate config files
+  template:
+    src: etc/httpd/{{ item }}.j2
+    dest: /etc/httpd/{{ item }}
+  loop:
+    - conf/httpd.conf
+    - conf.d/ssl.conf
+    - conf.d/letsencrypt.conf
+  register: apache_global_config
+
+- name: reload apache
+  systemd:
+    name: httpd
+    state: reloaded
+  when: apache_global_config.changed
+
+- name: set selinux booleans
+  seboolean:
+    name: '{{ item.sebool }}'
+    state: '{{ item.value }}'
+    persistent: yes
+  loop:
+    - { sebool: httpd_use_nfs,                value: '{{ apache_use_nfs }}' }
+    - { sebool: httpd_can_network_relay,      value: '{{ apache_can_network_relay }}' }
+    - { sebool: httpd_can_network_connect,    value: '{{ apache_can_network_connect }}' }
+    - { sebool: httpd_can_connect_ldap,       value: '{{ apache_gssapi or apache_can_connect_ldap}}' }
+    - { sebool: httpd_can_network_connect_db, value: '{{ apache_can_network_connect_db }}' }
+    - { sebool: httpd_can_sendmail,           value: '{{ apache_can_sendmail }}' }
+  tags: selinux
+
+- name: configure mod_gssapi
+  import_tasks: gssapi.yml
+  when: apache_gssapi or apache_use_nfs
+
+- name: enable apache
+  systemd:
+    name: httpd
+    enabled: yes
+    state: started
+
+- name: open firewall ports
+  firewalld:
+    service: '{{ item }}'
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop:
+    - http
+    - https
+  tags: firewalld

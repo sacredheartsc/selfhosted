@@ -1,0 +1,9 @@
+nfs_packages:
+  - nfs-utils
+  - nfs4-acl-tools
+  - ipa-client-samba
+  - rsync
+
+nfs_homedir_home_automount_map: auto.home
+nfs_homedir_user_automount_map: auto.nfs_user
+nfs_homedir_group_automount_map: auto.nfs_group

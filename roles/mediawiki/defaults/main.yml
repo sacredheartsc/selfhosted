@@ -1,0 +1,52 @@
+mediawiki_version: 1.39.1
+mediawiki_extension_version: REL1_39
+
+mediawiki_kerberized_cidrs: '{{ kerberized_cidrs }}'
+
+mediawiki_user: s-mediawiki
+mediawiki_db_name: mediawiki
+mediawiki_db_host: '{{ postgresql_host }}'
+
+mediawiki_access_group: role-wiki-access
+mediawiki_admin_group: role-wiki-admin
+
+mediawiki_max_upload_size: 50M
+mediawiki_max_upload_count: 32
+
+mediawiki_custom_namespaces: []
+
+mediawiki_use_subpages: true
+
+mediawiki_ldap_servers: '{{ freeipa_hosts }}'
+mediawiki_sysaccount_username: mediawiki
+
+mediawiki_site_name: '{{ organization }} Wiki'
+mediawiki_meta_namespace: "{{ organization | regex_replace('\\s*', '') }}"
+mediawiki_fqdn: '{{ ansible_fqdn }}'
+mediawiki_url: https://{{ mediawiki_fqdn }}
+
+mediawiki_admin_username: admin
+mediawiki_emergency_contact: root@{{ email_domain }}
+mediawiki_password_sender: wiki-noreply@{{ email_domain }}
+mediawiki_email_authentication: no
+
+mediawiki_local_timezone: '{{ timezone }}'
+mediawiki_language_code: en
+
+mediawiki_default_skin: vector
+mediawiki_default_mobile_skin: minerva
+
+mediawiki_disable_anonymous_read: no
+mediawiki_disable_anonymous_edit: yes
+
+mediawiki_block_wan_login: yes
+
+mediawiki_apc_shm_size: 256M
+
+mediawiki_skins:
+  - Vector
+  - MinervaNeue
+
+# mediawiki_logo_1x: /path/to/1x/logo.jpg
+# mediawiki_logo_icon: /path/to/icon/logo.jpg
+# mediawiki_logo_favicon: /path/to/favicon.ico

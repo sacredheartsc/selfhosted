@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -eu
+
+SRCDIR={{ teddit_install_dir | quote }}
+TEDDIT_USER={{ teddit_user | quote }}
+
+as-teddit() {
+  runuser -u "$TEDDIT_USER" -- "$@"
+}
+
+if (( $EUID != 0 )); then
+  echo 'must be superuser' 1>&2
+  exit 1
+fi
+
+cd "$SRCDIR"
+
+as-teddit git fetch
+
+local_rev=$(git rev-parse HEAD)
+upstream_rev=$(git rev-parse '@{u}')
+
+echo "local: $local_rev"
+echo "upstream: $upstream_rev"
+
+if [ "$local_rev" != "$upstream_rev" ]; then
+  as-teddit git reset --hard HEAD
+
+  echo "installing dependencies..."
+  as-teddit npm install --production --no-optional
+
+  systemctl restart teddit
+else
+  echo "teddit is already up to date"
+fi

@@ -1,0 +1,13 @@
+- name: generate udev rules
+  copy:
+    content: |
+      {{ item.rule }}
+    dest: "/etc/udev/rules.d/{{ item.name | replace(' ', '_') }}.rules"
+  loop: '{{ udev_rules }}'
+  notify: reload udev rules
+
+- name: generate powersave blacklist
+  template:
+    src: etc/udev/rules.d/pci_pm.rules.j2
+    dest: /etc/udev/rules.d/pci_pm.rules
+  notify: reload udev rules

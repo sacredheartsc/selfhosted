@@ -1,0 +1,6 @@
+[Journal]
+Storage=auto
+{% if journald_max_use %}
+{{ 'System' if journald_persistent else 'Runtime' }}MaxUse={{ journald_max_use }}
+{% endif %}
+ForwardToSyslog={{ journald_forward_to_syslog | bool | to_json }}

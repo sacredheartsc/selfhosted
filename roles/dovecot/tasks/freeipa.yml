@@ -1,0 +1,109 @@
+- name: create IMAP access group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ dovecot_access_group }}'
+    description: users with IMAP access
+    nonposix: yes
+    state: present
+  run_once: True
+
+- name: create service principals
+  ipaservice:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ item }}/{{ ansible_fqdn }}'
+    state: present
+  loop:
+    - imap
+    - sieve
+
+- name: retrieve service keytabs
+  include_role:
+    name: freeipa_keytab
+  vars:
+    keytab_principal: '{{ item }}/{{ ansible_fqdn }}'
+    keytab_path: '{{ dovecot_keytab }}'
+  loop:
+    - imap
+    - sieve
+
+- name: configure gssproxy
+  include_role:
+    name: gssproxy_client
+  vars:
+    gssproxy_name: dovecot
+    gssproxy_section: service/dovecot
+    gssproxy_keytab: '{{ dovecot_keytab }}'
+    gssproxy_client_keytab: '{{ dovecot_keytab }}'
+    gssproxy_cred_usage: both
+    gssproxy_euid: dovecot
+
+- name: create SELinux policy for dovecot to access gssproxy
+  include_role:
+    name: selinux_policy
+    apply:
+      tags: selinux
+  vars:
+    selinux_policy_name: dovecot_gssproxy
+    selinux_policy_te: '{{ dovecot_selinux_policy_te }}'
+  tags: selinux
+
+- name: generate PAM configuration for dovecot
+  copy:
+    content: |
+      auth    required pam_sss.so
+      account required pam_sss.so
+    dest: /etc/pam.d/dovecot
+
+- name: create HBAC service
+  ipahbacsvc:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ dovecot_hbac_service }}'
+    description: Dovecot IMAP server
+    state: present
+  run_once: True
+
+- name: create imap-servers hostgroup
+  ipahostgroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ dovecot_hbac_hostgroup }}'
+    description: IMAP Servers
+    host: "{{ groups[dovecot_hbac_hostgroup] | map('regex_replace', '$', '.' ~ ansible_domain) }}"
+    state: present
+  run_once: True
+
+# Note: we explicitly allow all here. SSSD will only be consulted when a user performs
+# a PLAIN login, falling back to PAM authentication. Users with a valid Kerberos ticket
+# bypass the PAM stack entirely, so a restrictive HBAC rule is pointless.
+- name: create HBAC rule
+  ipahbacrule:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: allow_dovecot_on_imap_servers
+    description: Allow IMAP on imap servers
+    hostgroup:
+      - '{{ dovecot_hbac_hostgroup }}'
+    usercategory: all
+    hbacsvc:
+      - '{{ dovecot_hbac_service }}'
+  run_once: True
+
+- name: create systemd override directory
+  file:
+    path: /etc/systemd/system/dovecot.service.d
+    state: directory
+
+- name: create systemd override file
+  copy:
+    src: etc/systemd/system/dovecot.service.d/override.conf
+    dest: /etc/systemd/system/dovecot.service.d/override.conf
+  notify: restart dovecot
+  register: dovecot_systemd_unit
+
+- name: reload systemd daemons
+  systemd:
+    daemon_reload: yes
+  when: dovecot_systemd_unit.changed

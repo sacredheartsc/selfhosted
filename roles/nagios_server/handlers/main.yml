@@ -1,0 +1,9 @@
+- name: restart nagios
+  systemd:
+    name: nagios
+    state: restarted
+
+- name: reload nagios
+  systemd:
+    name: nagios
+    state: reloaded

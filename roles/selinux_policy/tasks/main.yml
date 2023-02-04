@@ -1,0 +1,44 @@
+- name: create custom SELinux module directory
+  file:
+    path: '{{ selinux_policy_custom_dir }}'
+    state: directory
+
+- name: create SELinux type-enforcement file
+  copy:
+    content: |
+      module {{ selinux_policy_name }} {{ selinux_policy_version | default('1.0') }};
+
+      {{ selinux_policy_te }}
+    dest: '{{ selinux_policy_custom_dir }}/{{ selinux_policy_name }}.te'
+  register: selinux_te_file
+
+- name: check if SELinux policy is loaded
+  shell: semodule -l | grep -q {{ selinux_policy_name }}
+  changed_when: false
+  failed_when: false
+  register: se_policy_loaded
+
+- name: compile and load SELinux module
+  block:
+    - name: unload SELinux module
+      command: semodule -r {{ selinux_policy_name }}
+      when: se_policy_loaded.rc == 0
+
+    - name: compile SELinux module
+      command: checkmodule -M -m -o {{ selinux_policy_custom_dir ~ '/' ~ selinux_policy_name }}.mod {{ selinux_policy_custom_dir ~ '/' ~ selinux_policy_name }}.te
+
+    - name: build SELinux policy package
+      command: semodule_package -o {{ selinux_policy_custom_dir ~ '/' ~ selinux_policy_name }}.pp -m {{ selinux_policy_custom_dir ~ '/' ~ selinux_policy_name }}.mod
+
+    - name: load SELinux module
+      command: semodule -i {{ selinux_policy_custom_dir ~ '/' ~ selinux_policy_name }}.pp
+
+    - name: clean up build artifacts
+      file:
+        path: '{{ selinux_policy_custom_dir }}/{{ selinux_policy_name }}.{{ item }}'
+        state: absent
+      loop:
+        - mod
+        - pp
+
+  when: selinux_te_file.changed or se_policy_loaded.rc != 0

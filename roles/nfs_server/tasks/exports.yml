@@ -1,0 +1,55 @@
+- name: create zfs datasets for exports
+  zfs:
+    name: '{{ item.dataset }}'
+    state: present
+    extra_zfs_properties: '{{ item.zfs_properties if item.zfs_properties is defined else omit }}'
+  loop: "{{ nfs_exports | selectattr('dataset', 'defined') }}"
+  loop_control:
+    label: '{{ item.dataset }}'
+
+- name: collect zfs mountpoints
+  shell: "zfs list -Hp -o name,mountpoint | sed 's/\t/: /'"
+  changed_when: False
+  register: zfs_list_mountpoints
+
+- name: set zfs_mountpoints fact
+  set_fact:
+    zfs_mountpoints: '{{ zfs_list_mountpoints.stdout | from_yaml }}'
+
+- name: set directory permissions for exports
+  file:
+    path: '{{ zfs_mountpoints[item.dataset] }}'
+    owner: '{{ item.owner | default(omit) }}'
+    group: '{{ item.group | default(omit) }}'
+    mode: "{{ '0%0o' % item.mode if item.mode is defined else omit }}"
+    setype: _default
+    state: directory
+  loop: '{{ nfs_exports }}'
+  loop_control:
+    label: '{{ item.dataset }}'
+
+- name: set directory ACLs for exports
+  acl:
+    path: '{{ zfs_mountpoints[item.0.dataset] }}'
+    default: '{{ item.1.default | default(omit) }}'
+    entity: '{{ item.1.entity }}'
+    etype: '{{ item.1.etype }}'
+    permissions: '{{ item.1.permissions }}'
+    recalculate_mask: mask
+    state: present
+  loop: "{{ nfs_exports | selectattr('acl', 'defined') | subelements('acl') }}"
+  loop_control:
+    label: '{{ item.0.dataset }}: {{ item.1 }}'
+
+- name: for exports with a "default" ACL, ensure the ACL is set on the directory itself
+  acl:
+    path: '{{ zfs_mountpoints[item.0.dataset] }}'
+    default: no
+    entity: '{{ item.1.entity }}'
+    etype: '{{ item.1.etype }}'
+    permissions: '{{ item.1.permissions }}'
+    recalculate_mask: mask
+    state: present
+  loop: "{{ nfs_exports | selectattr('acl', 'defined') | subelements('acl') | selectattr('1.default', 'defined') | selectattr('1.default', 'equalto', True) }}"
+  loop_control:
+    label: '{{ item.0.dataset }}: {{ item.1 }}'

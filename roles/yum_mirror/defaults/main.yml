@@ -1,0 +1,2 @@
+yum_sync_on_calendar: '22,23,10,11:00'
+yum_mirrorlist_country: US

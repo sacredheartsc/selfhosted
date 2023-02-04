@@ -1,0 +1,15 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: nagios_servers
+
+- name: configure nagios
+  hosts: nagios_servers
+  tags: nagios
+  roles:
+    - role: nagios_server
+
+    - role: apache_vhost
+      apache_default_vhost: yes
+      apache_document_root: '{{ nagios_html_dir }}'
+      apache_config: '{{ nagios_apache_config }}'
+      tags: apache

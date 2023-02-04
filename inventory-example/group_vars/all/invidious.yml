@@ -1,0 +1,4 @@
+invidious_port: 8080
+invidious_db_password: '{{ vault_invidious_db_password }}'
+invidious_hmac_key: '{{ vault_invidious_hmac_key }}'
+invidious_db_user: s-invidious

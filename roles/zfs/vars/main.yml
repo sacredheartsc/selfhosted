@@ -1,0 +1,6 @@
+zfs_packages:
+  - zfs
+  - git
+  - make
+zfs_auto_snapshot_repo: https://github.com/zfsonlinux/zfs-auto-snapshot
+zfs_auto_snapshot_dir: /usr/local/src/zfs-auto-snapshot

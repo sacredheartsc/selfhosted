@@ -1,0 +1,10 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: freeipa_master
+    bootstrap: yes
+
+- name: configure freeipa master
+  hosts: freeipa_master
+  tags: freeipa
+  roles:
+    - freeipa_server

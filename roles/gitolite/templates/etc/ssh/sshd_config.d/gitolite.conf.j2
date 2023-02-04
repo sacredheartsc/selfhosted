@@ -1,0 +1,4 @@
+Match User {{ gitolite_ssh_user }}
+  AuthenticationMethods "publickey"
+  AuthorizedKeysCommand {{ gitolite_authorizedkeys_script }}
+  AuthorizedKeysCommandUser {{ gitolite_user }}

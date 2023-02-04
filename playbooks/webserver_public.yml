@@ -1,0 +1,38 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: dmz-www1
+
+- name: configure public web server
+  hosts: dmz-www1
+  roles:
+    - role: apache_vhost
+      apache_server_name: www.example.com
+      apache_server_aliases: [example.com]
+      apache_canonical_hostname: www.example.com
+      apache_letsencrypt: yes
+      apache_document_root: /var/www/www.example.com
+      tags: apache
+
+    - role: archive_job
+      tags: archive
+      archive_name: www
+      archive_shell: >-
+        TIMESTAMP=$(date +%Y%m%d%H%M%S);
+        tar czf "www-${TIMESTAMP}.tar.gz"
+        --transform "s|^\.|www-${TIMESTAMP}|"
+        -C "{{ apache_public_dir }}" {% for dir in apache_backup_dirs %}{{ dir | quote }} {% endfor %}
+
+    # prosody letsencrypt proxy
+    - role: prosody_letsencrypt_proxy
+      prosody_le_role: master
+      tags: prosody
+
+  tasks:
+    - name: create webroot
+      file:
+        path: /var/www/www.example.com
+        state: directory
+        owner: root
+        group: webmasters
+        mode: 02770
+      tags: apache

@@ -1,0 +1,97 @@
+- name: install prosody
+  dnf:
+    name: '{{ prosody_packages }}'
+    state: present
+
+- name: request conference vhost certificates
+  include_role:
+    name: certbot
+  vars:
+    certificate_sans: ['{{ item }}']
+    certificate_path: '{{ prosody_certificate_dir }}/{{ item }}.crt'
+    certificate_key_path: '{{ prosody_certificate_dir }}/{{ item }}.key'
+    certificate_owner: prosody
+    certificate_hook: systemctl reload prosody
+    certificate_use_apache: yes
+  loop: '{{ prosody_conference_vhosts }}'
+
+- import_tasks: freeipa.yml
+  tags: freeipa
+
+- import_tasks: database.yml
+  tags: database
+
+- name: create module directory
+  file:
+    path: '{{ prosody_module_dir }}'
+    state: directory
+
+- name: clone module repository
+  hg:
+    repo: '{{ prosody_module_repo }}'
+    dest: '{{ prosody_module_dir }}'
+
+- name: generate configuration
+  template:
+    src: etc/prosody/prosody.cfg.lua.j2
+    dest: /etc/prosody/prosody.cfg.lua
+    owner: root
+    group: prosody
+    mode: 0640
+  notify: restart prosody
+
+- name: open firewall ports
+  firewalld:
+    permanent: yes
+    immediate: yes
+    service: '{{ item }}'
+    state: enabled
+  loop:
+    - xmpp-client
+    - xmpp-server
+  tags: firewalld
+
+- name: enable httpd_can_network_connect SELinux boolean
+  seboolean:
+    name: httpd_can_network_connect
+    state: yes
+    persistent: yes
+  tags: selinux
+
+- name: create roster file with correct permissions
+  copy:
+    content: ''
+    dest: '{{ prosody_groups_file }}'
+    owner: prosody
+    group: prosody
+    mode: 0640
+    force: no
+
+- name: generate roster script
+  template:
+    src: usr/local/bin/prosody-update-roster.j2
+    dest: /usr/local/bin/prosody-update-roster
+    mode: 0555
+
+- name: create prosody-update-roster timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: prosody-update-roster
+    timer_description: Update prosody shared roster
+    timer_after: network.target
+    timer_on_calendar: daily
+    timer_exec: /usr/local/bin/prosody-update-roster
+    timer_user: prosody
+
+- name: generate shared roster
+  systemd:
+    name: prosody-update-roster.service
+    state: started
+  changed_when: no
+
+- name: start prosody
+  systemd:
+    name: prosody
+    enabled: yes
+    state: started

@@ -1,0 +1,6 @@
+root_authorized_keys:
+  - ssh-ed25519 AAAAAAAchangeme
+  - ssh-ed25519 AAAAAAAchangeme
+
+root_password: '{{ vault_root_password }}'
+root_password_salt: '{{ vault_root_password_salt }}'

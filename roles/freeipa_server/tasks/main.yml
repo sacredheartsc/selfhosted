@@ -1,0 +1,77 @@
+- name: install freeipa pacakges
+  dnf:
+    name: '{{ freeipa_packages }}'
+    state: present
+
+# Disabling this until they figure out this bug. I don't use containers,
+# so the kernel KEYRING ccache is just fine.
+# https://bugzilla.redhat.com/show_bug.cgi?id=2035496
+- name: uninstall sssd-kcm
+  dnf:
+    name: sssd-kcm
+    state: absent
+  notify: restart sssd
+
+- name: open firewall ports
+  firewalld:
+    service: '{{ item }}'
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop:
+    - dns
+    - freeipa-ldap
+    - freeipa-ldaps
+    - freeipa-trust
+    - freeipa-replication
+  tags: firewalld
+
+- include_tasks:
+    file: "{{ 'master' if (freeipa_master == inventory_hostname) else 'replica' }}.yml"
+
+- name: copy bind configuration
+  template:
+    src: etc/named/ipa-options-ext.conf.j2
+    dest: /etc/named/ipa-options-ext.conf
+  notify: restart freeipa
+
+- name: send sssd logs to journald
+  lineinfile:
+    create: yes
+    path: /etc/sysconfig/sssd
+    regexp: ^DEBUG_LOGGER=
+    line: DEBUG_LOGGER=--logger=journald
+  notify: restart sssd
+
+- name: check if rsyslog is installed
+  stat:
+    path: /etc/rsyslog.d
+  register: rsyslog_conf_dir
+
+- name: log krb5 to rsyslog
+  lineinfile:
+    path: /etc/krb5.conf
+    insertafter: '^\[logging\]$'
+    firstmatch: yes
+    regexp: '^\s*{{ item }}\s*='
+    line: ' {{ item }} = SYSLOG:INFO:DAEMON'
+  loop:
+    - kdc
+    - admin_server
+  notify: restart freeipa
+
+- name: log freeipa files to rsyslog
+  template:
+    src: etc/rsyslog.d/freeipa.conf.j2
+    dest: /etc/rsyslog.d/freeipa.conf
+  notify: restart rsyslog
+  when: rsyslog_conf_dir.stat.exists
+
+- name: log samba to rsyslog
+  lineinfile:
+    path: /etc/samba/smb.conf
+    insertafter: '^\[global\]$'
+    firstmatch: yes
+    regexp: '^\s*logging\s*='
+    line: 'logging = syslog@2'
+  notify: restart samba

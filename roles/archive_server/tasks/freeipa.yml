@@ -1,0 +1,51 @@
+- name: create freeipa user
+  ipauser:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ archive_user }}'
+    loginshell: /bin/bash
+    homedir: '{{ archive_home }}'
+    givenname: archive
+    sn: Service Account
+    state: present
+  run_once: True
+
+- name: create archive-clients hostgroup
+  ipahostgroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ archive_clients_hbac_hostgroup }}'
+    description: Archive Clients
+    state: present
+  run_once: True
+
+- name: create HBAC rule for ssh
+  ipahbacrule:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: archive_ssh_to_archive_clients
+    description: Allow archive user to ssh to archive clients
+    user:
+      - '{{ archive_user }}'
+    hostgroup:
+      - '{{ archive_clients_hbac_hostgroup }}'
+    hbacsvc: sshd
+  run_once: True
+
+- name: retrieve user keytab
+  include_role:
+    name: freeipa_keytab
+  vars:
+    keytab_principal: '{{ archive_user }}'
+    keytab_path: '{{ archive_keytab }}'
+
+- name: configure gssproxy for kerberized nfs
+  include_role:
+    name: gssproxy_client
+  vars:
+    gssproxy_name: archiver
+    gssproxy_section: service/archiver
+    gssproxy_keytab: /etc/krb5.keytab
+    gssproxy_client_keytab: '{{ archive_keytab }}'
+    gssproxy_cred_usage: initiate
+    gssproxy_euid: '{{ archive_user }}'

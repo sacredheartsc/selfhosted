@@ -1,0 +1,42 @@
+#!/usr/libexec/platform-python
+
+import os
+import sys
+import ldap
+import ldap.sasl
+import ldap.filter
+
+LDAP_URI = '{{ freeipa_ldap_uri }}'
+USER_BASEDN = '{{ freeipa_user_basedn }}'
+GROUP_BASEDN = '{{ freeipa_group_basedn }}'
+
+if len(sys.argv) != 2:
+  sys.exit('must specify one username')
+
+if sys.argv[1] == 'nobody':
+  exit(0)
+
+os.environ['GSS_USE_PROXY'] = 'yes'
+conn = ldap.initialize(LDAP_URI)
+conn.protocol_version = ldap.VERSION3
+conn.sasl_interactive_bind_s('', ldap.sasl.sasl({}, 'GSSAPI'))
+
+user = conn.search_s(
+  USER_BASEDN,
+  ldap.SCOPE_SUBTREE,
+  ldap.filter.filter_format('uid=%s', [sys.argv[1]]),
+  ['memberOf'])
+
+if not user:
+  exit(1)
+
+groups = []
+
+for group_dn in [ldap.dn.explode_dn(dn) for dn in user[0][1]['memberOf']]:
+  if ','.join(group_dn[1:]) == GROUP_BASEDN:
+    rdn = ldap.dn.str2dn(group_dn[0])[0][0]
+    if rdn[0] == 'cn':
+      # replace whitespace with underscore
+      groups.append('_'.join(rdn[1].split()))
+
+print(' '.join(groups))

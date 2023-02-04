@@ -1,0 +1,6 @@
+plugin {
+  fts_autoindex = yes
+  fts = solr
+  fts_solr = url=http://localhost:{{ dovecot_solr_port }}/solr/dovecot/
+  fts_tika = http://localhost:{{ dovecot_tika_port }}/tika/
+}

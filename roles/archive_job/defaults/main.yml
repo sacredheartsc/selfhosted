@@ -1,0 +1,8 @@
+#  archive_name: someprog
+#  archive_command: command with args
+# OR
+#  archive_shell: some $shell | command
+archive_description: 'archive {{ archive_name }}'
+archive_on_calendar: weekly
+archive_user: root
+archive_group: '{{ archive_user }}'

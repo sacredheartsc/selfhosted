@@ -1,0 +1,9 @@
+mediawiki_upgrade_key: '{{ vault_mediawiki_upgrade_key }}'
+mediawiki_secret_key: '{{ vault_mediawiki_secret_key }}'
+mediawiki_admin_password: '{{ vault_mediawiki_admin_password }}'
+
+mediawiki_sysaccount_password: '{{ vault_mediawiki_sysaccount_password }}'
+
+mediawiki_logo_1x: ~/Development/assets/mediawiki/acme-logo.svg     # changeme (or delete)
+mediawiki_logo_icon: ~/Development/assets/mediawiki/acme-icon.svg   # changeme (or delete)
+mediawiki_favicon: ~/Development/assets/mediawiki/acme-favicon.svg  # changeme (or delete)

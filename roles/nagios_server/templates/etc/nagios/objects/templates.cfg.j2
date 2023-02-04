@@ -1,0 +1,51 @@
+define contact {
+  name                           generic-contact
+  host_notification_period       24x7
+  host_notification_options      d,u,r,f,s
+  host_notification_commands     notify-host-by-email
+  service_notification_period    24x7
+  service_notification_options   w,u,c,r,f,s
+  service_notification_commands  notify-service-by-email
+  register                       0
+}
+
+define host {
+  name                           generic-host
+  notifications_enabled          1
+  event_handler_enabled          1
+  flap_detection_enabled         0
+  process_perf_data              1
+  retain_status_information      1
+  retain_nonstatus_information   1
+  notification_period            24x7-except-reboot-window
+  notification_interval          0
+  notification_options           d,u,r,f
+  first_notification_delay       0
+  check_period                   24x7
+  check_interval                 5
+  retry_interval                 1
+  max_check_attempts             3
+  contacts                       sysadmins
+  register                       0
+}
+
+define service {
+  name                           generic-service
+  parallelize_check              1
+  check_freshness                0
+  notifications_enabled          1
+  event_handler_enabled          1
+  flap_detection_enabled         0
+  process_perf_data              1
+  retain_status_information      1
+  retain_nonstatus_information   1
+  is_volatile                    0
+  max_check_attempts             3
+  check_interval                 10
+  retry_interval                 1
+  notification_options           w,u,c,r,f
+  notification_interval          0
+  first_notification_delay       0
+  contacts                       sysadmins
+  register                       0
+}

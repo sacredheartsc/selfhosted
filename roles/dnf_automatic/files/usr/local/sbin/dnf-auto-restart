@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -Eeu -o pipefail
+shopt -s lastpipe
+
+if ! dnf needs-restarting --reboothint; then
+  shutdown --reboot '+5' 'Rebooting to apply package upgrades'
+  exit 0
+fi
+
+SERVICES=()
+
+dnf needs-restarting --services | while read -r service; do
+  if [[ $service = user@* ]]; then
+    continue
+  elif [ "$(systemctl show "$service" -P RefuseManualStop)" = yes ]; then
+    continue
+  else
+    SERVICES+=("$service")
+  fi
+done
+
+printf '\n'
+if (( ${#SERVICES[@]} > 0 )); then
+  echo 'restarting the following units:'
+  printf '  * %s\n' "${SERVICES[@]}"
+  systemctl restart "${SERVICES[@]}"
+else
+  echo 'All services are up to date.'
+fi

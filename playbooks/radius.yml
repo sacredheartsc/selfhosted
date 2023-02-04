@@ -1,0 +1,9 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: radius_servers
+
+- name: configure freeradius
+  hosts: radius_servers
+  tags: freeradius,radius
+  roles:
+    - freeradius

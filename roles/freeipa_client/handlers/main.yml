@@ -1,0 +1,14 @@
+- name: restart gssproxy
+  systemd:
+    name: gssproxy
+    state: restarted
+
+- name: restart sssd
+  systemd:
+    name: sssd
+    state: restarted
+
+- name: restart rsyslog
+  systemd:
+    name: rsyslog
+    state: restarted

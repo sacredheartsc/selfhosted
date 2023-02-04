@@ -1,0 +1,10 @@
+certificate_email: 'root@{{ email_domain }}'
+
+certificate_sans: '{{ [ansible_fqdn] + cnames }}'
+certificate_type: ecdsa
+certificate_size: 2048
+
+certificate_owner: root
+certificate_mode: 0400
+
+certificate_use_apache: no

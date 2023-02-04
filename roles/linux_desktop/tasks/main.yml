@@ -1,0 +1,109 @@
+- name: install packages
+  dnf:
+    name: '{{ linux_desktop_packages }}'
+    exclude: '{{ linux_desktop_excluded_packages }}'
+    state: present
+
+# Sticking with tuned for now. On my thinkpad, the power-profiles-daemon sets the
+# CPU governor to "performance" in the "power-save" profile!
+- name: mask power-profiles-daemon
+  systemd:
+    name: power-profiles-daemon
+    state: stopped
+    masked: yes
+
+- name: make sure tuned wasn't killed by power-profiles-daemon
+  systemd:
+    name: tuned
+    state: started
+
+- name: enable GuC for intel card
+  copy:
+    content: |
+      options i915 enable_guc=2 enable_fbc=1
+    dest: /etc/modprobe.d/i915.conf
+  register: i915_options
+
+- name: warn if reboot needed
+  fail:
+    msg: A reboot is needed to apply settings to i915 graphics module.
+  when: i915_options.changed
+  ignore_errors: yes
+
+- name: set default target to graphical
+  file:
+    src: /usr/lib/systemd/system/graphical.target
+    dest: /etc/systemd/system/default.target
+    state: link
+
+- name: generate gdm configuration
+  template:
+    src: etc/gdm/custom.conf.j2
+    dest: /etc/gdm/custom.conf
+  notify: restart gdm
+
+- name: check if graphical target is active
+  command: systemctl is-active graphical.target
+  register: graphical_target
+  changed_when: false
+  failed_when: false
+
+- name: start display manager
+  command: systemctl isolate graphical.target
+  when: graphical_target.rc != 0
+  notify: restart gdm
+
+- name: enable fractional scaling
+  copy:
+    src: '{{ item[1:] }}'
+    dest: '{{ item }}'
+  loop:
+    - /etc/dconf/db/local.d/00-hidpi
+    - /etc/dconf/db/local.d/locks/hidpi
+  notify: update dconf
+
+- name: add local dconf settings
+  template:
+    src: etc/dconf/db/local.d/00-gnome.j2
+    dest: /etc/dconf/db/local.d/00-gnome
+  notify: update dconf
+
+- name: add flathub flatpak repository
+  flatpak_remote:
+    name: flathub
+    flatpakrepo_url: '{{ linux_desktop_flathub_repo }}'
+    state: present
+
+- name: install flatpak applications
+  flatpak:
+    name: '{{ item }}'
+    state: present
+  loop: '{{ linux_desktop_flatpaks }}'
+
+- name: set up flatpak-update timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: flatpak-update
+    timer_description: Update flatpaks
+    timer_after: network.target
+    timer_on_calendar: '{{ linux_desktop_flatpak_update_on_calendar }}'
+    timer_exec: flatpak update -y
+
+- name: configure flatpak overrides
+  command: flatpak override {{ item.key }} {{ item.value }}
+  changed_when: no
+  loop: '{{ linux_desktop_flatpak_overrides | dict2items }}'
+
+- name: create /usr/local/share/thumbnailers
+  file:
+    path: /usr/local/share/thumbnailers
+    state: directory
+
+# see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=973942
+- name: patch totem thumbnailer to support large mp4 files
+  copy:
+    src: usr/local/share/thumbnailers/totem.thumbnailer
+    dest: /usr/local/share/thumbnailers/totem.thumbnailer
+
+- import_tasks: freeipa.yml

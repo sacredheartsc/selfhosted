@@ -1,0 +1,5 @@
+- name: reload reposync timer
+  systemd:
+    name: reposync.timer
+    daemon-reload: yes
+    state: restarted

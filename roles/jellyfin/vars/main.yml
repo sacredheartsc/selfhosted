@@ -1,0 +1,34 @@
+jellyfin_url: https://repo.jellyfin.org/releases/server/linux/stable/combined/jellyfin_{{ jellyfin_version }}_amd64.tar.gz
+
+jellyfin_packages:
+  - ffmpeg
+
+jellyfin_home: /var/lib/jellyfin
+jellyfin_conf_dir: /etc/jellyfin
+jellyfin_install_dir: /opt/jellyfin
+jellyfin_keytab: /var/lib/gssproxy/clients/{{ jellyfin_user }}.keytab
+
+jellyfin_discovery_ports:
+  - 1900/udp
+  - 7359/udp
+
+jellyfin_apache_config: |
+  {{ apache_proxy_config }}
+  ProxyPass        / http://127.0.0.1:{{ jellyfin_port }}/
+  ProxyPassReverse / http://127.0.0.1:{{ jellyfin_port }}/
+
+  <Location /socket>
+    ProxyPass http://127.0.0.1:{{ jellyfin_port }}/socket/
+    ProxyPassReverse http://127.0.0.1:{{ jellyfin_port }}/socket/
+
+    RewriteEngine on
+    RewriteCond %{HTTP:Upgrade} websocket [NC]
+    RewriteCond %{HTTP:Connection} upgrade [NC]
+    RewriteRule ^/?(.*) "ws://127.0.0.1:{{ jellyfin_port }}/socket/$1" [P,L]
+  </Location>
+
+jellyfin_archive_shell: >-
+  TIMESTAMP=$(date +%Y%m%d%H%M%S);
+  tar czf "jellyfin-${TIMESTAMP}.tar.gz"
+  {{ jellyfin_home | quote }}/{data,metadata,plugins,root}
+  {{ jellyfin_conf_dir | quote }}

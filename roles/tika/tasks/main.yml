@@ -1,0 +1,69 @@
+- name: install java
+  dnf:
+    name: java-17-openjdk-headless
+    state: present
+
+- name: create tika installation directory
+  file:
+    path: '{{ tika_install_dir }}'
+    state: directory
+
+- name: download jar file
+  get_url:
+    url: '{{ tika_url }}'
+    dest: '{{ tika_install_dir }}/tika-server.jar'
+    mode: 0444
+  notify: restart tika
+
+- name: add local user
+  user:
+    name: tika
+    system: yes
+    home: '{{ tika_data_dir }}'
+    shell: /sbin/nologin
+    create_home: no
+
+- name: create data directory
+  file:
+    path: '{{ tika_data_dir }}'
+    state: directory
+    owner: tika
+    group: tika
+    mode: 0770
+
+- name: create systemd unit
+  template:
+    src: etc/systemd/system/tika.service.j2
+    dest: /etc/systemd/system/tika.service
+  register: tika_unit
+
+- name: reload systemd units
+  systemd:
+    daemon_reload: yes
+  when: tika_unit.changed
+
+- name: create environment file
+  template:
+    src: etc/sysconfig/tika.j2
+    dest: /etc/sysconfig/tika
+  notify: restart tika
+
+- name: create configuration directory
+  file:
+    path: '{{ tika_conf_dir }}'
+    state: directory
+
+- name: generate config files
+  template:
+    src: '{{ tika_conf_dir[1:] }}/{{ item }}.j2'
+    dest: '{{ tika_conf_dir }}/{{ item }}'
+  loop:
+    - log4j2.xml
+    - config.xml
+  notify: restart tika
+
+- name: start tika
+  systemd:
+    name: tika
+    enabled: yes
+    state: started

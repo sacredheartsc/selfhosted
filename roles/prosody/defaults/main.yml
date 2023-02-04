@@ -1,0 +1,21 @@
+prosody_admins: []
+prosody_vhosts: ['{{ email_domain }}']
+prosody_conference_vhosts: "{{ ['conference.'] | product(prosody_vhosts) | map('join') | list }}"
+prosody_user: s-prosody
+prosody_db_name: prosody
+prosody_db_host: '{{ postgresql_host }}'
+prosody_archive_expires_after: 4w
+prosody_http_port: 5280
+prosody_http_host: '{{ ansible_fqdn }}'
+prosody_sysaccount_username: prosody
+
+prosody_ldap_hosts: '{{ freeipa_hosts }}'
+prosody_access_group: role-xmpp-access
+
+prosody_upload_file_size_limit: 52428800  # 50 MB
+prosody_upload_expire_after: 604800       # 1 week
+prosody_upload_quota: 10737418240         # 10 GiB
+
+prosody_turn_secret: '{{ coturn_auth_secret }}'
+prosody_turn_host: '{{ coturn_realm }}'
+prosody_turn_port: 3478

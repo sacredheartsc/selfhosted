@@ -1,0 +1,8 @@
+version = 3
+bind = sasl
+sasl_mechs = gssapi
+server_host = {{ freeipa_hosts | join(" ") }}
+search_base = {{ freeipa_accounts_basedn }}
+query_filter = (|(mail=%s)(mailAlternateAddress=%s))
+special_result_attribute = member
+result_attribute = krbprincipalname

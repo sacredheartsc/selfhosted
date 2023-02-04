@@ -1,0 +1,33 @@
+- name: create linux-desktops hostgroup
+  ipahostgroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ linux_desktop_hbac_hostgroup}}'
+    description: Linux Desktops
+    host: "{{ groups[linux_desktop_hbac_hostgroup] | map('regex_replace', '$', '.' ~ ansible_domain) }}"
+  run_once: yes
+
+- name: create desktop access group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ linux_desktop_access_group }}'
+    description: linux desktop access
+    nonposix: yes
+    state: present
+  run_once: yes
+
+- name: create HBAC rule for gdm
+  ipahbacrule:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: allow_gdm_on_linux_desktops
+    description: Allow login to GDM on linux desktops
+    hostgroup:
+      - '{{ linux_desktop_hbac_hostgroup }}'
+    group:
+      - '{{ linux_desktop_access_group }}'
+    hbacsvc:
+      - gdm
+      - gdm-password
+  run_once: yes

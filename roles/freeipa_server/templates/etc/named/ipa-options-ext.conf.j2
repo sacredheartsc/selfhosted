@@ -1,0 +1,7 @@
+allow-recursion { any; };
+allow-query-cache { any; };
+
+max-ncache-ttl {{ freeipa_dns_max_negative_cache }};
+
+/* turns on IPv6 for port 53, IPv4 is on by default for all ifaces */
+listen-on-v6 { any; };

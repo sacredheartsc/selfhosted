@@ -1,0 +1,49 @@
+- name: install rsync
+  dnf:
+    name: rsync
+    state: present
+
+- name: add host to archive clients hostgroup
+  ipahostgroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ archive_clients_hostgroup }}'
+    host: '{{ ansible_fqdn }}'
+    action: member
+    state: present
+
+- name: create archive directory
+  file:
+    path: '{{ archive_path }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: set default user acl for archive directory
+  acl:
+    path: '{{ archive_path }}'
+    default: yes
+    entity: '{{ archive_server_user }}'
+    etype: user
+    permissions: rwX
+    state: present
+
+- name: set default group acl for archive directory
+  acl:
+    path: '{{ archive_path }}'
+    default: yes
+    etype: group
+    permissions: rwX
+    state: present
+
+- name: set up archive-cleanup timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: archive-cleanup
+    timer_description: Cleanup old archive files
+    timer_after: network.target
+    timer_on_calendar: '{{ archive_cleanup_on_calendar }}'
+    timer_user: root
+    timer_exec: find {{ archive_path }} -type f -mtime +{{ archive_cleanup_older_than_days }} -exec rm {} +

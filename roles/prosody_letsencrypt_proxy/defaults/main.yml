@@ -1,0 +1,2 @@
+prosody_le_role: slave
+prosody_le_domains: '{{ prosody_vhosts }}'

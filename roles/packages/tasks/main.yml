@@ -1,0 +1,10 @@
+- name: update packages
+  dnf:
+    name: '*'
+    state: latest
+    update_cache: yes
+
+- name: install packages
+  dnf:
+    name: '{{ packages_install }}'
+    state: present

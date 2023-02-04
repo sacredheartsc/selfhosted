@@ -1,0 +1,41 @@
+- name: create A record
+  ipadnsrecord:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    zone_name: "{{ dns_fqdn | regex_replace('^[^.]+\\.', '') }}"
+    record_name: '{{ dns_fqdn | split(".") | first }}'
+    record_type: A
+    record_value: "{{ dns_ip }}"
+    state: present
+  delegate_to: '{{ freeipa_master }}'
+
+- name: create reverse DNS zone
+  ipadnszone:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    zone_name: "{{ dns_ip | ansible.utils.ipaddr('revdns') | regex_replace('^[^.]+\\.', '') }}"
+    state: present
+  delegate_to: '{{ freeipa_master }}'
+
+- name: create PTR record
+  ipadnsrecord:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    zone_name: "{{ dns_ip | ansible.utils.ipaddr('revdns') | regex_replace('^[^.]+\\.', '') }}"
+    record_name: '{{ dns_ip | split(".") | last }}'
+    record_type: PTR
+    record_value: '{{ dns_fqdn if dns_fqdn[-1] == "." else (dns_fqdn ~ ".") }}'
+    state: present
+  delegate_to: '{{ freeipa_master }}'
+
+- name: create CNAME records
+  ipadnsrecord:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    zone_name: "{{ item | regex_replace('^[^.]+\\.', '') }}"
+    record_name: '{{ item | split(".") | first }}'
+    record_type: CNAME
+    record_value: '{{ dns_fqdn if dns_fqdn[-1] == "." else (dns_fqdn ~ ".") }}'
+    state: present
+  delegate_to: '{{ freeipa_master }}'
+  loop: '{{ dns_cnames }}'

@@ -1,0 +1,2 @@
+nim_url: https://nim-lang.org/download/nim-{{ nim_version }}-linux_x64.tar.xz
+nim_install_dir: /usr/local/share/nim

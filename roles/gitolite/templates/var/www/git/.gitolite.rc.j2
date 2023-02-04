@@ -1,0 +1,28 @@
+$ENV{PATH} .= ":{{ gitolite_home }}/bin";
+
+%RC = (
+  UMASK           =>  0027,
+  GIT_CONFIG_KEYS =>  '.*',
+  LOG_DEST        => 'syslog',
+  ROLES => {
+    READERS       =>  1,
+    WRITERS       =>  1,
+  },
+  ENABLE => [
+    'help',
+    'desc',
+    'info',
+    'perms',
+    'writable',
+    'D',
+    'git-config',
+    'gitweb',
+    'set-default-roles',
+    'upstream',
+    'cgit',
+  ],
+  GROUPLIST_PGM   =>  '{{ gitolite_groups_script }}',
+  HTTP_ANON_USER  =>  '{{ gitolite_anon_user }}',
+);
+
+1;

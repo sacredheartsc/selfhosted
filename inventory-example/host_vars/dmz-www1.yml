@@ -1,0 +1,9 @@
+nagios_https_vhosts:  # changeme - https vhosts to monitor
+  - example.com
+  - example.net
+  - www.example.com
+  - www.example.net
+
+# subdirs of /var/www to be included in the backup.yml playbook
+apache_backup_dirs:
+  - www.example.com

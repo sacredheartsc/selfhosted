@@ -1,0 +1,19 @@
+- name: install tuned
+  dnf:
+    name: tuned
+    state: present
+
+- name: start tuned
+  systemd:
+    name: tuned
+    enabled: yes
+    state: started
+
+- name: get current tuned profile
+  slurp:
+    src: /etc/tuned/active_profile
+  register: tuned_active_profile
+
+- name: set tuned profile
+  command: 'tuned-adm profile {{ tuned_profile }}'
+  when: tuned_active_profile.content | b64decode | trim != tuned_profile

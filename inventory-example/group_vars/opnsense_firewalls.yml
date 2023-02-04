@@ -1,0 +1,7 @@
+ansible_python_interpreter: /usr/local/bin/python3
+
+# If you want OPNsense to serve PXE, you need the following plugins:
+#   - os-tftp
+#   - os-nginx
+pxe_root: /usr/local/tftp
+pxe_http_port: 8080

@@ -1,0 +1,5 @@
+postgresql_timezone: '{{ timezone }}'
+postgresql_max_connections: 100
+postgresql_shared_buffers_mb: '{{ (ansible_memory_mb.real.total / 4) | int }}'
+
+postgresql_password_users: []

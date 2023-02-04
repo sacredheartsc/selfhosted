@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -Eeu -o pipefail
+
+trap 'exit 3' ERR
+
+failed_units=$(systemctl --state failed --no-legend --plain | cut -d' ' -f1)
+
+if [ -n "$failed_units" ]; then
+  echo "CRIT - failed units: ${failed_units// /, }"
+
+  for unit in $failed_units; do
+    sudo systemctl status -- "$unit" ||:
+  done
+
+  exit 2
+else
+  echo 'OK - all units healthy'
+  exit 0
+fi

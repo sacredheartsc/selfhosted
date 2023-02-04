@@ -1,0 +1,22 @@
+- name: install packages
+  dnf:
+    name: '{{ selinux_packages }}'
+    state: present
+
+- name: start auditd
+  systemd:
+    name: auditd
+    enabled: yes
+    state: started
+
+- name: enable selinux
+  lineinfile:
+    path: /etc/selinux/config
+    regexp: ^SELINUX=
+    line: SELINUX={{ 'enforcing' if selinux_enabled else 'disabled' }}
+    state: present
+  register: selinux_config
+
+- name: reboot to apply selinux mode
+  reboot:
+  when: selinux_config.changed

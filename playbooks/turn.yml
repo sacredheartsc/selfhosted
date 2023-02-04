@@ -1,0 +1,10 @@
+- import_playbook: common.yml
+  tags: common
+  vars:
+    hostlist: turn_servers
+
+- name: configure coturn
+  hosts: turn_servers
+  tags: coturn,turn
+  roles:
+    - role: coturn

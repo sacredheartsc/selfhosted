@@ -1,0 +1,33 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: privbrowse_servers
+
+- name: configure web service frontends
+  hosts: privbrowse_servers
+  roles:
+    - role: invidious
+      tags: invidious
+
+    - role: apache_vhost
+      apache_server_name: '{{ invidious_server_name }}'
+      apache_server_aliases: []
+      apache_config: '{{ invidious_apache_config }}'
+      tags: apache
+
+    - role: teddit
+      tags: teddit
+
+    - role: apache_vhost
+      apache_server_name: '{{ teddit_server_name }}'
+      apache_server_aliases: []
+      apache_config: '{{ teddit_apache_config }}'
+      tags: apache
+
+    - role: nitter
+      tags: nitter
+
+    - role: apache_vhost
+      apache_server_name: '{{ nitter_server_name }}'
+      apache_server_aliases: []
+      apache_config: '{{ nitter_apache_config }}'
+      tags: apache

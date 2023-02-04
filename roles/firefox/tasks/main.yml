@@ -1,0 +1,10 @@
+- name: generate firefox policy
+  template:
+    lstrip_blocks: yes
+    src: usr/lib64/firefox/distribution/policies.json.j2
+    dest: /usr/lib64/firefox/distribution/policies.json
+
+- name: enable wayland for firefox
+  copy:
+    src: etc/profile.d/firefox.sh
+    dest: /etc/profile.d/firefox.sh

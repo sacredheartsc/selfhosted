@@ -1,0 +1,3 @@
+{% for command in nagios_sudo_whitelist %}
+{{ nagios_user }} ALL=(root) NOPASSWD: {{ command | replace(':', '\\:') }}
+{% endfor %}

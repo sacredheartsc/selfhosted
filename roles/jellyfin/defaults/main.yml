@@ -1,0 +1,11 @@
+jellyfin_version: 10.8.9
+jellyfin_port: 8096
+jellyfin_user: s-jellyfin
+
+jellyfin_sysaccount_username: jellyfin
+
+jellyfin_media_access_group: role-media-access
+jellyfin_access_group: role-media-access
+jellyfin_admin_group: role-media-admin
+
+jellyfin_ldap_server: '{{ freeipa_hosts[0] }}'

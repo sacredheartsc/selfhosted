@@ -1,0 +1,35 @@
+[Unit]
+Description=hastebin paste server
+After=network.target
+AssertPathExists={{ hastebin_install_dir }}
+
+[Service]
+Type=simple
+Environment="LISTEN_ADDRESS=127.0.0.1"
+Environment="NODE_ENV=production"
+EnvironmentFile=-/etc/sysconfig/hastebin
+ExecStart=/usr/bin/node server.js
+WorkingDirectory={{ hastebin_install_dir }}
+User={{ hastebin_user }}
+Group={{ hastebin_user }}
+Restart=on-failure
+
+# See https://www.freedesktop.org/software/systemd/man/systemd.exec.html
+# for details
+DevicePolicy=closed
+NoNewPrivileges=yes
+PrivateDevices=yes
+PrivateTmp=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=yes
+RestrictRealtime=yes
+SystemCallFilter=~@clock @debug @module @mount @obsolete @privileged @reboot @setuid @swap
+
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,25 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: wiki_servers
+
+- name: configure mediawiki
+  hosts: wiki_servers
+  tags: wiki,mediawiki
+  roles:
+    - role: mediawiki
+
+    - role: apache_vhost
+      apache_default_vhost: yes
+      apache_document_root: '{{ mediawiki_home }}'
+      apache_config: '{{ mediawiki_apache_config }}'
+      tags: apache
+
+    - role: php
+      php_fpm_environment: '{{ mediawiki_php_environment }}'
+      php_fpm_admin_values: '{{ mediawiki_php_admin_values }}'
+      tags: php
+
+    - role: archive_job
+      archive_name: mediawiki
+      archive_shell: '{{ mediawiki_archive_shell }}'
+      tags: archive

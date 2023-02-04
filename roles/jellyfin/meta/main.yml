@@ -1,0 +1,10 @@
+dependencies:
+  - role: yum
+    yum_repositories:
+      - epel
+      - rpmfusion-free
+    tags: yum
+
+  - role: freeipa_system_account
+    system_account_username: '{{ jellyfin_sysaccount_username }}'
+    system_account_password: '{{ jellyfin_sysaccount_password }}'

@@ -1,0 +1,102 @@
+- name: install packages
+  dnf:
+    name: '{{ gathio_packages }}'
+    state: present
+
+- name: create SELinux policy for mongodb
+  include_role:
+    name: selinux_policy
+    apply:
+      tags: selinux
+  vars:
+    selinux_policy_name: mongodb_custom
+    selinux_policy_te: '{{ gathio_mongodb_selinux_policy_te }}'
+  tags: selinux
+
+- name: enable mongodb
+  systemd:
+    name: mongod
+    state: started
+    enabled: yes
+
+- name: create gathio user
+  user:
+    name: '{{ gathio_user }}'
+    system: yes
+    home: '{{ gathio_home }}'
+    shell: /sbin/nologin
+    create_home: no
+
+- name: create gathio home
+  file:
+    path: '{{ gathio_home }}'
+    owner: '{{ gathio_user }}'
+    group: '{{ gathio_user }}'
+    mode: 0755
+    state: directory
+
+- name: disable npm package lock
+  lineinfile:
+    regexp: ^package-lock=
+    line: package-lock=false
+    path: '{{ gathio_home }}/.npmrc'
+    create: yes
+    owner: '{{ gathio_user }}'
+    group: '{{ gathio_user }}'
+    mode: 0600
+    state: present
+
+- name: clone gathio repository
+  git:
+    repo: '{{ gathio_git_repo }}'
+    dest: '{{ gathio_install_dir }}'
+    version: '{{ gathio_version }}'
+    force: yes
+    update: yes
+  become: yes
+  become_user: '{{ gathio_user }}'
+  register: gathio_git
+  notify: restart gathio
+
+- name: install npm dependencies
+  npm:
+    path: '{{ gathio_install_dir }}'
+    production: yes
+    no_optional: no
+  become: yes
+  become_user: '{{ gathio_user }}'
+  when: gathio_git.changed
+  notify: restart gathio
+
+- name: generate gathio configuration
+  template:
+    src: '{{ gathio_install_dir[1:] }}/config/{{ item }}.j2'
+    dest: '{{ gathio_install_dir }}/config/{{ item }}'
+    owner: '{{ gathio_user }}'
+    group: '{{ gathio_user }}'
+    mode: 0440
+  loop:
+    - api.js
+    - database.js
+    - domain.js
+  notify: restart gathio
+
+- name: create gathio systemd unit
+  template:
+    src: etc/systemd/system/gathio.service.j2
+    dest: /etc/systemd/system/gathio.service
+  register: gathio_unit
+  notify: restart gathio
+
+- name: reload systemd daemons
+  systemd:
+    daemon_reload: yes
+  when: gathio_unit.changed
+
+- name: open firewall ports
+  firewalld:
+    port: '{{ gathio_port }}/tcp'
+    permanent: yes
+    immediate: yes
+    state: enabled
+  tags: firewalld

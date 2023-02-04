@@ -1,0 +1,46 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: www1
+
+- name: configure internal web servers
+  hosts: www1
+  tags: apache
+  roles:
+    - role: apache_vhost
+      apache_default_vhost: yes
+      apache_config: |
+        AliasMatch "^/pub/user/([^/]+)(.*)"  "/nfs/user/$1/pub$2"
+        AliasMatch "^/pub/group/([^/]+)(.*)" "/nfs/group/$1/pub$2"
+
+        <Directory "/nfs/user">
+          Options -FollowSymLinks +Indexes
+          AllowOverride None
+          Require all granted
+        </Directory>
+
+        <Directory "/nfs/group">
+          Options -FollowSymLinks +Indexes
+          AllowOverride None
+          Require all granted
+        </Directory>
+  tasks:
+    - name: generate index.html
+      tags: apache
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <title>{{ domain }} webserver</title>
+          </head>
+          <body>
+            <p>This is the {{ organization }} internal webserver. To access files in user or group
+            public directories, try paths like the following:
+            <ul>
+              <li><tt><a href="/pub/user/username/">/pub/user/username</a></tt></li>
+              <li><tt><a href="/pub/group/groupname/">/pub/group/groupname</a></tt></li>
+            </ul>
+          </body
+          </html>

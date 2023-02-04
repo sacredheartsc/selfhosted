@@ -1,0 +1,9 @@
+[Unit]
+Description={{ timer_description | default(timer_name) }} on calendar interval
+
+[Timer]
+OnCalendar={{ timer_on_calendar }}
+Persistent={{ timer_persistent | bool | to_json }}
+
+[Install]
+WantedBy=timers.target

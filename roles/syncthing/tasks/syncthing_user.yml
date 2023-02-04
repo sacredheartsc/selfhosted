@@ -1,0 +1,36 @@
+- name: create user directory
+  file:
+    path: '{{ syncthing_home }}/{{ syncthing_user }}'
+    state: directory
+    owner: '{{ syncthing_user }}'
+    group: '{{ syncthing_user }}'
+    mode: 0700
+
+- name: generate default configuration
+  command:
+    cmd: syncthing -generate '{{ syncthing_home }}/{{ syncthing_user }}'
+    creates: '{{ syncthing_home }}/{{ syncthing_user }}/config.xml'
+  become: yes
+  become_user: '{{ syncthing_user }}'
+  register: syncthing_generate
+
+- name: get device id
+  command:
+    cmd: syncthing -home {{ syncthing_home }}/{{ syncthing_user }} -device-id
+  changed_when: no
+  register: syncthing_device_id
+
+- name: generate config file
+  template:
+    src: '{{ syncthing_home[1:] }}/config.xml.j2'
+    dest: '{{ syncthing_home }}/{{ syncthing_user }}/config.xml'
+    owner: '{{ syncthing_user }}'
+    group: '{{ syncthing_user }}'
+    mode: 0600
+    force: '{{ syncthing_generate.changed }}'
+
+- name: enable systemd unit
+  systemd:
+    name: 'syncthing-user@{{ syncthing_user }}'
+    enabled: yes
+    state: started

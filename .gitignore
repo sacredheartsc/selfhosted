@@ -1,0 +1,6 @@
+*.pyc
+*.swp
+*.swo
+.nfs*
+.vault_password
+backups

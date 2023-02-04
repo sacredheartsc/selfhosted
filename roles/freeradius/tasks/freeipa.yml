@@ -1,0 +1,50 @@
+- name: create access group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ freeradius_access_group }}'
+    description: wifi access
+    nonposix: yes
+    state: present
+  run_once: True
+
+- name: create service principal
+  ipaservice:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: 'radius/{{ ansible_fqdn }}'
+    state: present
+
+- name: retrieve service keytab
+  include_role:
+    name: freeipa_keytab
+  vars:
+    keytab_principal: 'radius/{{ ansible_fqdn }}'
+    keytab_path: '{{ freeradius_keytab }}'
+
+- name: configure gssproxy for kerberized LDAP
+  include_role:
+    name: gssproxy_client
+  vars:
+    gssproxy_name: freeradius
+    gssproxy_section: service/freeradius
+    gssproxy_client_keytab: '{{ freeradius_keytab }}'
+    gssproxy_cred_usage: initiate
+    gssproxy_euid: radiusd
+
+- name: create systemd override directory
+  file:
+    path: /etc/systemd/system/radiusd.service.d
+    state: directory
+
+- name: create systemd override file
+  copy:
+    src: etc/systemd/system/radiusd.service.d/override.conf
+    dest: /etc/systemd/system/radiusd.service.d/override.conf
+  register: freeradius_systemd_unit
+  notify: restart radiusd
+
+- name: reload systemd units
+  systemd:
+    daemon_reload: yes
+  when: freeradius_systemd_unit.changed

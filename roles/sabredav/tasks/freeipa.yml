@@ -1,0 +1,27 @@
+- name: create user
+  ipauser:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ sabredav_user }}'
+    loginshell: /sbin/nologin
+    homedir: '{{ sabredav_home }}'
+    givenname: SabreDAV
+    sn: Service Account
+    state: present
+  run_once: yes
+
+- name: retrieve user keytab
+  include_role:
+    name: freeipa_keytab
+  vars:
+    keytab_principal: '{{ sabredav_user }}'
+    keytab_path: '{{ sabredav_keytab }}'
+
+- name: create access group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ sabredav_access_group }}'
+    nonposix: yes
+    state: present
+  run_once: yes

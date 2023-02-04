@@ -1,0 +1,9 @@
+prosody_le_user: prosody-le-proxy
+prosody_le_home: /var/spool/prosody
+prosody_le_authorized_keys_dir: /etc/ssh/authorized_keys
+prosody_le_cert_dir: '{{ prosody_le_home }}/certs'
+
+prosody_le_slave_packages:
+  - prosody
+
+prosody_le_ssh_privkey_path: /etc/prosody/id_prosody_le_proxy

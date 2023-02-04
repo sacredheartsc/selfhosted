@@ -1,0 +1,4 @@
+dnf_automatic_packages:
+  - dnf-automatic
+
+dnf_automatic_restart_script: /usr/local/sbin/dnf-auto-restart

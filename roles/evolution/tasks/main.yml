@@ -1,0 +1,23 @@
+- name: create evolution autoconfig directory
+  file:
+    path: '{{ evolution_autoconfig_dir }}'
+    state: directory
+    recurse: yes
+
+- name: set evolution autoconfig source
+  template:
+    src: etc/dconf/db/site.d/10-evolution.j2
+    dest: /etc/dconf/db/site.d/10-evolution
+  notify: update dconf
+
+- name: generate evolution autoconfig sources
+  template:
+    src: '{{ evolution_autoconfig_dir[1:] }}/{{ item }}.j2'
+    dest: '{{ evolution_autoconfig_dir }}/{{ item }}'
+  loop:
+    - ac-caldav.source
+    - ac-carddav.source
+    - ac-tasks.source
+    - ac-imap.source
+    - ac-mail.source
+    - ac-smtp.source

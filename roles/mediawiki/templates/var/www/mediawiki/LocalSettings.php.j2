@@ -1,0 +1,288 @@
+<?php
+
+### Protect against web entry
+if ( !defined( 'MEDIAWIKI' ) ) {
+  exit;
+}
+
+
+### Wiki Name
+$wgSitename = "{{ mediawiki_site_name }}";
+$wgMetaNamespace = "{{ mediawiki_meta_namespace }}";
+$wgServer = "{{ mediawiki_url }}";
+
+
+### Short URLs
+$wgScriptPath = "";
+$wgUsePathInfo = true;
+
+$actions = array( 'edit', 'watch', 'unwatch', 'delete','revert', 'rollback',
+  'protect', 'unprotect', 'markpatrolled', 'render', 'submit', 'history', 'purge', 'info' );
+
+foreach ( $actions as $action ) {
+  $wgActionPaths[$action] = "/$1/$action";
+}
+
+$wgActionPaths['view'] = "/$1";
+$wgArticlePath = $wgActionPaths['view'];
+
+
+### Static Resources
+$wgResourceBasePath = $wgScriptPath;
+
+{% if mediawiki_logo_icon is defined %}
+$wgLogos['icon'] = "$wgResourceBasePath/resources/assets/{{ mediawiki_logo_icon | basename }}";
+{% endif %}
+{% if mediawiki_logo_1x is defined %}
+$wgLogos['1x'] = "$wgResourceBasePath/resources/assets/{{ mediawiki_logo_1x | basename }}";
+{% endif %}
+
+{% if mediawiki_favicon is defined %}
+$wgFavicon = "$wgResourceBasePath/resources/assets/{{ mediawiki_favicon | basename }}";
+{% endif %}
+
+
+### Email
+$wgEnableEmail = true;
+$wgEnableUserEmail = true;
+
+$wgEmergencyContact = "{{ mediawiki_emergency_contact }}";
+$wgPasswordSender = "{{ mediawiki_password_sender }}";
+
+$wgEnotifUserTalk = true;
+$wgEnotifWatchlist = true;
+$wgEmailAuthentication = {{ mediawiki_email_authentication | bool }};
+
+
+### Database settings
+$wgDBtype = "postgres";
+$wgDBserver = "{{ mediawiki_db_host }}";
+$wgDBname = "{{ mediawiki_db_name }}";
+$wgDBuser = "{{ mediawiki_user }}";
+$wgDBpassword = "";
+$wgDBport = "5432";
+$wgDBmwschema = "mediawiki";
+$wgSharedTables[] = "actor";
+
+
+### Caching
+$wgMainCacheType = CACHE_ACCEL;
+$wgMemCachedServers = [];
+$wgCacheDirectory = "$IP/cache";
+$wgUseFileCache = true;
+$wgUseGzip = true;
+
+
+### Images
+$wgEnableUploads = true;
+$wgUseImageMagick = true;
+$wgImageMagickConvertCommand = "/usr/bin/convert";
+
+
+### Don't reach out to the WWW
+$wgUseInstantCommons = false;
+$wgPingback = false;
+
+
+### Localization
+$wgLanguageCode = "{{ mediawiki_language_code }}";
+$wgLocaltimezone = "{{ mediawiki_local_timezone }}";
+
+
+### Secrets
+$wgSecretKey = "{{ mediawiki_secret_key }}";
+{% if mediawiki_upgrade_key is defined %}
+$wgUpgradeKey = "{{ mediawiki_upgrade_key }}";
+{% endif %}
+
+# Changing this will log out all existing sessions.
+$wgAuthenticationTokenVersion = "1";
+
+
+### Licensing
+$wgRightsPage = ""; # Set to the title of a wiki page that describes your license/copyright
+$wgRightsUrl = "";
+$wgRightsText = "";
+$wgRightsIcon = "";
+
+
+### Paths
+$wgDiff3 = "/usr/bin/diff3";
+
+
+### Permissions
+$wgGroupPermissions['*']['createaccount'] = false;
+$wgGroupPermissions['*']['autocreateaccount'] = true;
+
+{% if mediawiki_disable_anonymous_read %}
+$wgGroupPermissions['*']['read'] = false;
+{% endif %}
+
+{% if mediawiki_disable_anonymous_edit %}
+$wgGroupPermissions['*']['edit'] = false;
+{% endif %}
+
+$wgBlockDisablesLogin = true;
+
+
+### Skins
+$wgDefaultSkin = "{{ mediawiki_default_skin }}";
+
+{% for skin in mediawiki_skins %}
+wfLoadSkin( '{{ skin }}' );
+{% endfor %}
+
+
+### Custom namespaces
+{% for ns in mediawiki_custom_namespaces %}
+$wgExtraNamespaces[{{ ns.id }}] = '{{ ns.namespace }}';
+$wgExtraNamespaces[{{ ns.talk_id }}] = '{{ ns.namespace }}Talk';
+{% endfor %}
+
+
+### Subpages
+{% if mediawiki_use_subpages %}
+$wgNamespacesWithSubpages[NS_MAIN] = true;
+{% for ns in mediawiki_custom_namespaces %}
+$wgNamespacesWithSubpages[{{ ns.id }}] = true;
+$wgNamespacesWithSubpages[{{ ns.talk_id }}] = true;
+{% endfor %}
+{% endif %}
+
+
+### Custom groups
+{% for group in mediawiki_custom_namespaces
+     | selectattr('restrict', 'defined')
+     | map(attribute='restrict')
+     | map('dict2items')
+     | flatten
+     | map(attribute='value')
+     | unique
+     | difference(mediawiki_builtin_groups) %}
+$wgGroupPermissions['{{ group }}']['read'] = true;
+{% endfor %}
+
+
+### Extensions
+{% for extension in mediawiki_builtin_extensions + mediawiki_extensions %}
+wfLoadExtension( '{{ extension if extension is string else extension.name }}' );
+{% endfor %}
+
+
+### Extension: MobileFrontend
+$wgDefaultMobileSkin = '{{ mediawiki_default_mobile_skin }}';
+
+
+### Extension: WikiEditor
+$wgWikiEditorRealtimePreview = true;
+
+
+### Extension: LDAPAuthorization
+$LDAPAuthorizationAutoAuthRemoteUserStringParser = "username-at-domain";
+
+
+### Extension: LDAPAuthorization
+$LDAPProviderDefaultDomain = '{{ freeipa_realm }}';
+
+$LDAPProviderDomainConfigProvider = function() {
+  $config = [
+    '{{ freeipa_realm }}' => [
+      'connection' => [
+        'server' => '{{ mediawiki_ldap_servers | join(' ') }}',
+        'user' => 'uid={{ mediawiki_sysaccount_username }},{{ freeipa_sysaccount_basedn }}',
+        'pass' => '{{ mediawiki_sysaccount_password }}',
+        'enctype' => 'tls',
+        'options' => [
+          'LDAP_OPT_DEREF' => 1
+        ],
+        'basedn' => '{{ freeipa_basedn }}',
+        'groupbasedn' => '{{ freeipa_group_basedn }}',
+        'grouprequest' => 'MediaWiki\\Extension\\LDAPProvider\\UserGroupsRequest\\UserMemberOf::factory',
+        'presearchusernamemodifiers' => [ 'lowercase' ],
+        'userbasedn' => '{{ freeipa_user_basedn }}',
+        'searchattribute' => 'uid',
+        'searchstring' => 'uid=USER-NAME,{{ freeipa_user_basedn }}',
+        'usernameattribute' => 'uid',
+        'realnameattribute' => 'cn',
+        'emailattribute' => 'mail'
+      ],
+      'groupsync' => [
+        'mechanism' => 'mappedgroups',
+        'mapping' => [
+{% for group in mediawiki_custom_namespaces
+     | selectattr('restrict', 'defined')
+     | map(attribute='restrict')
+     | map('dict2items')
+     | flatten
+     | map(attribute='value')
+     | unique
+     | difference(mediawiki_builtin_groups) %}
+          '{{ group }}' => 'cn={{ group }},{{ freeipa_group_basedn }}',
+{% endfor %}
+          'sysop' => 'cn={{ mediawiki_admin_group }},{{ freeipa_group_basedn }}',
+          'interface-admin' => 'cn={{ mediawiki_admin_group }},{{ freeipa_group_basedn }}',
+          'bureaucrat' => 'cn={{ mediawiki_admin_group }},{{ freeipa_group_basedn }}'
+        ]
+      ],
+      'userinfo' => [
+        'attributes-map' => [
+          'email' => 'mail',
+          'realname' => 'cn'
+        ]
+      ],
+      'authorization' => [
+        'rules' => [
+          'groups' => [
+            'required' => [
+              'cn={{ mediawiki_access_group }},{{ freeipa_group_basedn }}',
+              'cn={{ mediawiki_admin_group }},{{ freeipa_group_basedn }}'
+            ]
+          ]
+        ]
+      ]
+    ]
+  ];
+
+  return new \MediaWiki\Extension\LDAPProvider\DomainConfigProvider\InlinePHPArray( $config );
+};
+
+
+### Extension: PluggableAuth
+$wgPluggableAuth_ButtonLabel = 'Log In';
+
+
+### Extension: CodeMirror
+$wgDefaultUserOptions['usecodemirror'] = 1;
+$wgCodeMirrorEnableBracketMatching = true;
+$wgCodeMirrorLineNumberingNamespaces = null;
+
+
+### Extension: UploadWizard
+$wgUploadNavigationUrl = '/Special:UploadWizard';
+
+
+### Extension: Auth_remoteuser
+$wgAuthRemoteuserUserNameReplaceFilter = [
+  '@{{ freeipa_realm }}$' => ''
+];
+
+
+### Extension: Lockdown
+{% for ns in mediawiki_custom_namespaces | selectattr('restrict', 'defined') %}
+{% for r in ns.restrict | dict2items(key_name='perm', value_name='group') %}
+$wgNamespacePermissionLockdown[{{ ns.id }}]['{{ r.perm }}'] = {{ ([r.group] if r.group is string else r.group) | to_json }};
+$wgNamespacePermissionLockdown[{{ ns.talk_id }}]['{{ r.perm }}'] = {{ ([r.group] if r.group is string else r.group) | to_json }};
+{% endfor %}
+$wgNonincludableNamespaces[] = {{ ns.id }};
+$wgNonincludableNamespaces[] = {{ ns.talk_id }};
+{% endfor %}
+
+
+### Extension: VisualEditor
+$wgVisualEditorAvailableNamespaces = [
+{% for ns in mediawiki_custom_namespaces %}
+  '{{ ns.namespace }}' => true,
+  '{{ ns.namespace }}Talk' => true{% if not loop.last %},{% endif %}
+
+{% endfor %}
+];

@@ -1,0 +1,58 @@
+- name: create admin group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ cups_admin_group }}'
+    nonposix: no
+    state: present
+  run_once: yes
+
+- name: create HBAC service
+  ipahbacsvc:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ cups_hbac_service }}'
+    description: CUPS Print Server
+    state: present
+  run_once: yes
+
+- name: create cups-servers hostgroup
+  ipahostgroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ cups_hbac_hostgroup }}'
+    description: CUPS Servers
+    host: "{{ groups[cups_hostgroup] | map('regex_replace', '$', '.' ~ ansible_domain) }}"
+  run_once: yes
+
+- name: create HBAC rule for cups-admin
+  ipahbacrule:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: allow_cups_on_cups_servers
+    description: Allow CUPS admin on CUPS servers
+    hostgroup: '{{ cups_hbac_hostgroup }}'
+    group: '{{ cups_admin_group }}'
+    hbacsvc: '{{ cups_hbac_service }}'
+  run_once: yes
+
+- name: generate pam configuration
+  copy:
+    content: |
+      auth    required pam_sss.so
+      account required pam_sss.so
+    dest: /etc/pam.d/cups
+
+- name: create HTTP service principal
+  ipaservice:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: 'HTTP/{{ ansible_fqdn }}'
+    state: present
+
+- name: retrieve HTTP keytab
+  include_role:
+    name: freeipa_keytab
+  vars:
+    keytab_principal: 'HTTP/{{ ansible_fqdn }}'
+    keytab_path: /etc/krb5.keytab

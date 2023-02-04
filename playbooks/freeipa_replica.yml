@@ -1,0 +1,9 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: freeipa_master
+
+- name: configure freeipa replicas
+  hosts: freeipa_servers:!freeipa_master
+  tags: freeipa
+  roles:
+    - freeipa_replica

@@ -1,0 +1,65 @@
+[baremetal]
+opnsense1    ip=10.10.11.1    cname=opnsense
+proxmox1     ip=10.10.11.11   cname=proxmox
+nas1         ip=10.10.12.5    cname=nas
+tuxstation1  ip=10.10.12.51
+tuxbook1     ip=10.10.12.52
+
+[proxmox_instances]
+freeipa1        ip=10.10.12.2                    cores=4  ram=8g   disk=64g
+freeipa2        ip=10.10.12.3                    cores=4  ram=8g   disk=64g
+yum1            ip=10.10.12.4   cname=yum        cores=4           disk=256g
+syslog1         ip=10.10.12.6   cname=syslog                       disk=256g
+imap1           ip=10.10.12.7   cname=imap       cores=4  ram=8g   disk=256g
+rspamd1         ip=10.10.12.8   cname=rspamd
+radius1         ip=10.10.12.9   cname=radius
+postgres1       ip=10.10.12.10  cname=postgres   cores=4  ram=8g
+ttrss1          ip=10.10.12.11  cname=ttrss
+znc1            ip=10.10.12.12  cname=znc
+dav1            ip=10.10.12.13  cname=dav                          disk=64g
+bitwarden1      ip=10.10.12.14  cname=bitwarden
+cups1           ip=10.10.12.15  cname=cups
+dev1            ip=10.10.12.16                   cores=4           disk=256g
+www1            ip=10.10.12.17  cname=www
+syncthing1      ip=10.10.12.18  cname=syncthing
+wiki1           ip=10.10.12.19  cname=wiki                         disk=64g
+jellyfin1       ip=10.10.12.20  cname=jellyfin   cores=8  ram=32g  disk=512g
+privbrowse1     ip=10.10.12.21                   cores=4  ram=8g   disk=64g
+nagios1         ip=10.10.12.22  cname=nagios     cores=4
+archive1        ip=10.10.12.23  cname=archive
+photostructure1 ip=10.10.12.24  cname=photos     cores=8  ram=16g  disk=256g
+unifi1          ip=10.10.11.30  cname=unifi
+dmz-dns1        ip=10.10.19.2
+dmz-mx1         ip=10.10.19.3   cname=smtp
+dmz-www1        ip=10.10.19.4
+dmz-xmpp1       ip=10.10.19.5   cname=xmpp
+dmz-turn1       ip=10.10.19.6   cname=turn
+dmz-git1        ip=10.10.19.13
+dmz-asterisk1   ip=10.10.14.10  cname=asterisk   cores=4
+
+[unmanaged]
+switch1           ip=10.10.11.2
+wap-livingroom    ip=10.10.11.31
+wap-bedroom       ip=10.10.11.32
+wap-kitchen       ip=10.10.11.33
+pixel1            ip=10.10.13.11
+pixel2            ip=10.10.13.12
+printer1          ip=10.10.15.2
+phone1            ip=10.10.14.11
+phone2            ip=10.10.14.12
+
+
+# Only one host can be the freeipa master.
+[freeipa_master]
+freeipa1
+
+
+# The "all" group must be specified explicitly; otherwise the constructed inventory
+# plugin won't parse the group_vars.
+# https://github.com/ansible/ansible/issues/71738
+[all:children]
+baremetal
+proxmox_instances
+unmanaged
+
+# vi: ft=dosini

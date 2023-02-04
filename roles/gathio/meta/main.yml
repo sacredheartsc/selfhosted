@@ -1,0 +1,6 @@
+dependencies:
+  - role: yum
+    yum_repositories:
+      - epel
+      - mongodb-6.0
+    tags: yum

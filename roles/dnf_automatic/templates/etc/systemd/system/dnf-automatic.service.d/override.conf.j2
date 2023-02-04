@@ -1,0 +1,4 @@
+{% if dnf_automatic_restart %}
+[Service]
+ExecStartPost={{ dnf_automatic_restart_script }}
+{% endif %}

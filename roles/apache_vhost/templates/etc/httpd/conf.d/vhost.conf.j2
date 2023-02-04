@@ -1,0 +1,135 @@
+{% if apache_use_ssl and apache_redirect_to_https %}
+<VirtualHost {{ apache_listen | default('*') }}:80>
+  ServerName {{ apache_server_name }}
+  {% for alias in apache_server_aliases %}
+  ServerAlias {{ alias }}
+  {% endfor %}
+
+  ErrorLog "logs/{{ apache_server_name }}.error_log"
+  CustomLog "logs/{{ apache_server_name }}.access_log" combined
+
+  Protocols {% if apache_use_http2 %}h2c {% endif %}http/1.1
+
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} !^\/\.well-known\/acme-challenge\/.*$
+  RewriteRule (.*) https://%{HTTP_HOST}$1 [R=permanent,L]
+</VirtualHost>
+
+{% else %}
+
+{% if apache_canonical_hostname is defined and (apache_server_aliases | length > 0) %}
+<VirtualHost {{ apache_listen | default('*') }}:80>
+  {% for alias in ([apache_server_name] + apache_server_aliases) | reject('equalto', apache_canonical_hostname) | list %}
+  {% if loop.first %}
+  ServerName {{ alias }}
+  {% else %}
+  ServerAlias {{ alias }}
+  {% endif %}
+  {% endfor %}
+
+  ErrorLog "logs/{{ apache_server_name }}.error_log"
+  CustomLog "logs/{{ apache_server_name }}.access_log" combined
+
+  Protocols {% if apache_use_http2 %}h2c {% endif %}http/1.1
+
+  RedirectMatch Permanent ^(?!/\.well-known/acme-challenge/).* http://{{ apache_canonical_hostname }}/$0
+</VirtualHost>
+{% endif %}
+
+<VirtualHost {{ apache_listen | default('*') }}:80>
+  {% if apache_document_root is defined %}
+  DocumentRoot "{{ apache_document_root }}"
+  {% endif %}
+
+  {% if apache_canonical_hostname is defined %}
+  ServerName {{ apache_canonical_hostname }}
+  {% else %}
+  ServerName {{ apache_server_name }}
+  {% for alias in apache_server_aliases %}
+  ServerAlias {{ alias }}
+  {% endfor %}
+  {% endif %}
+
+  ErrorLog "logs/{{ apache_server_name }}.error_log"
+  CustomLog "logs/{{ apache_server_name }}.access_log" combined
+
+  Protocols {% if apache_use_http2 %}h2c {% endif %}http/1.1
+
+  {% if apache_document_root is defined and not apache_config is search('<Directory\s+"' + apache_document_root + '">') %}
+  <Directory "{{ apache_document_root }}">
+    Options +FollowSymLinks
+    AllowOverride None
+    Require all granted
+    {% if apache_autoindex %}
+    Options +Indexes
+    {% endif %}
+  </Directory>
+  {% endif %}
+
+  {{ apache_config }}
+</VirtualHost>
+{% endif %}
+
+{% if apache_use_ssl %}
+
+{% if apache_canonical_hostname is defined and (apache_server_aliases | length > 0) %}
+<VirtualHost {{ apache_listen | default('*') }}:443>
+  {% for alias in ([apache_server_name] + apache_server_aliases) | reject('equalto', apache_canonical_hostname) | list %}
+  {% if loop.first %}
+  ServerName {{ alias }}
+  {% else %}
+  ServerAlias {{ alias }}
+  {% endif %}
+  {% endfor %}
+
+  ErrorLog "logs/{{ apache_server_name }}.error_log"
+  CustomLog "logs/{{ apache_server_name }}.access_log" combined
+
+  Protocols {% if apache_use_http2 %}h2 {% endif %}http/1.1
+
+  SSLEngine on
+  SSLCertificateFile {{ apache_certificate_path }}
+  SSLCertificateKeyFile {{ apache_certificate_key_path }}
+  Header always set Strict-Transport-Security "max-age=63072000"
+
+  Redirect permanent / https://{{ apache_canonical_hostname }}/
+</VirtualHost>
+{% endif %}
+
+<VirtualHost {{ apache_listen | default('*') }}:443>
+  {% if apache_document_root is defined %}
+  DocumentRoot "{{ apache_document_root }}"
+  {% endif %}
+  {% if apache_canonical_hostname is defined %}
+  ServerName {{ apache_canonical_hostname }}
+  {% else %}
+  ServerName {{ apache_server_name }}
+  {% for alias in apache_server_aliases %}
+  ServerAlias {{ alias }}
+  {% endfor %}
+  {% endif %}
+
+  ErrorLog "logs/{{ apache_server_name }}.error_log"
+  CustomLog "logs/{{ apache_server_name }}.access_log" combined
+
+  Protocols {% if apache_use_http2 %}h2 {% endif %}http/1.1
+
+  SSLEngine on
+  SSLCertificateFile {{ apache_certificate_path }}
+  SSLCertificateKeyFile {{ apache_certificate_key_path }}
+  Header always set Strict-Transport-Security "max-age=63072000"
+
+  {% if apache_document_root is defined and not apache_config is search('<Directory\s+"' + apache_document_root + '">') %}
+  <Directory "{{ apache_document_root }}">
+    Options +FollowSymLinks
+    AllowOverride None
+    Require all granted
+    {% if apache_autoindex %}
+    Options +Indexes
+    {% endif %}
+  </Directory>
+  {% endif %}
+
+  {{ apache_config }}
+</VirtualHost>
+{% endif %}

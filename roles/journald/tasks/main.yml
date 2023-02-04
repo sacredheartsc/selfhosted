@@ -1,0 +1,23 @@
+- name: generate journald.conf
+  template:
+    src: etc/systemd/journald.conf.j2
+    dest: /etc/systemd/journald.conf
+  notify: restart journald
+
+- name: set journald storage method
+  file:
+    path: /var/log/journal
+    state: "{{ 'directory' if journald_persistent else 'absent' }}"
+  register: journal_directory
+
+- name: configure persistent journal
+  block:
+    - name: set journal directory permissions
+      command: systemd-tmpfiles --create --prefix /var/log/journal
+
+    - name: flush journal to disk
+      command: journalctl --flush
+
+  when:
+    - journald_persistent
+    - journal_directory.changed

@@ -1,0 +1,4 @@
+tika_url: https://dlcdn.apache.org/tika/{{ tika_version }}/tika-server-standard-{{ tika_version }}.jar
+tika_install_dir: /usr/local/share/tika
+tika_data_dir: /var/lib/tika
+tika_conf_dir: /etc/tika

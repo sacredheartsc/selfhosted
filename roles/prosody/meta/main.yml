@@ -1,0 +1,16 @@
+dependencies:
+  - role: yum
+    yum_repositories: epel
+    tags: yum
+
+  - role: prosody_letsencrypt_proxy
+
+  - role: freeipa_system_account
+    system_account_username: '{{ prosody_sysaccount_username }}'
+    system_account_password: '{{ prosody_sysaccount_password }}'
+
+  - role: apache_vhost
+    apache_server_name: '{{ prosody_http_host }}'
+    apache_server_aliases: []
+    apache_letsencrypt: yes
+    apache_config: '{{ prosody_apache_config }}'

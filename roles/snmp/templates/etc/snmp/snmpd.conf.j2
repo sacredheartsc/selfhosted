@@ -1,0 +1,8 @@
+syslocation {{ snmp_location }}
+syscontact {{ snmp_contact }}
+
+dontLogTCPWrappersConnects yes
+
+{% for user in snmp_v3_users %}
+rouser {{ user.name }}
+{% endfor %}

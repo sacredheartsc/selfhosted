@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PluginConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <LdapServer>{{ jellyfin_ldap_server }}</LdapServer>
+  <LdapPort>636</LdapPort>
+  <UseSsl>true</UseSsl>
+  <UseStartTls>false</UseStartTls>
+  <SkipSslVerify>false</SkipSslVerify>
+  <LdapBindUser>uid={{ jellyfin_sysaccount_username }},{{ freeipa_sysaccount_basedn }}</LdapBindUser>
+  <LdapBindPassword>{{ jellyfin_sysaccount_password }}</LdapBindPassword>
+  <LdapBaseDn>{{ freeipa_user_basedn }}</LdapBaseDn>
+  <LdapSearchFilter>(memberOf=cn={{ jellyfin_access_group }},{{ freeipa_group_basedn }})</LdapSearchFilter>
+  <LdapAdminBaseDn />
+  <LdapAdminFilter>(memberOf=cn={{ jellyfin_admin_group }},{{ freeipa_group_basedn }})</LdapAdminFilter>
+  <LdapSearchAttributes>uid</LdapSearchAttributes>
+  <EnableCaseInsensitiveUsername>false</EnableCaseInsensitiveUsername>
+  <CreateUsersFromLdap>true</CreateUsersFromLdap>
+  <AllowPassChange>false</AllowPassChange>
+  <LdapUsernameAttribute>uid</LdapUsernameAttribute>
+  <LdapPasswordAttribute>userPassword</LdapPasswordAttribute>
+  <EnableAllFolders>true</EnableAllFolders>
+  <EnabledFolders />
+  <PasswordResetUrl />
+</PluginConfiguration>

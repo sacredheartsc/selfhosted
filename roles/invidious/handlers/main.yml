@@ -1,0 +1,4 @@
+- name: restart invidious
+  systemd:
+    name: invidious
+    state: restarted

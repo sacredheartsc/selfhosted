@@ -1,0 +1,10 @@
+[Unit]
+Description=Zpool trim for %i on calendar interval
+
+[Timer]
+OnCalendar={{ proxmox_zfs_trim_on_calendar }}
+AccuracySec=1h
+Persistent=true
+
+[Install]
+WantedBy=multi-user.target

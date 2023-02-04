@@ -1,0 +1,99 @@
+- name: populate freeipa domain
+  hosts: freeipa_master
+  vars:
+    default_user_password: ChangeMe123!
+  tasks:
+    - name: create users
+      ipauser:
+        ipaadmin_principal: '{{ ipa_user }}'
+        ipaadmin_password: '{{ ipa_pass }}'
+        name: '{{ item.name }}'
+        givenname: '{{ item.givenname }}'
+        sn: '{{ item.sn }}'
+        email: '{{ [item.mail] if item.mail is defined else omit }}'
+        loginshell: '{{ item.loginshell | default(omit) }}'
+        password: '{{ item.password | default(default_user_password) }}'
+        update_password: on_create
+        state: present
+      loop: '{{ freeipa_users | default([]) }}'
+      tags: users
+
+    - name: add custom attributes
+      ldap_attrs:
+        dn: 'uid={{ item.name }},{{ freeipa_user_basedn }}'
+        attributes:
+          mailAlternateAddress: '{{ item.mail_aliases | default([]) }}'
+          jid: '{{ item.jid | default([]) }}'
+        bind_dn: uid={{ ipa_user }},{{ freeipa_user_basedn }}
+        bind_pw: '{{ ipa_pass }}'
+        server_uri: ldaps://{{ ipa_host }}
+        state: exact
+      loop: "{{ freeipa_users | default([]) }}"
+      tags: users
+
+    - name: create groups
+      ipagroup:
+        ipaadmin_principal: '{{ ipa_user }}'
+        ipaadmin_password: '{{ ipa_pass }}'
+        name: '{{ item.name }}'
+        description: '{{ item.description | default(omit) }}'
+        user: '{{ item.user | default(omit) }}'
+        group: '{{ item.group | default(omit) }}'
+        nonposix: '{{ item.nonposix | default(omit) }}'
+        action: '{{ "member" if (item.append | default(false)) else "group" }}'
+        state: present
+      loop: '{{ freeipa_groups | default([]) }}'
+      tags: groups
+
+    - name: add group email addresses
+      ldap_attrs:
+        dn: 'cn={{ item.name }},{{ freeipa_group_basedn }}'
+        attributes:
+          mail: '{{ item.mail | default([]) }}'
+          mailAlternateAddress: '{{ item.mail_aliases | default([]) }}'
+        bind_dn: uid={{ ipa_user }},{{ freeipa_user_basedn }}
+        bind_pw: '{{ ipa_pass }}'
+        server_uri: ldaps://{{ ipa_host }}
+        state: exact
+      loop: "{{ freeipa_groups | default([]) }}"
+      tags: groups
+
+    - name: create sudo rules
+      ipasudorule:
+        ipaadmin_principal: '{{ ipa_user }}'
+        ipaadmin_password: '{{ ipa_pass }}'
+        name: '{{ item.name }}'
+        description: '{{ item.description | default(omit) }}'
+        allow_sudocmd: '{{ item.cmd | default(omit) }}'
+        cmdcategory: '{{ item.cmdcategory | default(omit) }}'
+        allow_sudocmdgroup: '{{ item.cmdgroup | default(omit) }}'
+        host: '{{ item.host | default(omit) }}'
+        hostcategory: '{{ item.hostcategory | default(omit) }}'
+        hostgroup: '{{ item.hostgroup | default(omit) }}'
+        runasusercategory: '{{ item.runasusercategory | default(omit) }}'
+        runasgroupcategory: '{{ item.runasgroupcategory | default(omit) }}'
+        user: '{{ item.user | default(omit) }}'
+        usercategory: '{{ item.usercategory | default(omit) }}'
+        group: '{{ item.usergroup | default(omit) }}'
+        state: present
+      loop: '{{ freeipa_sudo_rules | default([]) }}'
+      tags: sudo
+
+    - name: create hbac rules
+      ipahbacrule:
+        ipaadmin_principal: '{{ ipa_user }}'
+        ipaadmin_password: '{{ ipa_pass }}'
+        name: '{{ item.name }}'
+        description: '{{ item.description | default(omit) }}'
+        host: '{{ item.host | default(omit) }}'
+        hostcategory: '{{ item.hostcategory | default(omit) }}'
+        hostgroup: '{{ item.hostgroup | default(omit) }}'
+        hbacsvc: '{{ item.service | default(omit) }}'
+        servicecategory: '{{ item.servicecategory | default(omit) }}'
+        hbacsvcgroup: '{{ item.servicegroup | default(omit) }}'
+        user: '{{ item.user | default(omit) }}'
+        usercategory: '{{ item.usercategory | default(omit) }}'
+        group: '{{ item.usergroup | default(omit) }}'
+        state: present
+      loop: '{{ freeipa_hbac_rules | default([]) }}'
+      tags: hbac

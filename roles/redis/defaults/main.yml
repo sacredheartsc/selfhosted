@@ -1,0 +1,3 @@
+redis_port: 6379
+redis_max_memory: 2gb
+redis_max_memory_policy: allkeys-lru

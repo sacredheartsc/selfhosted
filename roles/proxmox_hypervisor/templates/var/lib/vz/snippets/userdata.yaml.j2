@@ -1,0 +1,17 @@
+#cloud-config
+manage_etc_hosts: False
+users:
+  - name: root
+    passwd: {{ root_password | password_hash("sha512", root_password_salt | default("")) }}
+    lock_passwd: False
+    ssh_authorized_keys:
+{% for key in root_authorized_keys %}
+      - {{ key }}
+{% endfor %}
+chpasswd:
+  expire: False
+disable_root: False
+ssh_pwauth: False
+package_update: False
+package_upgrade: False
+preserve_hostname: true

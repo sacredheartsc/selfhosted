@@ -1,0 +1,12 @@
+- name: create nim installation directory
+  file:
+    path: '{{ nim_install_dir }}'
+    state: directory
+
+- name: extract nim tarball
+  unarchive:
+    src: '{{ nim_url }}'
+    remote_src: yes
+    dest: '{{ nim_install_dir }}'
+    extra_opts:
+      - '--strip-components=1'

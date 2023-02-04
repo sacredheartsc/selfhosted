@@ -1,0 +1,9 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: archive_servers
+
+- name: configure archiver
+  hosts: archive_servers
+  tags: archive,archiver
+  roles:
+    - archive_server

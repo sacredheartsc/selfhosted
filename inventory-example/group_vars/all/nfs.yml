@@ -1,0 +1,11 @@
+nfs_homedir_options: rw,crossmnt
+
+# These clients will be added to the export list for NFS home directories.
+nfs_homedir_clients:
+  - client: '{{ vlans.trusted.cidr }}'
+    options: sec=krb5p
+
+  # We can't use kerberos for Syncthing, because the Syncthing daemons have
+  # to impersonate each user, and I don't feel like shuffling keytabs around.
+  - client: syncthing1
+    options: sec=sys

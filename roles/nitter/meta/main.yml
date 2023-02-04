@@ -1,0 +1,7 @@
+dependencies:
+  - role: nim
+    tags: nim
+
+  - role: redis
+    redis_port: '{{ nitter_redis_port }}'
+    tags: redis

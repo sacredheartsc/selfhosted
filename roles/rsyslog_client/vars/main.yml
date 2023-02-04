@@ -1,0 +1,8 @@
+rsyslog_packages:
+  - rsyslog
+  - rsyslog-relp
+  - rsyslog-openssl
+
+rsyslog_certificate_path: /etc/pki/rsyslog/syslog.pem
+rsyslog_certificate_key_path: /etc/pki/rsyslog/syslog.key
+rsyslog_certificate_ca_path: /etc/ipa/ca.crt

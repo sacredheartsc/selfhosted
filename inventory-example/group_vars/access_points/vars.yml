@@ -1,0 +1,12 @@
+nagios_snmp_priv_pass: '{{ vault_nagios_snmp_priv_pass }}'
+nagios_snmp_auth_pass: '{{ vault_nagios_snmp_auth_pass }}'
+
+nagios_interfaces:
+  - eth0
+  - regex: '^wifi[0-9]'
+    description: wifi
+    down_ok: yes
+    discard_warn: 500
+    discard_crit: 1000
+    error_warn: 500
+    error_crit: 1000

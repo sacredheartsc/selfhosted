@@ -1,0 +1,4 @@
+- name: restart radiusd
+  systemd:
+    name: radiusd
+    state: restarted

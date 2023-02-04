@@ -1,0 +1,17 @@
+- name: create database
+  postgresql_db:
+    name: '{{ prosody_db_name }}'
+    state: present
+  delegate_to: '{{ postgresql_inventory_host }}'
+  become: yes
+  become_user: postgres
+
+- name: create database user
+  postgresql_user:
+    name: '{{ prosody_user }}'
+    db: '{{ prosody_db_name }}'
+    priv: ALL
+    state: present
+  delegate_to: '{{ postgresql_inventory_host }}'
+  become: yes
+  become_user: postgres

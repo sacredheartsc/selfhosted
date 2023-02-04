@@ -1,0 +1,112 @@
+- name: create parent zfs datasets for home directories
+  zfs:
+    name: '{{ item }}'
+    state: present
+  loop:
+    - '{{ nfs_homedir_user_dataset }}'
+    - '{{ nfs_homedir_group_dataset }}'
+
+- name: collect zfs mountpoints
+  shell: "zfs list -Hp -o name,mountpoint | sed 's/\t/: /'"
+  changed_when: false
+  register: zfs_list_mountpoints
+
+- name: set zfs_mountpoints fact
+  set_fact:
+    zfs_mountpoints: '{{ zfs_list_mountpoints.stdout | from_yaml }}'
+
+- name: set selinux context for home directories
+  sefcontext:
+    target: '{{ item }}'
+    setype: samba_share_t
+    state: present
+  loop:
+    - '{{ zfs_mountpoints[nfs_homedir_group_dataset] }}(/.*)?'
+    - '{{ zfs_mountpoints[nfs_homedir_user_dataset] }}(/.*)?'
+  register: nfs_homedir_sefcontext
+
+- name: apply selinux context to home directories
+  command: 'restorecon -R {{ zfs_mountpoints[nfs_homedir_group_dataset] }} {{ zfs_mountpoints[nfs_homedir_user_dataset] }}'
+  when: nfs_homedir_sefcontext.changed
+
+- name: check which home directories already exist
+  stat:
+    path: '{{ zfs_mountpoints[nfs_homedir_group_dataset if item.group is defined else nfs_homedir_user_dataset] }}/{{ item.group if item.group is defined else item.user }}/priv'
+  loop: '{{ nfs_homedirs }}'
+  register: nfs_homedir_stat
+
+- name: create zfs datasets for public home directories
+  zfs:
+    name: '{{ nfs_homedir_group_dataset if item.group is defined else nfs_homedir_user_dataset }}/{{ item.group if item.group is defined else item.user }}/pub'
+    state: present
+    extra_zfs_properties:
+      refquota: '{{ item.pub_quota | default(nfs_homedir_pub_quota) }}'
+  loop: '{{ nfs_homedirs }}'
+  loop_control:
+    label: '{{ item }}'
+
+- name: create zfs datasets for private home directories
+  zfs:
+    name: '{{ nfs_homedir_group_dataset if item.group is defined else nfs_homedir_user_dataset }}/{{ item.group if item.group is defined else item.user }}/priv'
+    state: present
+    extra_zfs_properties:
+      refquota: '{{ item.priv_quota | default(nfs_homedir_priv_quota) }}'
+  loop: '{{ nfs_homedirs }}'
+  loop_control:
+    label: '{{ item }}'
+
+- name: copy skel files into any newly-created home directories
+  copy:
+    src: /etc/skel/
+    dest: '{{ zfs_mountpoints[nfs_homedir_user_dataset] }}/{{ item.user }}/priv'
+    remote_src: yes
+    owner: '{{ item.user }}'
+    group: '{{ item.user }}'
+    mode: preserve
+  when:
+    - item.user is defined
+    - not nfs_homedir_stat.results[index].stat.exists
+  loop: '{{ nfs_homedirs }}'
+  loop_control:
+    index_var: index
+
+- name: set directory permissions for user home directories
+  file:
+    path: "{{ zfs_mountpoints[nfs_homedir_user_dataset] }}/{{ item.0 }}/{{ item.1.name }}"
+    state: directory
+    owner: '{{ item.0 }}'
+    group: '{{ item.0 }}'
+    mode: '{{ item.1.mode }}'
+    setype: _default
+  loop: "{{ nfs_homedirs | selectattr('user', 'defined') | map(attribute='user') | product(subdirs) }}"
+  vars:
+    subdirs:
+      - { name: pub,  mode: '755' }
+      - { name: priv, mode: '700' }
+
+- name: set directory permissions for group directories
+  file:
+    path: "{{ zfs_mountpoints[nfs_homedir_group_dataset] }}/{{ item.0 }}/{{ item.1.name }}"
+    state: directory
+    owner: root
+    group: '{{ item.0 }}'
+    mode: '{{ item.1.mode }}'
+    setype: _default
+  loop: "{{ nfs_homedirs | selectattr('group', 'defined') | map(attribute='group') | product(subdirs) }}"
+  vars:
+    subdirs:
+      - { name: pub,  mode: '02775' }
+      - { name: priv, mode: '02770' }
+
+- name: set directory ACLs for group directories
+  acl:
+    path: '{{ zfs_mountpoints[nfs_homedir_group_dataset] }}/{{ item.0 }}/{{ item.1 }}'
+    default: yes
+    entity: '{{ item.0 }}'
+    etype: group
+    permissions: rwX
+    recalculate_mask: mask
+    state: present
+  loop: "{{ nfs_homedirs | selectattr('group', 'defined') | map(attribute='group') | product(['pub', 'priv']) }}"
+  loop_control:
+    label: '{{ item.0 }}: {{ item.1 }}'

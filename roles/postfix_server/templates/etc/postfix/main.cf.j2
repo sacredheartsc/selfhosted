@@ -1,0 +1,109 @@
+compatibility_level = 2
+
+### path definitions
+queue_directory = /var/spool/postfix
+command_directory = /usr/sbin
+daemon_directory = /usr/libexec/postfix
+data_directory = /var/lib/postfix
+mail_owner = postfix
+
+sendmail_path = /usr/sbin/sendmail.postfix
+newaliases_path = /usr/bin/newaliases.postfix
+mailq_path = /usr/bin/mailq.postfix
+setgid_group = postdrop
+html_directory = no
+manpage_directory = /usr/share/man
+sample_directory = /usr/share/doc/postfix/samples
+readme_directory = /usr/share/doc/postfix/README_FILES
+meta_directory = /etc/postfix
+shlib_directory = /usr/lib64/postfix
+
+import_environment = MAIL_CONFIG MAIL_DEBUG MAIL_LOGTAG TZ XAUTHORITY DISPLAY LANG=C POSTLOG_SERVICE POSTLOG_HOSTNAME GSS_USE_PROXY=yes
+
+myorigin = {{ postfix_myorigin }}
+myhostname = {{ postfix_myhostname }}
+
+mynetworks = 127.0.0.0/8 {{ postfix_mynetworks | join(' ') }}
+
+# disable local delivery
+mydestination =
+
+inet_interfaces = all
+inet_protocols = all
+
+# disable open relay
+mynetworks_style = host
+
+alias_database = hash:/etc/aliases
+
+smtputf8_enable = yes
+recipient_delimiter = {{ postfix_recipient_delimiter }}
+message_size_limit = {{ postfix_message_size_limit }}
+
+strict_rfc821_envelopes = yes
+allow_percent_hack = no
+swap_bangpath = no
+disable_vrfy_command = yes
+show_user_unknown_table_name = no
+
+tls_medium_cipherlist = {{ postfix_cipherlist }}
+tls_preempt_cipherlist = no
+
+smtpd_tls_security_level = may
+smtpd_tls_auth_only = yes
+smtpd_tls_cert_file = {{ postfix_certificate_path }}
+smtpd_tls_key_file = {{ postfix_certificate_key_path }}
+smtpd_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1
+smtpd_tls_mandatory_ciphers = medium
+smtpd_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1
+smtpd_tls_dh1024_param_file = {{ postfix_dhparams_path }}
+
+smtpd_sasl_security_options = noanonymous, noplaintext
+smtpd_sasl_tls_security_options = noanonymous
+
+smtpd_helo_required = yes
+
+smtp_tls_security_level = may
+smtp_tls_CAfile = {{ postfix_smtp_ca_file }}
+
+lmtp_tls_CAfile = {{ postfix_smtp_ca_file }}
+lmtp_tls_security_level = {{ 'secure' if postfix_lmtp_require_tls else 'may' }}
+
+# public mailserver - restrictive policy
+smtpd_helo_required = yes
+smtpd_client_restrictions =
+  permit_mynetworks,
+  reject_unauth_pipelining,
+  reject_unknown_reverse_client_hostname
+smtpd_helo_restrictions =
+  permit_mynetworks,
+  reject_invalid_helo_hostname,
+  reject_non_fqdn_helo_hostname,
+  reject_unauth_pipelining
+smtpd_sender_restrictions =
+  permit_mynetworks,
+  reject_non_fqdn_sender,
+  reject_unknown_sender_domain,
+  reject_unauth_pipelining
+smtpd_relay_restrictions =
+  permit_mynetworks,
+  reject_unauth_destination
+smtpd_recipient_restrictions =
+  permit_mynetworks,
+  reject_non_fqdn_recipient,
+  reject_unknown_recipient_domain,
+  reject_unauth_pipelining,
+  reject_unlisted_recipient,
+  reject_unauth_destination,
+  check_policy_service {{ postfix_mailbox_quota_service }}
+smtpd_data_restrictions =
+  permit_mynetworks,
+  reject_unauth_pipelining
+
+virtual_transport = {{ postfix_virtual_transport }}
+virtual_mailbox_domains = {{ freeipa_realm }} {{ postfix_virtual_domains | join(' ') }}
+virtual_mailbox_maps = ldap:$config_directory/virtual_mailboxes.cf
+virtual_alias_maps = ldap:$config_directory/virtual_aliases.cf
+
+milter_default_action = accept
+smtpd_milters = {{ postfix_milter }}

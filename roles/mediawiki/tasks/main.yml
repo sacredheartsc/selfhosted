@@ -1,0 +1,134 @@
+- name: install packages
+  dnf:
+    name: '{{ mediawiki_packages }}'
+    state: present
+
+- name: set PHP APC cache size
+  lineinfile:
+    path: /etc/php.d/40-apcu.ini
+    regexp: ^apc\.shm_size=
+    line: apc.shm_size={{ mediawiki_apc_shm_size }}
+    state: present
+  notify: restart php-fpm
+
+- import_tasks: freeipa.yml
+  tags: freeipa
+
+- name: create mediawiki webroot
+  file:
+    path: '{{ mediawiki_home }}'
+    state: directory
+
+- name: get current mediawiki version
+  command: php {{ mediawiki_home }}/maintenance/version.php
+  become: True
+  become_user: apache
+  environment:
+    GSS_USE_PROXY: 'yes'
+  changed_when: no
+  failed_when: no
+  register: mediawiki_current_version
+
+- name: extract mediawiki tarball
+  unarchive:
+    src: '{{ mediawiki_tarball }}'
+    remote_src: yes
+    dest: '{{ mediawiki_home }}'
+    owner: apache
+    group: apache
+    extra_opts:
+      - '--strip-components=1'
+
+- name: set permissions on writeable directories
+  file:
+    path: '{{ mediawiki_home }}/{{ item }}'
+    state: directory
+    mode: 0770
+    owner: apache
+    group: apache
+    setype: _default
+  loop: '{{ mediawiki_writable_dirs }}'
+
+- name: set selinux context for writeable directories
+  sefcontext:
+    target: '{{ mediawiki_home }}/{{ item }}(/.*)?'
+    setype: httpd_sys_rw_content_t
+    state: present
+  loop: '{{ mediawiki_writable_dirs }}'
+  register: mediawiki_writeable_sefcontext
+  tags: selinux
+
+- name: apply selinux context to writeable directories
+  command: 'restorecon -R {{ mediawiki_home }}/{{ item }}'
+  when: mediawiki_writeable_sefcontext.results[index].changed
+  loop: '{{ mediawiki_writable_dirs }}'
+  loop_control:
+    index_var: index
+  tags: selinux
+
+- name: set selinux context for executable directories
+  sefcontext:
+    target: '{{ mediawiki_home }}/{{ item }}(/.*)?'
+    setype: httpd_sys_script_exec_t
+    state: present
+  loop: '{{ mediawiki_executable_dirs }}'
+  register: mediawiki_executable_sefcontext
+  tags: selinux
+
+- name: apply selinux context to executable directories
+  command: 'restorecon -R {{ mediawiki_home }}/{{ item }}'
+  when: mediawiki_executable_sefcontext.results[index].changed
+  loop: '{{ mediawiki_executable_dirs }}'
+  loop_control:
+    index_var: index
+  tags: selinux
+
+- import_tasks: database.yml
+  tags: database
+
+- name: generate LocalSettings.php
+  template:
+    src: '{{ mediawiki_home[1:] }}/LocalSettings.php.j2'
+    dest: '{{ mediawiki_home }}/LocalSettings.php'
+    owner: root
+    group: apache
+    mode: 0640
+  register: mediawiki_localsettings
+
+- name: install extensions
+  include_tasks: extension.yml
+  vars:
+    extension_name: '{{ item if item is string else item.name }}'
+    extension_version: '{{ mediawiki_extension_version if item is string else (item.version | default(mediawiki_extension_version)) }}'
+  loop: '{{ mediawiki_extensions }}'
+
+- name: update database schema
+  command: php {{ mediawiki_home }}/maintenance/update.php --quick
+  become: yes
+  become_user: apache
+  environment:
+    GSS_USE_PROXY: 'yes'
+  when: mediawiki_localsettings.changed or (mediawiki_current_version.rc == 0 and not mediawiki_current_version.stdout is search(mediawiki_version))
+
+- name: copy robots.txt
+  copy:
+    src: '{{ mediawiki_home[1:] }}/robots.txt'
+    dest: '{{ mediawiki_home }}/robots.txt'
+
+- name: copy 1x logo
+  copy:
+    src: '{{ mediawiki_logo_1x }}'
+    dest: '{{ mediawiki_home }}/resources/assets/{{ mediawiki_logo_1x | basename }}'
+  when: mediawiki_logo_1x is defined
+
+- name: copy icon logo
+  copy:
+    src: '{{ mediawiki_logo_icon }}'
+    dest: '{{ mediawiki_home }}/resources/assets/{{ mediawiki_logo_icon | basename }}'
+  when: mediawiki_logo_icon is defined
+
+- name: copy favicon
+  copy:
+    src: '{{ mediawiki_favicon }}'
+    dest: '{{ mediawiki_home }}/resources/assets/{{ mediawiki_favicon | basename }}'
+  when: mediawiki_favicon is defined

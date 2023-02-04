@@ -1,0 +1,47 @@
+- name: create user
+  ipauser:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ photostructure_user }}'
+    loginshell: /sbin/nologin
+    homedir: '{{ photostructure_home }}'
+    givenname: Photostructure
+    sn: Service Account
+    state: present
+  run_once: yes
+
+- name: retrieve user keytab
+  include_role:
+    name: freeipa_keytab
+  vars:
+    keytab_principal: '{{ photostructure_user }}'
+    keytab_path: '{{ photostructure_keytab }}'
+
+- name: configure gssproxy for kerberized NFS
+  include_role:
+    name: gssproxy_client
+  vars:
+    gssproxy_name: photostructure
+    gssproxy_section: service/photostructure
+    gssproxy_keytab: /etc/krb5.keytab
+    gssproxy_client_keytab: '{{ photostructure_keytab }}'
+    gssproxy_cred_usage: initiate
+    gssproxy_euid: '{{ photostructure_user }}'
+
+- name: add user to file access group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ photostructure_file_access_group }}'
+    user: '{{ photostructure_user }}'
+    action: member
+    state: present
+  run_once: yes
+
+- name: create access group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ photostructure_access_group }}'
+    state: present
+  run_once: yes

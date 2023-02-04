@@ -1,0 +1,9 @@
+[main]
+dns=dnsmasq
+
+[global-dns]
+searches={{ dnsmasq_searchdomain if dnsmasq_searchdomain is string else (dnsmasq_searchdomain | join(',')) }}
+options={{ dnsmasq_resolv_options if dnsmasq_resolv_options is string else (dnsmasq_resolv_options | join(',')) }}
+
+[global-dns-domain-*]
+servers={{ dnsmasq_nameservers | join(',') }}

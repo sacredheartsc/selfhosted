@@ -1,0 +1,27 @@
+- import_playbook: common.yml
+  vars:
+    hostlist: linux_laptops
+
+- name: configure linux desktop environment
+  hosts: linux_laptops
+  roles:
+    - role: dev_environment
+      tags: dev
+
+    - role: linux_desktop
+      tags: desktop,linux_desktop
+
+    - role: local_homedirs
+      tags: local_homedirs,homedirs,homedir
+
+    - role: firefox
+      tags: firefox
+
+    - role: evolution
+      tags: evolution
+
+    - role: cups_client
+      tags: cups
+
+    - role: linux_laptop
+      tags: laptop,linux_laptop

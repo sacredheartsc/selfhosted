@@ -1,0 +1,21 @@
+- name: create systemd units
+  template:
+    src: etc/systemd/system/task.{{ item }}.j2
+    dest: /etc/systemd/system/{{ timer_name }}.{{ item }}
+  loop:
+    - service
+    - timer
+  register: timer_unit
+
+- name: reload systemd units
+  systemd:
+    name: '{{ timer_name }}.timer'
+    daemon-reload: yes
+    state: restarted
+  when: timer_unit.changed
+
+- name: enable systemd timer
+  systemd:
+    name: '{{ timer_name }}.timer'
+    enabled: '{{ true if timer_enabled else false }}'
+    state: "{{ 'started' if timer_enabled else 'stopped' }}"

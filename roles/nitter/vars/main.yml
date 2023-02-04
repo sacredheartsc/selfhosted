@@ -1,0 +1,14 @@
+nitter_git_repo: https://github.com/zedeus/nitter
+nitter_home: /opt/nitter
+nitter_install_dir: '{{ nitter_home }}/nitter'
+
+nitter_packages:
+  - libsass
+  - libsass-devel
+  - pcre
+
+nitter_apache_config: |
+  AllowEncodedSlashes On
+  ProxyPass        / http://127.0.0.1:{{ nitter_port }}/ nocanon
+  ProxyPassReverse / http://127.0.0.1:{{ nitter_port }}/
+  {{ apache_proxy_config }}

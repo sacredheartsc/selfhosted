@@ -1,0 +1,124 @@
+# This is a sample file with fake secrets. For a real deployment, encrypt this
+# file with `ansible-vault encrypt` and add your own secrets.
+---
+# apache
+vault_apache_sysaccount_password: changeme
+
+
+# archiver
+vault_archive_ssh_privkey: |
+  -----BEGIN OPENSSH PRIVATE KEY-----
+  AAAAAAAAAAAAchangeme
+  -----END OPENSSH PRIVATE KEY-----
+
+
+# asterisk
+vault_asterisk_ari_users:
+  - name: nagios
+    readonly: yes
+    password: changeme
+
+vault_asterisk_password_salt: changeme
+
+vault_asterisk_sip_extensions:
+  - name: 6001
+    context: house-phones
+    mailbox: 6000@default
+    cid_name: Living Room
+    password: changeme
+
+  - name: 6002
+    context: house-phones
+    mailbox: 6000@default
+    cid_name: Kitchen
+    password: changeme
+
+vault_asterisk_sip_trunks:
+  - name: upstream-provider
+    host: 'sip.example.com:5060'
+    username: changeme
+    password: changeme
+
+
+# coturn
+vault_coturn_auth_secret: changeme
+
+
+# freeipa
+vault_freeipa_admin_password: changeme
+vault_freeipa_ds_password: changeme
+
+
+# freeradius
+vault_freeradius_clients:
+  - name: unifi
+    address: '{{ vlans.mgmt.cidr }}'
+    secret: changeme
+
+
+# invidious
+vault_invidious_db_password: changeme
+vault_invidious_hmac_key: changeme
+
+
+# jellyfin
+vault_jellyfin_sysaccount_password: changeme
+
+
+# mediawiki
+vault_mediawiki_admin_password: changeme
+vault_mediawiki_upgrade_key: changeme
+vault_mediawiki_secret_key: changeme
+vault_mediawiki_sysaccount_password: changeme
+
+
+# nagios
+vault_nagios_snmp_auth_pass: changeme
+vault_nagios_snmp_priv_pass: changeme
+vault_nagios_ssh_privkey: |
+  -----BEGIN OPENSSH PRIVATE KEY-----
+  AAAAAAAAAAAAAAAAchangeme
+  -----END OPENSSH PRIVATE KEY-----
+
+
+# nitter
+vault_nitter_hmac_key: changeme
+
+
+# prosody
+vault_prosody_le_ssh_privkey: |
+  -----BEGIN OPENSSH PRIVATE KEY-----
+  AAAAAAAAAAAAAAAAchangeme
+  -----END OPENSSH PRIVATE KEY-----
+vault_prosody_sysaccount_password: changeme
+
+
+# proxmox
+vault_proxmox_api_password: changeme
+vault_proxmox_password_salt: changeme
+
+
+# psitransfer
+vault_psitransfer_admin_password: changeme
+
+
+# root user
+vault_root_password_salt: changeme
+vault_root_password: changeme
+
+
+# rspamd
+vault_rspamd_password: changeme
+vault_rspamd_password_hash: $2$changeme  # generate with `rspamadm pw`
+vault_rspamd_privkey: changeme           # generate with `rspamadm keypair`
+vault_rspamd_dkim_keys:                  # generate with `rspamadm dkim_keygen`
+  example.com: |
+    -----BEGIN RSA PRIVATE KEY-----
+    AAAAAAAAAAAAAAAAchangeme
+    -----END RSA PRIVATE KEY-----
+
+# teddit
+vault_teddit_reddit_app_id: changeme
+
+# vaultwarden
+vault_vaultwarden_admin_token: changeme  # generate with `openssl rand -base64 48`

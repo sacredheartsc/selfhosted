@@ -1,0 +1,24 @@
+# TODO: ssh_config.d is included by default starting with EL9
+- name: create sshd config directory
+  file:
+    path: /etc/ssh/sshd_config.d
+    state: directory
+
+- name: add sshd include directive
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: Include sshd_config.d/*
+    insertafter: EOF
+
+- name: generate sshd configuration for gitolite
+  template:
+    src: etc/ssh/sshd_config.d/gitolite.conf.j2
+    dest: /etc/ssh/sshd_config.d/gitolite.conf
+  notify: restart sshd
+
+- name: allow sshd to query ldap
+  seboolean:
+    name: authlogin_nsswitch_use_ldap
+    state: yes
+    persistent: yes
+  tags: selinux

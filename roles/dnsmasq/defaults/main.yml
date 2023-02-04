@@ -1,0 +1,8 @@
+dnsmasq_nameservers: '{{ vlan.dns_servers }}'
+dnsmasq_searchdomain: '{{ domain }}'
+dnsmasq_resolv_options:
+  - rotate
+
+dnsmasq_cache_size: 1000
+dnsmasq_negcache: no
+dnsmasq_all_servers: yes

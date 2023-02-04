@@ -1,0 +1,8 @@
+freebsd_loader_config:
+  'mrsas_load': 'YES'
+  'hw.mfi.mrsas_enable': 1
+  'kern.ipc.nmbclusters': 1000000
+  'kern.ipc.nmbjumbop': 524288
+
+opnsense_backup_api_key: '{{ vault_opnsense_backup_api_key }}'
+opnsense_backup_api_secret: '{{ vault_opnsense_backup_api_secret }}'

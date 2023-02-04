@@ -1,0 +1,4 @@
+- name: restart jellyfin
+  systemd:
+    name: jellyfin
+    state: restarted

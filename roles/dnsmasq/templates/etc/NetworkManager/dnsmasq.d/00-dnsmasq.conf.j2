@@ -1,0 +1,7 @@
+cache-size={{ dnsmasq_cache_size }}
+{% if not dnsmasq_negcache %}
+no-negcache
+{% endif %}
+{% if dnsmasq_all_servers %}
+all-servers
+{% endif %}

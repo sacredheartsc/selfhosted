@@ -1,0 +1,2 @@
+archive_path: /var/spool/archive
+archive_clients_hostgroup: archive_clients

@@ -1,0 +1,9 @@
+dependencies:
+  - role: yum
+    yum_repositories:
+      - epel
+      - rpmfusion-free
+      - rpmfusion-free-tainted
+      - rpmfusion-nonfree
+      - rpmfusion-nonfree-tainted
+    tags: yum

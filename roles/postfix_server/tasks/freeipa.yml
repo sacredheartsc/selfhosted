@@ -1,0 +1,95 @@
+- name: create smtp service principal
+  ipaservice:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: 'smtp/{{ ansible_fqdn }}'
+    pac_type: NONE
+    state: present
+
+- name: retrieve smtp service keytab
+  include_role:
+    name: freeipa_keytab
+  vars:
+    keytab_principal: 'smtp/{{ ansible_fqdn }}'
+    keytab_path: '{{ postfix_keytab }}'
+
+- name: configure gssproxy
+  include_role:
+    name: gssproxy_client
+  vars:
+    gssproxy_name: postfix
+    gssproxy_section: service/postfix
+    gssproxy_keytab: '{{ postfix_keytab }}'
+    gssproxy_client_keytab: '{{ postfix_keytab }}'
+    gssproxy_cred_usage: both
+    gssproxy_euid: postfix
+
+- name: create SELinux policy for smtpd to access gssproxy
+  include_role:
+    name: selinux_policy
+    apply:
+      tags: selinux
+  vars:
+    selinux_policy_name: smtpd_gssproxy
+    selinux_policy_te: '{{ postfix_selinux_policy_te }}'
+  tags: selinux
+
+- name: generate PAM configuration for smtp
+  copy:
+    content: |
+      auth    required pam_sss.so
+      account required pam_sss.so
+    dest: /etc/pam.d/smtp
+
+- name: create smtp HBAC service
+  ipahbacsvc:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ postfix_hbac_service }}'
+    description: Postfix SMTP server
+    state: present
+  run_once: True
+
+- name: create mail-servers hostgroup
+  ipahostgroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ postfix_hbac_hostgroup }}'
+    description: Mail Servers
+    host: "{{ groups[postfix_hbac_hostgroup] | map('regex_replace', '$', '.' ~ ansible_domain) }}"
+    state: present
+  run_once: True
+
+# Note: we explicitly allow all here. SSSD will only be consulted when a user
+# performs a PLAIN login, falling back to saslauthd/PAM authentication.
+# Users with a valid Kerberos ticket bypass the PAM stack entirely, so a
+# restrictive HBAC rule is pointless.
+- name: create HBAC rule for smtp
+  ipahbacrule:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: allow_smtp_on_mail_servers
+    description: Allow SMTP on mail servers
+    hostgroup:
+      - '{{ postfix_hbac_hostgroup }}'
+    usercategory: all
+    hbacsvc:
+      - '{{ postfix_hbac_service }}'
+  run_once: True
+
+- name: create systemd override directory
+  file:
+    path: /etc/systemd/system/postfix.service.d
+    state: directory
+
+- name: create systemd override file
+  copy:
+    src: etc/systemd/system/postfix.service.d/override.conf
+    dest: /etc/systemd/system/postfix.service.d/override.conf
+  notify: restart postfix
+  register: postfix_systemd_unit
+
+- name: reload systemd daemons
+  systemd:
+    daemon_reload: yes
+  when: postfix_systemd_unit.changed

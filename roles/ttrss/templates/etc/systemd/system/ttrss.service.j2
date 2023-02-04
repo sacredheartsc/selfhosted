@@ -1,0 +1,18 @@
+[Unit]
+Description=Tiny Tiny RSS background feed updates
+Wants=gssproxy.service
+After=network-online.target nss-lookup.target gssproxy.service
+StartLimitIntervalSec=200
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=apache
+Group=apache
+Environment=GSS_USE_PROXY=yes
+ExecStart=php {{ ttrss_home }}/update_daemon2.php
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,138 @@
+- name: initialize freeipa server
+  command: >
+    ipa-server-install
+    --unattended
+    --realm={{ freeipa_realm }}
+    --domain={{ freeipa_domain }}
+    --ds-password={{ freeipa_ds_password | quote }}
+    --admin={{ freeipa_admin_password | quote }}
+    --hostname={{ ansible_fqdn }}
+    --ip-address={{ ansible_default_ipv4.address }}
+    --no-host-dns
+    --idstart={{ freeipa_idstart }}
+    --idmax={{ freeipa_idmax }}
+    --setup-dns
+    {% for forwarder in freeipa_dns_forwarders %}
+    --forwarder {{ forwarder }}
+    {% endfor %}
+    --forward-policy=only
+    --no-ntp
+    --no-hbac-allow
+  args:
+    creates: /etc/ipa/default.conf
+
+- name: initialize AD trust (for smb)
+  command: >
+    ipa-adtrust-install
+    --unattended
+    --add-sids
+    --netbios-name={{ freeipa_workgroup }}
+    --admin-name=admin
+    --admin-password={{ freeipa_admin_password | quote }}
+  args:
+    creates: /etc/samba/samba.keytab
+
+- name: set default password policy
+  community.general.ipa_pwpolicy:
+    ipa_user: '{{ ipa_user }}'
+    ipa_pass: '{{ ipa_pass }}'
+    maxpwdlife: '{{ freeipa_maxpwdlife }}'
+    minpwdlife: '{{ freeipa_minpwdlife }}'
+    historylength: '{{ freeipa_historylength }}'
+    minclasses: '{{ freeipa_minclasses }}'
+    minlength: '{{ freeipa_minlength }}'
+    maxfailcount: '{{ freeipa_maxfailcount }}'
+    failinterval: '{{ freeipa_failinterval }}'
+    lockouttime: '{{ freeipa_lockouttime }}'
+
+- name: set admin user's password expiration date
+  ipauser:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: admin
+    passwordexpiration: '{{ freeipa_admin_password_expiration }}'
+
+- name: set global freeipa configuration
+  ipaconfig:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    emaildomain: '{{ freeipa_email_domain }}'
+    defaultshell: '{{ freeipa_default_login_shell }}'
+
+- name: create HBAC services for system-level services
+  ipahbacsvc:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ item }}'
+    description: '{{ item }}'
+    state: present
+  loop: '{{ freeipa_system_services }}'
+
+- name: create HBAC rule for system-level services
+  ipahbacrule:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: whitelisted_system_services
+    description: Always allow authentication to system-level services
+    usercategory: all
+    hostcategory: all
+    hbacsvc: '{{ freeipa_system_services }}'
+
+- name: get admin kerberos ticket
+  command:
+    cmd: kinit -fpa {{ ipa_user }}
+    stdin: '{{ ipa_pass }}'
+  changed_when: false
+
+- include_tasks: custom_schema.yml
+
+- name: generate clientAuth certificate profile
+  template:
+    src: etc/pki/caIPAclientAuth.cfg.j2
+    dest: /etc/pki/caIPAclientAuth.cfg
+  register: freeipa_clientauth_config
+
+- name: import clientAuth certificate profile
+  shell:
+    cmd: >
+      ipa certprofile-import caIPAclientAuth
+      --file /etc/pki/caIPAclientAuth.cfg
+      --desc 'Profile for client authentication'
+      --store TRUE
+  when: freeipa_clientauth_config.changed
+
+- name: destroy kerberos ticket
+  command:
+    cmd: kdestroy
+  changed_when: false
+
+- name: create automount maps
+  ipaautomountmap:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ item }}'
+    location: default
+    state: present
+  loop: '{{ freeipa_automount_maps }}'
+
+- name: create automount keys
+  ipaautomountkey:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    location: default
+    mapname: '{{ item.map }}'
+    key: '{{ item.key }}'
+    info: '{{ item.info }}'
+    state: present
+  loop: '{{ freeipa_automount_keys }}'
+
+- name: create /home automount key
+  ipaautomountkey:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    location: default
+    mapname: auto.master
+    key: /home
+    info: auto.home
+    state: "{{ 'present' if freeipa_nfs_homedirs else 'absent' }}"
+  when: freeipa_nfs_homedirs

@@ -1,0 +1,96 @@
+- name: install packages
+  dnf:
+    name: '{{ ttrss_packages }}'
+    state: present
+
+- name: create webroot
+  file:
+    path: '{{ ttrss_home }}'
+    state: directory
+
+- name: clone git repository
+  git:
+    repo: '{{ ttrss_git_repo }}'
+    dest: '{{ ttrss_home }}'
+    version: '{{ ttrss_version }}'
+    update: yes
+
+- name: set httpd_sys_rw_content_t selinux context for writable directories
+  sefcontext:
+    target: '{{ ttrss_home }}/{{ item }}(/.*)?'
+    setype: httpd_sys_rw_content_t
+    state: present
+  loop: '{{ ttrss_writable_dirs }}'
+  register: ttrss_writeable_sefcontext
+
+- name: apply selinux context to writeable directories
+  command: 'restorecon -R {{ ttrss_home }}/{{ item }}'
+  when: ttrss_writeable_sefcontext.results[index].changed
+  loop: '{{ ttrss_writable_dirs }}'
+  loop_control:
+    index_var: index
+
+- name: set permissions on writable directories
+  file:
+    path: '{{ ttrss_home }}/{{ item }}'
+    mode: 0775
+    owner: root
+    group: apache
+    setype: httpd_sys_rw_content_t
+  loop: '{{ ttrss_writable_dirs }}'
+
+- import_tasks: freeipa.yml
+  tags: freeipa
+
+- name: create auth_freeipa plugin directory
+  file:
+    path: '{{ ttrss_home }}/plugins.local/auth_freeipa'
+    state: directory
+
+- name: download auth_freeipa plugin
+  get_url:
+    url: '{{ ttrss_freeipa_plugin_url }}'
+    dest: '{{ ttrss_home }}/plugins.local/auth_freeipa/init.php'
+
+- name: generate config file
+  template:
+    src: '{{ ttrss_home[1:] }}/config.php.j2'
+    dest: '{{ ttrss_home }}/config.php'
+
+- import_tasks: database.yml
+  tags: database
+
+- name: generate systemd unit for updating feeds
+  template:
+    src: etc/systemd/system/ttrss.service.j2
+    dest: /etc/systemd/system/ttrss.service
+  register: ttrss_unit
+
+- name: reload systemd units
+  systemd:
+    name: ttrss
+    state: restarted
+    daemon_reload: yes
+  when: ttrss_unit.changed
+
+- name: start background feed updates
+  systemd:
+    name: ttrss
+    enabled: yes
+    state: started
+
+- name: generate update script
+  template:
+    src: 'usr/local/sbin/ttrss-update.sh.j2'
+    dest: '/usr/local/sbin/ttrss-update.sh'
+    mode: 0555
+
+- name: create ttrss-update timer
+  include_role:
+    name: systemd_timer
+  vars:
+    timer_name: ttrss-update
+    timer_description: Update ttrss
+    timer_after: network.target
+    timer_on_calendar: '{{ ttrss_update_on_calendar }}'
+    timer_exec: /usr/local/sbin/ttrss-update.sh

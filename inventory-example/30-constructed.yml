@@ -1,0 +1,15 @@
+plugin: constructed
+strict: yes
+use_vars_plugins: yes
+compose:
+  vlan: vlans.values() | selectattr('cidr', 'contains_ip', ip) | first
+  ansible_host: ansible_ip | default(ip) | default(ansible_host)
+  fqdn: inventory_hostname ~ '.' ~ domain
+  cnames: ([] if cname is not defined else (((cname | split(',')) if cname is string else cname) | map('regex_replace', '$', '.'~domain)))
+  proxmox_disk: (disk | default('32g') | human_to_bytes / 1073741824) | int
+  proxmox_memory: (ram | default('4g') | human_to_bytes / 1048576) | int
+  proxmox_cores: cores | default(2)
+groups:
+  el:                             (group_names | intersect(['unmanaged','opnsense_firewalls','proxmox_hypervisors']) | length) == 0
+  nagios_ansible_managed_clients: (group_names | intersect(['unmanaged','opnsense_firewalls','linux_laptops']) | length) == 0
+  nagios_el_clients:              (group_names | intersect(['unmanaged','opnsense_firewalls','linux_laptops','proxmox_hypervisors']) | length) == 0

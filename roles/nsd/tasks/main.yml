@@ -1,0 +1,35 @@
+- name: install packages
+  dnf:
+    name: nsd
+    state: present
+
+- name: generate nsd.conf
+  template:
+    src: etc/nsd/nsd.conf.j2
+    dest: /etc/nsd/nsd.conf
+  notify: restart nsd
+  tags: zoneupdate
+
+- include_tasks:
+    file: generate_zone.yml
+    apply:
+      tags: zoneupdate
+  loop: '{{ nsd_zones }}'
+  loop_control:
+    loop_var: zone
+    label: '{{ zone.name }}'
+  tags: zoneupdate
+
+- name: enable nsd
+  systemd:
+    name: nsd
+    state: started
+    enabled: yes
+
+- name: open firewall ports
+  firewalld:
+    service: dns
+    permanent: yes
+    immediate: yes
+    state: enabled
+  tags: firewalld

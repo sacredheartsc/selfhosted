@@ -1,0 +1,10 @@
+- name: create /etc/motd.d
+  file:
+    path: /etc/motd.d
+    state: directory
+
+- name: remove cockpit message
+  file:
+    src: /dev/null
+    dest: /etc/motd.d/cockpit
+    state: link

@@ -1,0 +1,18 @@
+- name: request https certificate
+  include_role:
+    name: '{{ "certbot" if apache_letsencrypt else "getcert_request" }}'
+  vars:
+    certificate_sans: '{{ [apache_server_name] + apache_server_aliases }}'
+    certificate_path: '{{ apache_certificate_path }}'
+    certificate_key_path: '{{ apache_certificate_key_path }}'
+    certificate_use_apache: yes
+    certificate_hook: systemctl reload httpd
+  when: apache_use_ssl
+
+- name: generate vhost configuration
+  template:
+    src: etc/httpd/conf.d/vhost.conf.j2
+    dest: /etc/httpd/conf.d/vhost-{{ '000-default' if apache_default_vhost else (apache_config_name | default(apache_server_name)) }}.conf
+    mode: 0640
+    lstrip_blocks: yes
+  notify: reload apache

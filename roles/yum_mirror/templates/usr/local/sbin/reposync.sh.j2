@@ -1,0 +1,17 @@
+#!/bin/bash
+
+EXITSTATUS=0
+
+{% for repo in yum_mirror_repositories %}
+# {{ repo.name }}
+dnf reposync \
+  --norepopath \
+  --download-path {{ yum_mirror_webroot }}/{{ repo.path }} \
+  --download-metadata \
+  --delete \
+  --quiet \
+  --repo {{ repo.id }} || EXITSTATUS=1
+
+{% endfor %}
+
+exit $EXITSTATUS

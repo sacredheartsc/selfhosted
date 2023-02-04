@@ -1,0 +1,34 @@
+- name: generate zed.rc
+  template:
+    src: etc/zfs/zed.d/zed.rc.j2
+    dest: /etc/zfs/zed.d/zed.rc
+  notify: restart zfs-zed
+
+- name: enable zfs event daemon
+  systemd:
+    name: zfs-zed
+    enabled: yes
+    state: started
+
+- name: create zfs systemd units
+  template:
+    src: etc/systemd/system/zfs-{{ item[0] }}@.{{ item[1] }}.j2
+    dest: /etc/systemd/system/zfs-{{ item[0] }}@.{{ item[1] }}
+  loop: "{{ ['scrub', 'trim'] | product(['service', 'timer']) }}"
+  register: zfs_units
+
+- name: reload systemd units
+  systemd:
+    daemon-reload: yes
+  when: zfs_units.changed
+
+- name: enable periodic trim and scrub for zpool
+  systemd:
+    name: zfs-{{ item }}@rpool.timer
+    state: started
+    enabled: yes
+  loop:
+    - trim
+    - scrub
+  loop_control:
+    label: zfs-{{ item }}@rpool.timer

@@ -1,0 +1,10 @@
+- name: install QEMU guest agent
+  package:
+    name: qemu-guest-agent
+    state: present
+
+- name: enable QEMU guest agent
+  systemd:
+    name: qemu-guest-agent
+    enabled: yes
+    state: started

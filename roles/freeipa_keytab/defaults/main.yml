@@ -1,0 +1,4 @@
+keytab_path: /etc/krb5.keytab
+keytab_owner: root
+keytab_group: root
+keytab_mode: '0600'

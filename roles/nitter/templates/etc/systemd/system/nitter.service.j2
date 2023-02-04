@@ -1,0 +1,34 @@
+[Unit]
+Description=nitter twitter proxy
+After=network.target redis@{{ nitter_redis_port }}.service
+Requires=redis@{{ nitter_redis_port }}.service
+AssertPathExists={{ nitter_install_dir }}
+
+[Service]
+Type=simple
+ExecStart={{ nitter_install_dir }}/nitter
+WorkingDirectory={{ nitter_install_dir }}
+User={{ nitter_user }}
+Group={{ nitter_user }}
+Restart=always
+RestartSec=15
+
+# See https://www.freedesktop.org/software/systemd/man/systemd.exec.html
+# for details
+DevicePolicy=closed
+NoNewPrivileges=yes
+PrivateDevices=yes
+PrivateTmp=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=yes
+RestrictRealtime=yes
+SystemCallFilter=~@clock @debug @module @mount @obsolete @privileged @reboot @setuid @swap
+
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

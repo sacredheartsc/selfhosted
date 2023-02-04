@@ -1,0 +1,9 @@
+postfix_smtp_ca_file: /etc/pki/tls/certs/ca-bundle.crt
+
+postfix_packages:
+  '8':
+    - postfix
+    - mailx
+  '9':
+    - postfix
+    - s-nail

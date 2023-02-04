@@ -1,0 +1,130 @@
+yum_mirror_webroot: /var/www/yum
+yum_mirror_reposync_script: /usr/local/sbin/reposync.sh
+
+yum_mirror_repositories:
+  ### RHEL 8 ###
+  - id: rocky-8-baseos-x86_64
+    name: Rocky Linux 8 - BaseOS
+    path: rocky/8/BaseOS/x86_64
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=x86_64&country={{ yum_mirrorlist_country }}&repo=BaseOS-8
+
+  - id: rocky-8-appstream-x86_64
+    name: Rocky Linux 8 - AppStream
+    path: rocky/8/AppStream/x86_64
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=x86_64&country={{ yum_mirrorlist_country }}&repo=AppStream-8
+
+  - id: rocky-8-extras-x86_64
+    name: Rocky Linux 8 - Extras
+    path: rocky/8/extras/x86_64
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=x86_64&country={{ yum_mirrorlist_country }}&repo=extras-8
+
+  - id: rocky-8-powertools-x86_64
+    name: Rocky Linux 8 - PowerTools
+    path: rocky/8/PowerTools/x86_64
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=x86_64&country={{ yum_mirrorlist_country }}&repo=PowerTools-8
+
+  - id: epel-8-x86_64
+    name: Extra Packages for Enterprise Linux 8
+    path: epel/8/x86_64
+    metalink: https://mirrors.fedoraproject.org/metalink?arch=x86_64&country={{ yum_mirrorlist_country }}&content=pub%2Frocky&repo=epel-8
+
+  - id: zfs-kmod-8.5-x86_64
+    name: ZFS on Linux for Enterprise Linux 8.5
+    path: zfsonlinux/8.5/x86_64
+    baseurl: http://download.zfsonlinux.org/epel/8.5/kmod/x86_64/
+
+  - id: zfs-kmod-8-x86_64
+    name: ZFS on Linux for Enterprise Linux 8
+    path: zfsonlinux/8/x86_64
+    baseurl: http://download.zfsonlinux.org/epel/8/kmod/x86_64/
+
+  - id: rpmfusion-free-8-x86_64
+    name: RPM Fusion for EL 8 - Free
+    path: rpmfusion/8/free/x86_64
+    mirrorlist: http://mirrors.rpmfusion.org/mirrorlist?repo=free-el-updates-released-8&arch=x86_64
+
+  - id: rpmfusion-nonfree-8-x86_64
+    name: RPM Fusion for EL 8 - Nonfree
+    path: rpmfusion/8/nonfree/x86_64
+    mirrorlist: http://mirrors.rpmfusion.org/mirrorlist?repo=nonfree-el-updates-released-8&arch=x86_64
+
+  - id: mongodb-4.0-8-x86_64
+    name: MongoDB 4.0 for EL 8
+    path: mongodb/8/4.0/x86_64
+    baseurl: https://repo.mongodb.org/yum/redhat/8/mongodb-org/4.0/x86_64/
+
+  - id: mongodb-4.4-8-x86_64
+    name: MongoDB 4.4 for EL 8
+    path: mongodb/8/4.4/x86_64
+    baseurl: https://repo.mongodb.org/yum/redhat/8/mongodb-org/4.4/x86_64/
+
+  - id: mongodb-6.0-8-x86_64
+    name: MongoDB 6.0 for EL 8
+    path: mongodb/8/6.0/x86_64
+    baseurl: https://repo.mongodb.org/yum/redhat/8/mongodb-org/6.0/x86_64/
+
+  - id: crystal-8-x86_64
+    name: Crystal Lang for EL 8
+    path: crystal/8/x86_64
+    baseurl: https://download.opensuse.org/repositories/devel:/languages:/crystal/CentOS_8/
+
+  - id: rspamd-8-x86_64
+    name: Rspamd for EL 8
+    path: rspamd/8/x86_64
+    baseurl: http://rspamd.com/rpm-stable/centos-8/x86_64/
+
+  ### RHEL 9 ###
+  - id: rocky-9-baseos-x86_64
+    name: Rocky Linux 9 - BaseOS
+    path: rocky/9/BaseOS/x86_64
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=x86_64&country={{ yum_mirrorlist_country }}&repo=BaseOS-9
+
+  - id: rocky-9-appstream-x86_64
+    name: Rocky Linux 9 - AppStream
+    path: rocky/9/AppStream/x86_64
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=x86_64&country={{ yum_mirrorlist_country }}&repo=AppStream-9
+
+  - id: rocky-9-extras-x86_64
+    name: Rocky Linux 9 - Extras
+    path: rocky/9/extras/x86_64
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=x86_64&country={{ yum_mirrorlist_country }}&repo=extras-9
+
+  - id: rocky-9-crb-x86_64
+    name: Rocky Linux 9 - CRB
+    path: rocky/9/CRB/x86_64
+    mirrorlist: https://mirrors.rockylinux.org/mirrorlist?arch=x86_64&country={{ yum_mirrorlist_country }}&repo=CRB-9
+
+  - id: epel-9-x86_64
+    name: Extra Packages for Enterprise Linux 9
+    path: epel/9/x86_64
+    metalink: https://mirrors.fedoraproject.org/metalink?arch=x86_64&country={{ yum_mirrorlist_country }}&content=pub%2Frocky&repo=epel-9
+
+  - id: zfs-kmod-9-x86_64
+    name: ZFS on Linux for Enterprise Linux 9
+    path: zfsonlinux/9/x86_64
+    baseurl: http://download.zfsonlinux.org/epel/9/kmod/x86_64/
+
+  - id: rpmfusion-free-9-x86_64
+    name: RPM Fusion for EL 9 - Free
+    path: rpmfusion/9/free/x86_64
+    mirrorlist: http://mirrors.rpmfusion.org/mirrorlist?repo=free-el-updates-released-9&arch=x86_64&country={{ yum_mirrorlist_country }}
+
+  - id: rpmfusion-free-tainted-9-x86_64
+    name: RPM Fusion for EL 9 - Free Tainted
+    path: rpmfusion/9/free-tainted/x86_64
+    mirrorlist: https://mirrors.rpmfusion.org/mirrorlist?repo=free-el-tainted-9&arch=x86_64&country={{ yum_mirrorlist_country }}
+
+  - id: rpmfusion-nonfree-9-x86_64
+    name: RPM Fusion for EL 9 - Nonfree
+    path: rpmfusion/9/nonfree/x86_64
+    mirrorlist: http://mirrors.rpmfusion.org/mirrorlist?repo=nonfree-el-updates-released-9&arch=x86_64&country={{ yum_mirrorlist_country }}
+
+  - id: rpmfusion-nonfree-tainted-9-x86_64
+    name: RPM Fusion for EL 9 - Nonfree Tainted
+    path: rpmfusion/9/nonfree-tainted/x86_64
+    mirrorlist: https://mirrors.rpmfusion.org/mirrorlist?repo=nonfree-el-tainted-9&arch=x86_64&country={{ yum_mirrorlist_country }}
+
+  - id: mongodb-6.0-9-x86_64
+    name: MongoDB 6.0 for EL 9
+    path: mongodb/9/6.0/x86_64
+    baseurl: https://repo.mongodb.org/yum/redhat/9/mongodb-org/6.0/x86_64/

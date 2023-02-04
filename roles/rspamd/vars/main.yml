@@ -1,0 +1,30 @@
+rspamd_packages:
+  - rspamd
+
+rspamd_user: _rspamd
+rspamd_group: _rspamd
+
+rspamd_data_dir: /var/lib/rspamd
+
+rspamd_archive_shell: >-
+  echo save | redis-cli -p {{ rspamd_redis_port }};
+  echo save | redis-cli -p {{ rspamd_redis_bayes_port }};
+  TIMESTAMP=$(date +%Y%m%d%H%M%S);
+  tar czf "redis-${TIMESTAMP}.tar.gz"
+  --transform "s|^\.|redis-${TIMESTAMP}|"
+  -C {{ redis_home }} .
+
+rspamd_apache_config: |
+  {{ apache_proxy_vhost_config }}
+  ProxyAddHeaders off
+  ProxyPass        / http://127.0.0.1:{{ rspamd_controller_port }}/
+  ProxyPassReverse / http://127.0.0.1:{{ rspamd_controller_port }}/
+
+  <Location />
+    AuthName "FreeIPA Single Sign-On"
+    AuthType GSSAPI
+    GssapiLocalName On
+    {{ apache_gssapi_session_config }}
+    {{ apache_ldap_config }}
+    Require ldap-attribute memberof=cn={{ rspamd_admin_group }},{{ freeipa_group_basedn }}
+  </Location>

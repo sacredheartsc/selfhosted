@@ -1,0 +1,9 @@
+- name: restart nsd
+  systemd:
+    name: nsd
+    state: restarted
+
+- name: reload nsd
+  systemd:
+    name: nsd
+    state: reloaded

@@ -1,0 +1,51 @@
+- name: install cgit
+  dnf:
+    name: '{{ cgit_packages }}'
+    state: present
+
+- name: generate cgit configuration
+  template:
+    src: etc/cgitrc.j2
+    dest: /etc/cgitrc
+
+- name: allow selinux mmap files
+  seboolean:
+    name: domain_can_mmap_files
+    state: yes
+    persistent: yes
+  tags: selinux
+
+- name: create cgit about file
+  copy:
+    content: '{{ cgit_about_html }}'
+    dest: '{{ cgit_static_dir }}/about.html'
+
+- name: copy custom css
+  copy:
+    src: '{{ cgit_css }}'
+    dest: '{{ cgit_static_dir }}/{{ cgit_css | basename }}'
+  when: cgit_css is defined
+
+- name: copy custom logo
+  copy:
+    src: '{{ cgit_logo }}'
+    dest: '{{ cgit_static_dir }}/{{ cgit_logo | basename }}'
+  when: cgit_logo is defined
+
+- name: copy custom favicon
+  copy:
+    src: '{{ cgit_favicon }}'
+    dest: '{{ cgit_static_dir }}/{{ cgit_favicon | basename }}'
+  when: cgit_favicon is defined
+
+- name: copy custom html head include
+  copy:
+    src: '{{ cgit_head_include }}'
+    dest: '{{ cgit_static_dir }}/{{ cgit_head_include | basename }}'
+  when: cgit_head_include is defined
+
+- name: copy custom html header
+  copy:
+    src: '{{ cgit_header }}'
+    dest: '{{ cgit_static_dir }}/{{ cgit_header | basename }}'
+  when: cgit_header is defined

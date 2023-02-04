@@ -1,0 +1,21 @@
+- name: create unix account
+  user:
+    name: "{{ proxmox_api_user | replace('@pam', '') }}"
+    shell: /sbin/nologin
+    password: '{{ proxmox_api_password | password_hash("sha512", proxmox_password_salt | default("")) }}'
+    state: present
+
+- name: check if user has PVE account
+  shell: pveum user list --noheader --noborder | cut -d ' ' -f1
+  changed_when: False
+  register: pve_users
+
+- name: create PVE account
+  block:
+    - name: create PVE user
+      command: pveum user add {{ proxmox_api_user }}
+
+    - name: set user ACLs
+      command: pveum acl modify / -user {{ proxmox_api_user }} -role PVEAdmin -propagate 1
+
+  when: proxmox_api_user not in pve_users.stdout_lines

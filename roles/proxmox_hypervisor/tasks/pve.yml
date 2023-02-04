@@ -1,0 +1,58 @@
+- name: disable proxmox enterprise repositiory
+  apt_repository:
+    filename: pve-enterprise
+    repo: 'deb {{ proxmox_repo_url }} {{ ansible_distribution_release }} pve-enterprise'
+    state: absent
+    update_cache: no
+
+- name: enable proxmox community repository
+  apt_repository:
+    filename: pve-no-subscription
+    repo: 'deb {{ proxmox_repo_url }} {{ ansible_distribution_release }} pve-no-subscription'
+    state: present
+    update_cache: yes
+
+- name: enable snippets on local storage
+  lineinfile:
+    path: /etc/pve/storage.cfg
+    line: '	content iso,backup,snippets,vztmpl'
+    regexp: '^\s+content\s'
+    insertafter: '^dir: local$'
+    firstmatch: yes
+
+- name: create snippets directory
+  file:
+    path: '{{ proxmox_snippets_dir }}'
+    state: directory
+
+- name: generate custom snippets
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ proxmox_snippets_dir }}/{{ item.path | splitext | first }}'
+  loop: "{{ lookup('filetree', '../templates/{{ proxmox_snippets_dir[1:] }}', wantlist=True) }}"
+  when: item.state == 'file'
+
+- name: add ansible API user
+  import_tasks: pve_api_user.yml
+
+- name: create kvm image directory
+  file:
+    path: '{{ proxmox_kvm_image_dir }}'
+    state: directory
+
+- name: get current VMIDs
+  shell: qm list | awk '{print $1}'
+  register: vmids
+  changed_when: false
+
+- name: install proxmoxer
+  apt:
+    name: python3-proxmoxer
+    state: present
+
+- name: create KVM templates
+  include_tasks: pve_kvm_template.yml
+  when: (image.vmid | string) not in vmids.stdout_lines
+  loop: '{{ proxmox_kvm_images }}'
+  loop_control:
+    loop_var: image

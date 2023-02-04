@@ -1,0 +1,5 @@
+- name: set root authorized_keys
+  authorized_key:
+    user: root
+    exclusive: yes
+    key: "{{ root_authorized_keys | join('\n') }}"

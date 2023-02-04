@@ -1,0 +1,94 @@
+- name: install packages
+  dnf:
+    name: '{{ jellyfin_packages }}'
+    state: present
+
+- name: create installation directory
+  file:
+    path: '{{ jellyfin_install_dir }}'
+    state: directory
+
+- name: extract tarball
+  unarchive:
+    src: '{{ jellyfin_url }}'
+    remote_src: yes
+    dest: '{{ jellyfin_install_dir }}'
+    extra_opts:
+      - '--strip-components=2'
+  notify: restart jellyfin
+
+- name: generate systemd unit
+  template:
+    src: etc/systemd/system/jellyfin.service.j2
+    dest: /etc/systemd/system/jellyfin.service
+  notify: restart jellyfin
+  register: jellyfin_unit
+
+- name: reload systemd units
+  systemd:
+    daemon_reload: yes
+  when: jellyfin_unit.changed
+
+- name: generate sysconfig file
+  template:
+    src: etc/sysconfig/jellyfin.j2
+    dest: /etc/sysconfig/jellyfin
+  notify: restart jellyfin
+
+- name: create runtime directories
+  file:
+    path: '{{ item.path }}'
+    owner: '{{ jellyfin_user }}'
+    group: '{{ jellyfin_user }}'
+    mode: '{{ item.mode }}'
+    state: directory
+  loop:
+    - { path: '{{ jellyfin_home }}',                        mode: '0750' }
+    - { path: '{{ jellyfin_home }}/plugins',                mode: '0750' }
+    - { path: '{{ jellyfin_home }}/plugins/configurations', mode: '0750' }
+    - { path: /var/cache/jellyfin,                          mode: '0750' }
+    - { path: /var/log/jellyfin,                            mode: '0755' }
+    - { path: '{{ jellyfin_conf_dir }}',                    mode: '0755' }
+
+- name: generate jellyfin network configuration
+  template:
+    src: '{{ jellyfin_conf_dir[1:] }}/network.xml.j2'
+    dest: '{{ jellyfin_conf_dir }}/network.xml'
+    owner: '{{ jellyfin_user }}'
+    group: '{{ jellyfin_user }}'
+    mode: 0644
+  notify: restart jellyfin
+
+- name: generate jellyfin LDAP configuration
+  template:
+    src: '{{ jellyfin_home[1:] }}/plugins/configurations/LDAP-Auth.xml.j2'
+    dest: '{{ jellyfin_home }}/plugins/configurations/LDAP-Auth.xml'
+    owner: '{{ jellyfin_user }}'
+    group: '{{ jellyfin_user }}'
+    mode: 0640
+  notify: restart jellyfin
+
+- import_tasks: freeipa.yml
+
+- name: enable jellyfin
+  systemd:
+    name: jellyfin
+    state: started
+    enabled: yes
+
+- name: allow apache to connect to jellyfin port
+  seport:
+    ports: '{{ jellyfin_port }}'
+    proto: tcp
+    setype: http_port_t
+    state: present
+  tags: selinux
+
+- name: open firewall ports
+  firewalld:
+    port: '{{ item }}'
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop: '{{ jellyfin_discovery_ports }}'
+  tags: firewalld

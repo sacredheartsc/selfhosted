@@ -1,0 +1,14 @@
+rsyslog_owner: root
+rsyslog_group: root
+rsyslog_file_mode: '0640'
+rsyslog_dir_mode: '0750'
+
+rsyslog_port: 514
+rsyslog_relp_port: 20514
+rsyslog_relp_tls_port: 10514
+
+rsyslog_gzip_on_calendar: daily
+rsyslog_gzip_days_ago: 7
+
+rsyslog_permitted_peers:
+  - '*.{{ ansible_domain }}'

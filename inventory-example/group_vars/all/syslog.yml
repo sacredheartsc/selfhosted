@@ -1,0 +1,2 @@
+syslog_host: syslog.{{ domain }}
+syslog_host_ip: "{{ hostvars[groups['syslog_servers'] | sort | first].ip }}"

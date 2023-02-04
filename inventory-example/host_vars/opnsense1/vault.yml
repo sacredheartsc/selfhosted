@@ -1,0 +1,6 @@
+# This is a sample file with fake secrets. For a real deployment, encrypt this
+# file with `ansible-vault encrypt` and add your own secrets.
+---
+# Generate these values from the OPNsense web interface.
+vault_opnsense_backup_api_key: AAAAAAAAAAAchangeme
+vault_opnsense_backup_api_secret: AAAAAAAAAchangeme

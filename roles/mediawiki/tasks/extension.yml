@@ -1,0 +1,12 @@
+- name: get url for extension tarball
+  uri:
+    url: 'https://www.mediawiki.org/w/index.php?title=Special:ExtensionDistributor&extdistname={{ extension_name }}&extdistversion={{ extension_version }}'
+  register: extension_distributor_resp
+
+- name: extract extension tarball
+  unarchive:
+    src: "{{ extension_distributor_resp.refresh.split(';') | map('trim') | select('search', '^url=') | first | regex_replace('^url=', '') }}"
+    remote_src: yes
+    dest: '{{ mediawiki_home }}/extensions'
+    owner: apache
+    group: apache

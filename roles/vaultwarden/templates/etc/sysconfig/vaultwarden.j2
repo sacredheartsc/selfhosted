@@ -1,0 +1,48 @@
+ROCKET_CLI_COLORS=false
+
+LOG_LEVEL=warn
+EXTENDED_LOGGING=true
+
+IP_HEADER=X-Forwarded-For
+
+DATABASE_URL=postgresql://{{ vaultwarden_user }}@{{ vaultwarden_db_host }}/{{ vaultwarden_db_name }}
+
+WEBSOCKET_ENABLED=true
+WEBSOCKET_ADDRESS=127.0.0.1
+WEBSOCKET_PORT={{ vaultwarden_websocket_port }}
+
+SIGNUPS_ALLOWED={{ 'false' if vaultwarden_signup_domain_whitelist else 'true' }}
+SIGNUPS_VERIFY={{ vaultwarden_verify_signups }}
+
+{% if vaultwarden_signup_domain_whitelist %}
+SIGNUPS_DOMAINS_WHITELIST={{ vaultwarden_signup_domain_whitelist | join(',') }}
+{% endif %}
+
+DISABLE_ADMIN_TOKEN=true
+
+INVITATIONS_ALLOWED={{ vaultwarden_invitations_allowed }}
+
+{% if vaultwarden_user_attachment_limit_kb %}
+USER_ATTACHMENT_LIMIT={{ vaultwarden_user_attachment_limit_kb }}
+{% endif %}
+
+DOMAIN={{ vaultwarden_url }}
+
+{% if vaultwarden_yubico_client_id is defined %}
+YUBICO_CLIENT_ID={{ vaultwarden_yubico_client_id }}
+YUBICO_SECRET_KEY={{ vaultwarden_yubico_secret_key }}
+{% endif %}
+
+ROCKET_ADDRESS=127.0.0.1
+ROCKET_PORT={{ vaultwarden_port }}
+
+SMTP_HOST=localhost
+SMTP_FROM={{ vaultwarden_smtp_from }}
+SMTP_FROM_NAME={{ vaultwarden_smtp_from_name }}
+SMTP_SECURITY=off
+SMTP_SSL=false
+SMTP_PORT=25
+
+{% if vaultwarden_haveibeenpwned_api_key is defined %}
+HIBP_API_KEY={{ vaultwarden_haveibeenpwned_api_key }}
+{% endif %}

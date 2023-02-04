@@ -1,0 +1,73 @@
+prefix = /usr
+exec_prefix = /usr
+sysconfdir = /etc
+localstatedir = /var
+sbindir = /usr/sbin
+logdir = ${localstatedir}/log/radius
+raddbdir = ${sysconfdir}/raddb
+radacctdir = ${logdir}/radacct
+
+name = radiusd
+
+confdir = ${raddbdir}
+modconfdir = ${confdir}/mods-config
+certdir = ${confdir}/certs
+cadir   = ${confdir}/certs
+run_dir = ${localstatedir}/run/${name}
+
+db_dir = ${localstatedir}/lib/radiusd
+libdir = /usr/lib64/freeradius
+pidfile = ${run_dir}/${name}.pid
+correct_escapes = true
+max_request_time = 30
+cleanup_delay = 5
+max_requests = 16384
+hostname_lookups = no
+log {
+  destination = stdout
+  colourise = no
+  stripped_names = no
+  auth = yes
+  auth_badpass = no
+  auth_goodpass = no
+  msg_denied = "You are already logged in - access denied"
+}
+
+checkrad = ${sbindir}/checkrad
+
+ENV { }
+
+security {
+  user = radiusd
+  group = radiusd
+  allow_core_dumps = no
+  max_attributes = 200
+  reject_delay = 1
+  status_server = yes
+}
+
+proxy_requests  = yes
+$INCLUDE proxy.conf
+
+$INCLUDE clients.conf
+
+thread pool {
+  start_servers = 5
+  max_servers = 32
+  min_spare_servers = 3
+  max_spare_servers = 10
+  max_requests_per_server = 0
+  auto_limit_acct = no
+}
+
+modules {
+  $INCLUDE mods-enabled/
+}
+
+instantiate { }
+
+policy {
+  $INCLUDE policy.d/
+}
+
+$INCLUDE sites-enabled/

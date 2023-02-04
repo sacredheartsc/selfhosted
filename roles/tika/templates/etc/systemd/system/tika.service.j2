@@ -1,0 +1,53 @@
+[Unit]
+Description=Apache Tika
+Before=dovecot.service
+
+[Service]
+Type=simple
+User=tika
+Restart=on-failure
+
+ProtectSystem=strict
+ReadWritePaths={{ tika_data_dir }} /var/log/tika
+
+# Harden this java nightmare
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+DevicePolicy=closed
+ProtectSystem=strict
+ProtectHome=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+WorkingDirectory={{ tika_install_dir }}
+LogsDirectory=tika
+
+Environment=TIKA_DATA_HOME={{ tika_data_dir }}
+Environment=JVM_ARGS=
+Environment=TIKA_OPTS=
+Environment=JVM_GC_ARGS="-XX:+UseG1GC -XX:+PerfDisableSharedMem -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=250 -XX:+UseLargePages -XX:+AlwaysPreTouch"
+Environment=TIKA_HOST=localhost
+Environment=TIKA_PORT=9998
+Environment=TIKA_LOGS_DIR=/var/log/tika
+Environment=TIKA_CONFIG_FILE={{ tika_conf_dir }}/config.xml
+EnvironmentFile=/etc/sysconfig/tika
+
+ExecStart=java -server \
+  $JVM_ARGS \
+  $JVM_GC_ARGS \
+  -Dlog4j2.formatMsgNoLookups=true \
+  $TIKA_OPTS \
+  -jar tika-server.jar \
+  -c ${TIKA_CONFIG_FILE} \
+  -h ${TIKA_HOST} \
+  -p ${TIKA_PORT}
+
+[Install]
+WantedBy=multi-user.target
