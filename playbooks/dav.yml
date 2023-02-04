@@ -1,11 +1,10 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: dav_servers
-
 - name: configure sabredav
   hosts: dav_servers
   tags: sabredav,dav
   roles:
+    - role: common
+      tags: common
+
     - role: sabredav
 
     - role: apache_vhost

@@ -1,11 +1,10 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: cups_servers
-
 - name: configure cups
   hosts: cups_servers
   tags: cups
   roles:
+    - role: common
+      tags: common
+
     - role: cups_server
 
     - role: archive_job

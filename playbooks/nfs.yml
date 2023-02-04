@@ -1,9 +1,8 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: nfs_servers
-
 - name: configure nfs exports
   hosts: nfs_servers
   tags: nfs
   roles:
-    - nfs_server
+    - role: common
+      tags: common
+
+    - role: nfs_server

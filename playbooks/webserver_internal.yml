@@ -1,11 +1,10 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: www1
-
 - name: configure internal web servers
   hosts: www1
   tags: apache
   roles:
+    - role: common
+      tags: common
+
     - role: apache_vhost
       apache_default_vhost: yes
       apache_config: |

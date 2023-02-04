@@ -1,11 +1,10 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: jellyfin_servers
-
 - name: configure jellyfin
   hosts: jellyfin_servers
   tags: jellyfin
   roles:
+    - role: common
+      tags: common
+
     - role: jellyfin
 
     - role: apache_vhost

@@ -1,11 +1,10 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: nagios_servers
-
 - name: configure nagios
   hosts: nagios_servers
   tags: nagios
   roles:
+    - role: common
+      tags: common
+
     - role: nagios_server
 
     - role: apache_vhost

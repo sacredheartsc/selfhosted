@@ -1,11 +1,10 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: syncthing_servers
-
 - name: configure syncthing
   hosts: syncthing_servers
   tags: syncthing
   roles:
+    - role: common
+      tags: common
+
     - role: syncthing
 
     - role: archive_job

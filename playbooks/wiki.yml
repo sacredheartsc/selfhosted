@@ -1,11 +1,10 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: wiki_servers
-
 - name: configure mediawiki
   hosts: wiki_servers
   tags: wiki,mediawiki
   roles:
+    - role: common
+      tags: common
+
     - role: mediawiki
 
     - role: apache_vhost

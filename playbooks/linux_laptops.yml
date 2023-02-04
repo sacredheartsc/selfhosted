@@ -1,10 +1,9 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: linux_laptops
-
 - name: configure linux desktop environment
   hosts: linux_laptops
   roles:
+    - role: common
+      tags: common
+
     - role: dev_environment
       tags: dev
 

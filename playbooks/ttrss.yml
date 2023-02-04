@@ -1,12 +1,10 @@
-- import_playbook: common.yml
-  tags: common
-  vars:
-    hostlist: ttrss_servers
-
 - name: configure tinytinyrss
   hosts: ttrss_servers
   tags: ttrss
   roles:
+    - role: common
+      tags: common
+
     - role: ttrss
 
     - role: apache_vhost

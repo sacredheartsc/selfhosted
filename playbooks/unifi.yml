@@ -1,12 +1,10 @@
-- import_playbook: common.yml
-  tags: common
-  vars:
-    hostlist: unifi_controllers
-
 - name: configure unifi controller
   hosts: unifi_controllers
   tags: unifi
   roles:
+    - role: common
+      tags: common
+
     - role: unifi
 
     - role: archive_job

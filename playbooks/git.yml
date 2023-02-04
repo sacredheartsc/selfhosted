@@ -1,11 +1,10 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: git_servers
-
 - name: configure git repository
   hosts: git_servers
   tags: git
   roles:
+    - role: common
+      tags: common
+
     - role: gitolite
       tags: gitolite
 

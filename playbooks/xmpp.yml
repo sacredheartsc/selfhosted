@@ -1,9 +1,8 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: xmpp_servers
-
 - name: configure prosody
   hosts: xmpp_servers
   tags: xmpp,prosody
   roles:
+    - role: common
+      tags: common
+
     - role: prosody

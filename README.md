@@ -53,12 +53,14 @@ into it.
 
 ## Features
 
-Modular [Ansible roles](roles) are used to manage VMs and configure each service.
+Modular [Ansible roles](roles) are used to create VMs, apply common base
+configuration, and configure each service.
 
 | Role                                      | Description |
 --------------------------------------------|-------------|
 [proxmox\_instance](roles/proxmox_instance) | Automatically provisions a [Proxmox](https://www.proxmox.com/) VM with the given hardware and cloud-init configuration
-[freeipa\_server](roles/freeipa_server)     | [FreeIPA](https://www.freeipa.org/) provides provides identity management, access control, certificate management, and Single Sign-On for all services via Kerberos/GSSAPI
+[common](roles/common)                      | Meta-role that pulls in common configuration roles (local repos, freeipa client, DNS/NTP, SSH keys, etc)
+[freeipa\_server](roles/freeipa_server)     | [FreeIPA](https://www.freeipa.org/) provides provides identity management, access control, certificate management, and single sign-on
 [yum\_mirror](roles/yum_mirror)             | Mirrors all package repositories locally
 [rsyslog\_server](roles/rsyslog_server)     | Centralized syslog storage using [Rsyslog](https://www.rsyslog.com/)
 [postfix\_server](roles/postfix_server)     | Public-facing mail server using [Postfix](https://www.postfix.org/)
@@ -89,9 +91,6 @@ Modular [Ansible roles](roles) are used to manage VMs and configure each service
 
 All services authenticate against the local FreeIPA domain. On a domain-joined
 workstation, Kerberos/GSSAPI is used for single sign-on.
-
-The [common.yml](playbooks/common.yml) playbook is a prerequisite for all services.
-It joins the host to FreeIPA, adds the local yum repos, configures DNS and NTP, etc.
 
 ## Todo
 

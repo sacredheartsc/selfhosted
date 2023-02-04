@@ -1,10 +1,9 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: privbrowse_servers
-
 - name: configure web service frontends
   hosts: privbrowse_servers
   roles:
+    - role: common
+      tags: common
+
     - role: invidious
       tags: invidious
 

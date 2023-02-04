@@ -1,0 +1,109 @@
+dependencies:
+  - role: proxmox_instance
+    when: '"proxmox_instances" in group_names'
+    tags: proxmox
+
+  - role: dns_records
+    when: not (bootstrap | default(false))
+    tags: dns
+
+  - role: gather_facts
+    when: not ansible_facts
+    tags: always
+
+  - role: udev
+    when: not ansible_virtualization_tech_guest
+    tags: udev
+
+  - role: root_authorized_keys
+    tags: authorized_keys
+
+  - role: root_password
+    tags: root_password
+
+  - role: polkit
+    tags: polkit
+
+  - role: grub
+    tags: grub
+
+  - role: sudo
+    tags: sudo,sudoers
+
+  - role: hostname
+    tags: hostname
+
+  - role: timezone
+    tags: timezone
+
+  - role: journald
+    tags: journald
+
+  - role: yum_disable_default_repos
+    when: '"yum_mirrors" not in group_names'
+
+  - role: yum
+    yum_repositories:
+      - rocky-baseos
+      - rocky-appstream
+      - rocky-extras
+    when:
+      - '"yum_mirrors" not in group_names'
+      - not (bootstrap | default(false))
+    tags: yum
+
+  - role: dnsmasq
+    when: '"freeipa_servers" not in group_names'
+    tags: dnsmasq
+
+  - role: locale
+    tags: locale
+
+  - role: selinux
+    tags: selinux
+
+  - role: qemu_guest_agent
+    when: '"kvm" in ansible_virtualization_tech_guest'
+    tags: qemu
+
+  - role: firewalld
+    tags: firewalld
+
+  - role: chrony
+    tags: chrony,ntp
+
+  - role: dnf_automatic
+    tags: yum
+
+  - role: ssh
+    tags: ssh
+
+  - role: tuned
+    tags: tuned
+
+  - role: motd
+    tags: motd
+
+  - role: packages
+    tags: packages
+
+  - role: postfix_client
+    when: '"mail_servers" not in group_names'
+    tags: postfix,mail
+
+  - role: freeipa_client
+    when: '"freeipa_servers" not in group_names'
+    tags: freeipa
+
+  - role: rsyslog_client
+    when:
+      - '"syslog_servers" not in group_names'
+      - not (bootstrap | default(false))
+    tags: rsyslog
+
+  - role: nagios_client
+    when:
+      - (group_names | intersect(nagios_excluded_groups) | length) == 0
+      - '"yum_mirrors" not in group_names'
+      - not (bootstrap | default(false))
+    tags: nagios

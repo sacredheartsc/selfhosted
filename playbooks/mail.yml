@@ -1,6 +1,8 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: rspamd_servers,mail_servers,imap_servers
+- name: run common roles
+  hosts: rspamd_servers,mail_servers,imap_servers
+  tags: common
+  roles:
+    - common
 
 - name: configure rspamd
   hosts: rspamd_servers
@@ -18,13 +20,13 @@
       archive_shell: '{{ rspamd_archive_shell }}'
       tags: archive
 
-- name: configure Postfix
+- name: configure postfix
   hosts: mail_servers
   tags: postfix,smtp
   roles:
-    - postfix_server
+    - role: postfix_server
 
-- name: configure Dovecot
+- name: configure dovecot
   hosts: imap_servers
   tags: dovecot,imap
   roles:

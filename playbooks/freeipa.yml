@@ -1,11 +1,10 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: freeipa_servers
-
 - name: configure freeipa master
   hosts: freeipa_master
   tags: freeipa
   roles:
+    - role: common
+      tags: common
+
     - role: freeipa_server
 
     - role: archive_job

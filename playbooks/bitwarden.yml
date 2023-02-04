@@ -1,11 +1,10 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: bitwarden_servers
-
 - name: configure vaultwarden
   hosts: bitwarden_servers
   tags: vaultwarden,bitwarden
   roles:
+    - role: common
+      tags: common
+
     - role: vaultwarden
 
     - role: apache_vhost

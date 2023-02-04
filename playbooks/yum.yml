@@ -1,11 +1,10 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: yum_mirrors
-
 - name: configure yum mirrors
   hosts: yum_mirrors
   tags: yum
   roles:
+    - role: common
+      tags: common
+
     - role: yum_mirror
 
     - role: apache_vhost

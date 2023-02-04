@@ -1,9 +1,8 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: authoritative_nameservers
-
 - name: configure nsd
   hosts: authoritative_nameservers
   tags: nsd
   roles:
-    - nsd
+    - role: common
+      tags: common
+
+    - role: nsd

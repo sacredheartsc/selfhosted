@@ -1,11 +1,10 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: photostructure_servers
-
 - name: configure photostructure
   hosts: photostructure_servers
   tags: photostructure
   roles:
+    - role: common
+      tags: common
+
     - role: photostructure
 
     - role: apache_vhost

@@ -1,10 +1,9 @@
-- import_playbook: common.yml
-  vars:
-    hostlist: dmz-www1
-
 - name: configure public web server
   hosts: dmz-www1
   roles:
+    - role: common
+      tags: common
+
     - role: apache_vhost
       apache_server_name: www.example.com
       apache_server_aliases: [example.com]
