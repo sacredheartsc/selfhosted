@@ -60,35 +60,35 @@ Modular [Ansible roles](roles) are used to manage VMs and configure each service
 
 | Role                                        | Description |
 ----------------------------------------------|-------------|
-`[proxmox_instance](roles/proxmox_instance)`  | Automatically provisions a [Proxmox](https://www.proxmox.com/) VM with the given hardware and cloud-init configuration
-`[freeipa_server](roles/freeipa_server)`      | [FreeIPA](https://www.freeipa.org/) provides provides identity management, access control, certificate management, and Single Sign-On for all services via Kerberos/GSSAPI
-`[yum_mirror](roles/yum_mirror)`              | Mirrors all package repositories locally
-`[rsyslog_server](roles/rsyslog_server)`      | Centralized syslog storage using [Rsyslog](https://www.rsyslog.com/)
-`[postfix_server](roles/postfix_server)`      | Public-facing mail server using [Postfix](https://www.postfix.org/)
-`[dovecot](roles/dovecot)`                    | [Dovecot](https://www.dovecot.org/) IMAP server, with full text and attachment search
-`[rspamd](roles/rspamd)`                      | [Rspamd](https://rspamd.com/) spam filtering system
-`[sabredav](roles/sabredav)`                  | [sabre/dav](https://sabre.io/) CalDAV and CardDAV server with custom FreeIPA integration
-`[prosody](roles/prosody)`                    | [Prosody](https://prosody.im/) XMPP server
-`[gitolite](roles/gitolite)`                  | Git repository with [Gitolite](https://gitolite.com/gitolite/index.html) access control
-`[cgit](roles/cgit)`                          | [cgit](https://git.zx2c4.com/cgit/) web frontend for Git
-`[vaultwarden](roles/vaultwarden)`            | [Bitwarden-compatible password manager](https://github.com/dani-garcia/vaultwarden)
-`[ttrss](roles/ttrss)`                        | [Tiny Tiny RSS](https://tt-rss.org/) feed aggregator
-`[mediawiki](roles/mediawiki)`                | [MediaWiki](https://www.mediawiki.org/) wiki platform
-`[jellyfin](roles/jellyfin)`                  | [Jellyfin](https://jellyfin.org/) media system
-`[invidious](roles/invidious)`                | [Invidious](https://invidious.io/) open source YouTube frontend
-`[nitter](roles/nitter)`                      | [Nitter](https://github.com/zedeus/nitter) open source Twitter frontend
-`[teddit](roles/teddit)`                      | [Teddit](https://codeberg.org/teddit/teddit) open source Reddit frontend
-`[hastebin](roles/hastebin)                   | [Hastebin](https://github.com/toptal/haste-server) open source pastebin
-`[psitransfer](roles/psitransfer)             | [PsiTransfer](https://github.com/psi-4ward/psitransfer) public file sharing
-`[nfs_server](roles/nfs_server)`              | Configures ZFS datasets, NFS exports, SMB shares, ACLs, and autofs maps.
-`[syncthing](roles/syncthing]`                | Per-user [Syncthing](https://syncthing.net/) instances that sync files to your NFS home directory
-`[asterisk](roles/asterisk]`                  | [Asterisk](https://www.asterisk.org/) PBX for VOIP phones
-`[nsd](roles/nsd)`                            | Authoritative DNS server
-`[nagios](roles/nagios)`                      | Monitors all hosts and services, automatically generated configuration
-`[znc](roles/znc)`                            | [ZNC](https://znc.in/) IRC bouncer
-`[cups](roles/cups)`                          | Centralized network printing
-`[unifi](roles/unifi)`                        | [UniFi](https://www.ui.com/) controller for managing Ubiquiti access points
-`[freeradius](roles/freeradius)`              | WPA Enterprise authentication for WiFi using FreeIPA credentials or SSL certificates
+[proxmox\_instance](roles/proxmox_instance) | Automatically provisions a [Proxmox](https://www.proxmox.com/) VM with the given hardware and cloud-init configuration
+[freeipa\_server](roles/freeipa_server)     | [FreeIPA](https://www.freeipa.org/) provides provides identity management, access control, certificate management, and Single Sign-On for all services via Kerberos/GSSAPI
+[yum\_mirror](roles/yum_mirror)             | Mirrors all package repositories locally
+[rsyslog\_server](roles/rsyslog_server)     | Centralized syslog storage using [Rsyslog](https://www.rsyslog.com/)
+[postfix\_server](roles/postfix_server)     | Public-facing mail server using [Postfix](https://www.postfix.org/)
+[dovecot](roles/dovecot)                    | [Dovecot](https://www.dovecot.org/) IMAP server, with full text and attachment search
+[rspamd](roles/rspamd)                      | [Rspamd](https://rspamd.com/) spam filtering system
+[sabredav](roles/sabredav)                  | [sabre/dav](https://sabre.io/) CalDAV and CardDAV server with custom FreeIPA integration
+[prosody](roles/prosody)                    | [Prosody](https://prosody.im/) XMPP server
+[gitolite](roles/gitolite)                  | Git repository with [Gitolite](https://gitolite.com/gitolite/index.html) access control
+[cgit](roles/cgit)                          | [cgit](https://git.zx2c4.com/cgit/) web frontend for Git
+[vaultwarden](roles/vaultwarden)            | [Bitwarden-compatible password manager](https://github.com/dani-garcia/vaultwarden)
+[ttrss](roles/ttrss)                        | [Tiny Tiny RSS](https://tt-rss.org/) feed aggregator
+[mediawiki](roles/mediawiki)                | [MediaWiki](https://www.mediawiki.org/) wiki platform
+[jellyfin](roles/jellyfin)                  | [Jellyfin](https://jellyfin.org/) media system
+[invidious](roles/invidious)                | [Invidious](https://invidious.io/) open source YouTube frontend
+[nitter](roles/nitter)                      | [Nitter](https://github.com/zedeus/nitter) open source Twitter frontend
+[teddit](roles/teddit)                      | [Teddit](https://codeberg.org/teddit/teddit) open source Reddit frontend
+[hastebin](roles/hastebin)                  | [Hastebin](https://github.com/toptal/haste-server) open source pastebin
+[psitransfer](roles/psitransfer)            | [PsiTransfer](https://github.com/psi-4ward/psitransfer) public file sharing
+[nfs\_server](roles/nfs_server)             | Configures ZFS datasets, NFS exports, SMB shares, ACLs, and autofs maps.
+[syncthing](roles/syncthing]                | Per-user [Syncthing](https://syncthing.net/) instances that sync files to your NFS home directory
+[asterisk](roles/asterisk]                  | [Asterisk](https://www.asterisk.org/) PBX for VOIP phones
+[nsd](roles/nsd)                            | Authoritative DNS server
+[nagios](roles/nagios)                      | Monitors all hosts and services, automatically generated configuration
+[znc](roles/znc)                            | [ZNC](https://znc.in/) IRC bouncer
+[cups](roles/cups)                          | Centralized network printing
+[unifi](roles/unifi)                        | [UniFi](https://www.ui.com/) controller for managing Ubiquiti access points
+[freeradius](roles/freeradius)              | WPA Enterprise authentication for WiFi using FreeIPA credentials or SSL certificates
 
 All services authenticate against the local FreeIPA domain. On a domain-joined
 workstation, Kerberos/GSSAPI is used for single sign-on.
