@@ -5,7 +5,6 @@
     unbound_max_negative_cache: 5
   roles:
     - freebsd_loader
-    - devd
     - pxe_server
   tasks:
     - name: set unbound negative ttl

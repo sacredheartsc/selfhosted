@@ -1,9 +1,0 @@
-# Without this, devd spams syslog about scsi sense messages about the virtual
-# floppy/optical drive.
-- name: add -q flag to devd
-  lineinfile:
-    path: /etc/rc.conf.d/devd
-    create: yes
-    regexp: ^devd_flags=
-    line: devd_flags="-q"
-  notify: restart devd

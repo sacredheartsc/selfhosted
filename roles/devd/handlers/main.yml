@@ -1,4 +1,0 @@
-- name: restart devd
-  service:
-    name: devd
-    state: restarted
