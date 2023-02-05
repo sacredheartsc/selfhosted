@@ -1,7 +1,5 @@
 #!/bin/bash
 
-exec 1> >(logger -s -t $(basename "$0")) 2>&1
-
 PAM_UID=$(id -u "$PAM_USER")
 
 if (( PAM_UID >= 1000 )); then
