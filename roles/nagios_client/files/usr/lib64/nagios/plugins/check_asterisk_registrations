@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -Eeu -o pipefail
+shopt -s lastpipe
+
+trap 'exit 3' ERR
+
+ok=()
+error=()
+
+sudo asterisk -rx 'pjsip show registrations' \
+  | sed '1,4d'                               \
+  | head -n2                                 \
+  | while read -r uri auth status
+do
+  msg="${auth} is ${status,,}"
+  if [ "$status" = Registered ]; then
+    ok+=("$msg")
+  else
+    err+=("$msg")
+  fi
+done
+
+if (( ${#error[@]} )); then
+  echo 'trunk is not registered!'
+  RC=2
+else
+  echo 'all trunks registered'
+  RC=0
+fi
+
+if (( ${#error[@]} )); then
+  printf 'CRIT: %s\n' "${error[@]}"
+fi
+
+if (( ${#ok[@]} )); then
+  printf 'OK: %s\n' "${ok[@]}"
+fi
+
+exit $RC

@@ -228,6 +228,13 @@ define service {
 # Asterisk Checks
 #################
 
+define service {
+  service_description registrations
+  hostgroups          asterisk_servers
+  use                 generic-service
+  check_command       check_asterisk_registrations
+}
+
 {% for host in groups.asterisk_servers %}
 # endpoints - {{ host }}
 define service {

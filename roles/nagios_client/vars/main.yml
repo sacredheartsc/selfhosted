@@ -9,3 +9,4 @@ nagios_sudo_whitelist:
   - /usr/bin/dnf needs-restarting --reboothint
   - /usr/bin/dnf needs-restarting --services
   - /usr/bin/systemctl status -- *
+  - /usr/sbin/asterisk -rx pjsip show registrations

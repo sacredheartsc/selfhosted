@@ -3,15 +3,17 @@
 ;;;;;;;;;;;
 
 [trunk-defaults](!)
-type                     = wizard
-sends_auth               = yes
-sends_registrations      = yes
-endpoint/rtp_symmetric   = yes
-endpoint/rewrite_contact = yes
-endpoint/send_rpid       = yes
-endpoint/from_domain     = {{ asterisk_from_domain }}
-endpoint/allow           = !all,ulaw
-aor/qualify_frequency    = 30
+type                                  = wizard
+sends_auth                            = yes
+sends_registrations                   = yes
+endpoint/rtp_symmetric                = yes
+endpoint/rewrite_contact              = yes
+endpoint/send_rpid                    = yes
+endpoint/from_domain                  = {{ asterisk_from_domain }}
+endpoint/allow                        = !all,ulaw
+registration/max_retries              = 4294967295
+registration/auth_rejection_permanent = no
+aor/qualify_frequency                 = 30
 
 {% for trunk in asterisk_sip_trunks %}
 [{{ trunk.name }}](trunk-defaults)
