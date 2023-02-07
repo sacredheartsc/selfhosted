@@ -1,8 +1,8 @@
 - name: configure nsd
   hosts: authoritative_nameservers
-  tags: nsd
   roles:
     - role: common
       tags: common
 
     - role: nsd
+      tags: nsd

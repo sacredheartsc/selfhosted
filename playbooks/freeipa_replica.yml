@@ -1,8 +1,8 @@
 - name: configure freeipa replicas
   hosts: freeipa_servers:!freeipa_master
-  tags: freeipa
   roles:
     - role: common
       tags: common
 
     - role: freeipa_replica
+      tags: freeipa

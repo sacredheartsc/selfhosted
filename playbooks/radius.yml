@@ -1,8 +1,8 @@
 - name: configure freeradius
   hosts: radius_servers
-  tags: freeradius,radius
   roles:
     - role: common
       tags: common
 
     - role: freeradius
+      tags: freeradius,radius

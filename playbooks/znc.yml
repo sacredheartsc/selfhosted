@@ -1,11 +1,11 @@
 - name: configure znc
   hosts: znc_servers
-  tags: znc
   roles:
     - role: common
       tags: common
 
     - role: znc
+      tags: znc
 
     - role: archive_job
       archive_name: znc

@@ -1,11 +1,11 @@
 - name: configure nagios
   hosts: nagios_servers
-  tags: nagios
   roles:
     - role: common
       tags: common
 
     - role: nagios_server
+      tags: nagios
 
     - role: apache_vhost
       apache_default_vhost: yes

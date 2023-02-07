@@ -1,11 +1,11 @@
 - name: configure jellyfin
   hosts: jellyfin_servers
-  tags: jellyfin
   roles:
     - role: common
       tags: common
 
     - role: jellyfin
+      tags: jellyfin
 
     - role: apache_vhost
       apache_default_vhost: yes

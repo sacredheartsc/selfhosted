@@ -1,5 +1,5 @@
 - name: build proxmox virtual machine
   hosts: proxmox_instances
-  tags: proxmox
   roles:
-    - proxmox_instance
+    - role: proxmox_instance
+      tags: proxmox

@@ -6,6 +6,11 @@
       tags: common
 
     - role: ttrss
+      tags: ttrss
+
+    - role: php
+      php_fpm_environment: '{{ ttrss_php_environment }}'
+      tags: php
 
     - role: apache_vhost
       apache_default_vhost: yes
@@ -13,7 +18,3 @@
       apache_document_root: '{{ ttrss_home }}'
       apache_config: '{{ ttrss_apache_config }}'
       tags: apache
-
-    - role: php
-      php_fpm_environment: '{{ ttrss_php_environment }}'
-      tags: php

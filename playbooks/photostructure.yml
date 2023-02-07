@@ -1,11 +1,11 @@
 - name: configure photostructure
   hosts: photostructure_servers
-  tags: photostructure
   roles:
     - role: common
       tags: common
 
     - role: photostructure
+      tags: photostructure
 
     - role: apache_vhost
       apache_default_vhost: yes

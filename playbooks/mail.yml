@@ -1,14 +1,14 @@
-- name: run common roles
+- name: apply base configuration
   hosts: rspamd_servers,mail_servers,imap_servers
-  tags: common
   roles:
-    - common
+    - role: common
+      tags: common
 
 - name: configure rspamd
   hosts: rspamd_servers
-  tags: rspamd
   roles:
     - role: rspamd
+      tags: rspamd
 
     - role: apache_vhost
       apache_default_vhost: yes
@@ -22,15 +22,15 @@
 
 - name: configure postfix
   hosts: mail_servers
-  tags: postfix,smtp
   roles:
     - role: postfix_server
+      tags: postfix,smtp
 
 - name: configure dovecot
   hosts: imap_servers
-  tags: dovecot,imap
   roles:
     - role: dovecot
+      tags: dovecot,imap
 
     - role: archive_job
       archive_name: dovecot

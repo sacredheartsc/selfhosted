@@ -1,12 +1,10 @@
 - name: add dns records for infrastructure hosts
   hosts: proxmox_hypervisors:opnsense_firewalls:unmanaged
-  tags: dns
   roles:
     - dns_records
 
 - name: add reverse dns records for firewall vlan interfaces
   hosts: freeipa_master
-  tags: dns
   tasks:
     - name: create reverse dns zones
       ipadnszone:

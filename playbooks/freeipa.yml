@@ -1,11 +1,14 @@
-- name: configure freeipa master
-  hosts: freeipa_master
-  tags: freeipa
+- name: apply base configuration
+  hosts: freeipa_servers
   roles:
     - role: common
       tags: common
 
+- name: configure freeipa master
+  hosts: freeipa_master
+  roles:
     - role: freeipa_server
+      tags: freeipa
 
     - role: archive_job
       archive_name: ipa
@@ -16,11 +19,10 @@
         -exec cp --preserve=timestamps -vr {} . \;
         -exec rm -vrf {} \; &&
         find . -mindepth 1 -type d -exec chmod -v 770 {} +
-
       tags: archive
 
 - name: configure freeipa replicas
   hosts: freeipa_servers:!freeipa_master
-  tags: freeipa
   roles:
-    - freeipa_server
+    - role: freeipa_server
+      tags: freeipa

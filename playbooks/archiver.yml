@@ -1,8 +1,8 @@
 - name: configure archiver
   hosts: archive_servers
-  tags: archive,archiver
   roles:
     - role: common
       tags: common
 
     - role: archive_server
+      tags: archive,archiver

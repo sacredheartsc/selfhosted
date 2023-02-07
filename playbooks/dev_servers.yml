@@ -1,8 +1,8 @@
 - name: configure development environment
   hosts: dev_servers
-  tags: dev
   roles:
     - role: common
       tags: common
 
     - role: dev_environment
+      tags: dev

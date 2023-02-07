@@ -13,13 +13,13 @@
       tags: apache
 
     - role: archive_job
-      tags: archive
       archive_name: www
       archive_shell: >-
         TIMESTAMP=$(date +%Y%m%d%H%M%S);
         tar czf "www-${TIMESTAMP}.tar.gz"
         --transform "s|^\.|www-${TIMESTAMP}|"
         -C "{{ apache_public_dir }}" {% for dir in apache_backup_dirs %}{{ dir | quote }} {% endfor %}
+      tags: archive
 
     # prosody letsencrypt proxy
     - role: prosody_letsencrypt_proxy

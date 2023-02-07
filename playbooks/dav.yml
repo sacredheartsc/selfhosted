@@ -1,11 +1,11 @@
 - name: configure sabredav
   hosts: dav_servers
-  tags: sabredav,dav
   roles:
     - role: common
       tags: common
 
     - role: sabredav
+      tags: sabredav,dav
 
     - role: apache_vhost
       apache_default_vhost: yes

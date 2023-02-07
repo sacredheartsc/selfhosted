@@ -1,11 +1,11 @@
 - name: configure syncthing
   hosts: syncthing_servers
-  tags: syncthing
   roles:
     - role: common
       tags: common
 
     - role: syncthing
+      tags: syncthing
 
     - role: archive_job
       archive_name: syncthing

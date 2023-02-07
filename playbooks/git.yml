@@ -1,12 +1,11 @@
 - name: configure git repository
   hosts: git_servers
-  tags: git
   roles:
     - role: common
       tags: common
 
     - role: gitolite
-      tags: gitolite
+      tags: gitolite,git
 
     - role: archive_job
       archive_name: gitolite
@@ -15,7 +14,7 @@
       tags: archive
 
     - role: cgit
-      tags: cgit
+      tags: cgit,git
 
     - role: apache_vhost
       apache_default_vhost: yes

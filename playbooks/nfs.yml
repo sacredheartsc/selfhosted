@@ -1,8 +1,8 @@
 - name: configure nfs exports
   hosts: nfs_servers
-  tags: nfs
   roles:
     - role: common
       tags: common
 
     - role: nfs_server
+      tags: nfs

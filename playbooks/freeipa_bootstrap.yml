@@ -1,9 +1,9 @@
 - name: configure freeipa master
   hosts: freeipa_master
-  tags: freeipa
   roles:
     - role: common
       bootstrap: yes
       tags: common
 
     - role: freeipa_server
+      tags: freeipa

@@ -1,8 +1,8 @@
 - name: configure rsyslog server
   hosts: syslog_servers
-  tags: rsyslog,syslog
   roles:
     - role: common
       tags: common
 
     - role: rsyslog_server
+      tags: rsyslog,syslog

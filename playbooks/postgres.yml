@@ -1,11 +1,11 @@
 - name: configure postgresql
   hosts: postgresql_servers
-  tags: postgres,postgresql
   roles:
     - role: common
       tags: common
 
     - role: postgresql_server
+      tags: postgres,postgresql
 
     - role: archive_job
       archive_name: postgres

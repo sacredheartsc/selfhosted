@@ -1,6 +1,5 @@
 - name: configure internal web servers
   hosts: www1
-  tags: apache
   roles:
     - role: common
       tags: common
@@ -22,9 +21,9 @@
           AllowOverride None
           Require all granted
         </Directory>
+    tags: apache
   tasks:
     - name: generate index.html
-      tags: apache
       copy:
         dest: /var/www/html/index.html
         content: |
@@ -43,3 +42,4 @@
             </ul>
           </body
           </html>
+      tags: apache

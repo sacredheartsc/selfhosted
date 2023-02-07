@@ -1,11 +1,11 @@
 - name: configure mediawiki
   hosts: wiki_servers
-  tags: wiki,mediawiki
   roles:
     - role: common
       tags: common
 
     - role: mediawiki
+      tags: wiki,mediawiki
 
     - role: apache_vhost
       apache_default_vhost: yes

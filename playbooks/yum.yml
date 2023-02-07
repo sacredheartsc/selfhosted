@@ -1,11 +1,11 @@
 - name: configure yum mirrors
   hosts: yum_mirrors
-  tags: yum
   roles:
     - role: common
       tags: common
 
     - role: yum_mirror
+      tags: yum
 
     - role: apache_vhost
       apache_default_vhost: yes
@@ -14,11 +14,11 @@
       apache_redirect_to_https: no
       tags: apache
 
-- name: configure mirror for local packages
+- name: configure local package repository
   hosts: yum_mirrors
-  tags: yum
   roles:
     - role: yum_disable_default_repos
+      tags: yum
 
     - role: yum
       yum_repositories:
@@ -26,6 +26,7 @@
         - rocky-appstream
         - rocky-extras
         - epel
+      tags: yum
 
     # nagios_client has to run *after* EPEL repository has been configured.
     - role: nagios_client

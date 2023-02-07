@@ -1,6 +1,5 @@
 - name: apply base configuration to all hosts
   hosts: el
-  gather_facts: no
-  tags: common
   roles:
-    - common
+    - role: common
+      tags: common

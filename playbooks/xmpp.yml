@@ -1,8 +1,8 @@
 - name: configure prosody
   hosts: xmpp_servers
-  tags: xmpp,prosody
   roles:
     - role: common
       tags: common
 
     - role: prosody
+      tags: xmpp,prosody

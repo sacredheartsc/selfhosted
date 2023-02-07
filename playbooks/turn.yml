@@ -1,8 +1,8 @@
 - name: configure coturn
   hosts: turn_servers
-  tags: coturn,turn
   roles:
     - role: common
       tags: common
 
     - role: coturn
+      tags: coturn,turn

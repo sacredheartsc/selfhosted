@@ -1,11 +1,11 @@
 - name: configure asterisk pbx
   hosts: asterisk_servers
-  tags: asterisk
   roles:
     - role: common
       tags: common
 
     - role: asterisk
+      tags: asterisk
 
     - role: archive_job
       archive_name: asterisk
