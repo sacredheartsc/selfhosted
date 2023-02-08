@@ -3,4 +3,4 @@
 *.swo
 .nfs*
 .vault_password
-backups
+inventory

@@ -6,7 +6,7 @@
     create_home: no
     shell: /sbin/nologin
 
-- name: create  home directory
+- name: create home directory
   file:
     path: '{{ prosody_le_home }}'
     owner: root
