@@ -1,5 +1,5 @@
 {% if apache_use_ssl and apache_redirect_to_https %}
-<VirtualHost {{ apache_listen | default('*') }}:80>
+<VirtualHost {{ apache_listen }}:80>
   ServerName {{ apache_server_name }}
   {% for alias in apache_server_aliases %}
   ServerAlias {{ alias }}
@@ -18,7 +18,7 @@
 {% else %}
 
 {% if apache_canonical_hostname is defined and (apache_server_aliases | length > 0) %}
-<VirtualHost {{ apache_listen | default('*') }}:80>
+<VirtualHost {{ apache_listen }}:80>
   {% for alias in ([apache_server_name] + apache_server_aliases) | reject('equalto', apache_canonical_hostname) | list %}
   {% if loop.first %}
   ServerName {{ alias }}
@@ -36,7 +36,7 @@
 </VirtualHost>
 {% endif %}
 
-<VirtualHost {{ apache_listen | default('*') }}:80>
+<VirtualHost {{ apache_listen }}:80>
   {% if apache_document_root is defined %}
   DocumentRoot "{{ apache_document_root }}"
   {% endif %}
@@ -73,7 +73,7 @@
 {% if apache_use_ssl %}
 
 {% if apache_canonical_hostname is defined and (apache_server_aliases | length > 0) %}
-<VirtualHost {{ apache_listen | default('*') }}:443>
+<VirtualHost {{ apache_listen }}:443>
   {% for alias in ([apache_server_name] + apache_server_aliases) | reject('equalto', apache_canonical_hostname) | list %}
   {% if loop.first %}
   ServerName {{ alias }}
@@ -96,7 +96,7 @@
 </VirtualHost>
 {% endif %}
 
-<VirtualHost {{ apache_listen | default('*') }}:443>
+<VirtualHost {{ apache_listen }}:443>
   {% if apache_document_root is defined %}
   DocumentRoot "{{ apache_document_root }}"
   {% endif %}

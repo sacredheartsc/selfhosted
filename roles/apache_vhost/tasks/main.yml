@@ -12,7 +12,7 @@
 - name: generate vhost configuration
   template:
     src: etc/httpd/conf.d/vhost.conf.j2
-    dest: /etc/httpd/conf.d/vhost-{{ '000-default' if apache_default_vhost else (apache_config_name | default(apache_server_name)) }}.conf
+    dest: /etc/httpd/conf.d/vhost-{{ '000-default' if apache_default_vhost else apache_config_name }}.conf
     mode: 0640
     lstrip_blocks: yes
   notify: reload apache
