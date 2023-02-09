@@ -29,5 +29,5 @@ Variable                          | Default    | Description
 Usage
 -----
 
-You should not need to call this role directory. It is a dependency of the
+You should not need to call this role directly. It is a dependency of the
 [archive\_job](../archive_job) role.
