@@ -3,5 +3,3 @@
 *.swo
 .nfs*
 .vault_password
-inventory
-playbooks/webserver_public.yml
