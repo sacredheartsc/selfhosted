@@ -21,7 +21,7 @@ This role **accepts** the following variables:
 
 Variable                          | Default    | Description
 ----------------------------------|------------|------------
-`archive_server_user`             | s-archiver | Username of the archiver user
+`archive_server_user`             | s-archiver | Username of the [archive server](../archive_server) user
 `archive_cleanup_on_calendar`     | daily      | Systemd [calendar interval](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) for deleting old archive files
 `archive_cleanup_older_than_days` | 7          | Maximum age of files to retain in the archive spool (days)
 
