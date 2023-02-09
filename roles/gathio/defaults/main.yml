@@ -2,4 +2,5 @@ gathio_version: master
 gathio_user: gathio
 gathio_port: 8080
 gathio_from_address: 'events-noreply@{{ email_domain }}'
-gathio_domain: '{{ ansible_fqdn }}:{{ gathio_port }}'
+gathio_server_name: '{{ ansible_fqdn }}'
+gathio_site_name: gathio

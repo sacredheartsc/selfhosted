@@ -1,9 +1,9 @@
 module.exports = {
-  'domain' : '{{ gathio_domain }}' ,
+  'domain' : '{{ gathio_server_name }}' ,
   'port': '{{ gathio_port }}',
   'email': '{{ gathio_from_address }}',
   'mailService': 'nodemailer',
-  'sitename': 'gathio',
+  'sitename': '{{ gathio_site_name }}',
   'isFederated': false,
   'logo_url': '',
   'showKofi': false,

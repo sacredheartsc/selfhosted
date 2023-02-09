@@ -60,9 +60,8 @@
 
 - name: install npm dependencies
   npm:
-    path: '{{ gathio_install_dir }}'
     production: yes
-    no_optional: no
+    path: '{{ gathio_install_dir }}'
   become: yes
   become_user: '{{ gathio_user }}'
   when: gathio_git.changed
