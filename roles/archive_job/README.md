@@ -30,9 +30,9 @@ Variable              | Default                      | Description
 `archive_description` | `archive {{ archive_name }}` | Description of the archive job
 `archive_user`        | root                         | Unix user that executes the job process
 `archive_group`       | `{{ archive_user }}`         | Unix group that executes the job process
+`archive_on_calendar` | weekly                       | Systemd [calendar interval](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) for running archive job
 `archive_command`     | &nbsp;                       | Command to execute (will be passed as-is to `exec`)
 `archive_shell`       | &nbsp;                       | Shell command to execute
-`archive_on_calendar` | weekly                       | Systemd [calendar interval](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) for running archive job
 
 You should define either `archive_command` or `archive_shell`, but not both.
 
