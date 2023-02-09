@@ -20,6 +20,7 @@ dev_packages:
   - discount
   - python3-pip
   - postgresql
+  - whois
   # sieveconnect dependencies
   - perl-Authen-SASL
   - perl-IO-Socket-INET6

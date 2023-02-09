@@ -1,4 +1,3 @@
 archive_server_user: s-archiver
 archive_cleanup_on_calendar: daily
 archive_cleanup_older_than_days: 7
-archive_server: '{{ groups.archive_servers | first }}'

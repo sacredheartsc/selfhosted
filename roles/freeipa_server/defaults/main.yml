@@ -3,8 +3,6 @@ freeipa_realm: '{{ ansible_domain | upper }}'
 freeipa_email_domain: '{{ email_domain }}'
 freeipa_workgroup: WORKGROUP
 
-freeipa_archive_on_calendar: 'Sat *-*-* 04:00:00'
-
 freeipa_dns_forwarders:
   - 8.8.8.8
   - 8.8.4.4

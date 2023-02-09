@@ -9,8 +9,6 @@ dovecot_rspamd_pubkey: '{{ rspamd_pubkey }}'
 
 dovecot_access_group: role-imap-access
 
-dovecot_archive_on_calendar: weekly
-
 dovecot_lmtp_port: 24
 dovecot_quota_status_port: 10993
 
