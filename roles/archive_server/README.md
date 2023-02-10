@@ -29,7 +29,7 @@ Each line in the archiver [config file](templates/etc/archiver.conf.j2) specifie
 a host to archive, along with a plugin invocation.
 
 Currently, plugins are used to archive [OPNsense](files/usr/local/libexec/archiver/archive_opnsense)
-and [EdgeSwitch](files/usr/local/libexec/archiver/archive_edgeswitch) configuration.
+and [EdgeSwitch](files/usr/local/libexec/archiver/archive_edgeswitch) configurations.
 
 Variables
 ---------
