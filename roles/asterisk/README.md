@@ -38,11 +38,11 @@ Variable                               | Default                                
 `asterisk_voicemail_max_failed_logins` | 3                                                  | Maximum number of failed voicemail logins before lockout
 `asterisk_dialplan`                    | &nbsp;                                             | Raw dialplan to place in `extensions.conf` (see [documentation](https://wiki.asterisk.org/wiki/display/AST/Contexts%2C+Extensions%2C+and+Priorities))
 `asterisk_password_salt`               | &nbsp;                                             | Salt used for generating SHA-512 password hashes
-`asterisk_sip_trunks`                  | `[]`                                               | Upstream SIP trunks (see format below)
-`asterisk_sip_extensions`              | `[]`                                               | Local SIP extensions (see format below)
-`asterisk_queues`                      | `[]`                                               | Local call queues (see format below)
-`asterisk_ari_users`                   | `[]`                                               | User accounts for the Asterisk REST Interface (see format below)
-`asterisk_voicemail_contexts`          | `{}`                                               | Dictionary of [voicemail contexts](https://wiki.asterisk.org/wiki/display/AST/Configuring+Voice+Mail+Boxes) (see format below)
+`asterisk_sip_trunks`                  | `[]`                                               | Upstream SIP trunks (see [format](#asterisk_sip_trunks) below)
+`asterisk_sip_extensions`              | `[]`                                               | Local SIP extensions (see [format](#asterisk_sip_extensions) below)
+`asterisk_queues`                      | `[]`                                               | Local call queues (see [format](#asterisk_queues) below)
+`asterisk_ari_users`                   | `[]`                                               | User accounts for the Asterisk REST Interface (see [format](#asterisk_ari_users) below)
+`asterisk_voicemail_contexts`          | `{}`                                               | Dictionary of [voicemail contexts](https://wiki.asterisk.org/wiki/display/AST/Configuring+Voice+Mail+Boxes) (see [format](#asterisk_voicemail_contexts) below)
 
 
 ### asterisk\_sip\_trunks
