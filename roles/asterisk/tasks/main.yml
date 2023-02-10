@@ -32,7 +32,7 @@
   include_role:
     name: certbot
   vars:
-    certificate_sans: ['{{ asterisk_fqdn }}']
+    certificate_sans: ['{{ asterisk_public_fqdn }}']
     certificate_path: '{{ asterisk_certificate_path }}'
     certificate_key_path: '{{ asterisk_certificate_key_path }}'
     certificate_owner: asterisk

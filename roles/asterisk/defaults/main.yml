@@ -6,7 +6,7 @@ asterisk_local_nets:
 asterisk_timezone: '{{ timezone }}'
 asterisk_locale: en_US.UTF-8
 
-asterisk_fqdn: '{{ ansible_fqdn }}'
+asterisk_public_fqdn: '{{ ansible_fqdn }}'
 asterisk_from_domain: '{{ email_domain }}'
 
 asterisk_rtp_port_start: 10000
