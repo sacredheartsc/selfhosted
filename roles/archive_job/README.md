@@ -14,7 +14,7 @@ job at a given calendar interval. The archive command can be specified as an
 `argv` to pass to directly to `exec()`, or as a string to be interpreted by the
 shell.
 
-Archive commands are `chdir`ed to the appropriate spool directory prior to
+Archive commands are `chdir`'d to the appropriate spool directory prior to
 execution, so it's safe for them to simply write files to their current working
 directory.
 
