@@ -43,12 +43,12 @@ Variables
 
 This role **accepts** the following variables:
 
-Variable                | Default      | Description
-------------------------|--------------|------------
-`archive_dest_path`     | /nfs/archive | Path to store archived files
-`archive_user`          | s-archiver   | FreeIPA user account for performing SSH-based rsync
-`archive_on_calendar`   | 23:00:00     | Systemd [calendar interval](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) for archiving hosts
-`archive_retention_days`| 365          | Number of days to retain archive files
+Variable                | Default        | Description
+------------------------|----------------|------------
+`archive_dest_path`     | `/nfs/archive` | Path to store archived files
+`archive_user`          | `s-archiver`   | FreeIPA user account for performing SSH-based rsync
+`archive_on_calendar`   | `23:00:00`     | Systemd [calendar interval](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) for archiving hosts
+`archive_retention_days`| 365            | Number of days to retain archive files
 
 
 Usage
