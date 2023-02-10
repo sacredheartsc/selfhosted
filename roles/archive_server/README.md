@@ -25,11 +25,15 @@ executable file in the [plugin directory](files/usr/local/libexec/archiver/)
 that takes a target hostname as the first argument (you can also pass additional
 arguments if needed).
 
+Plugin scripts are `chdir`ed to the destination directory prior to execution,
+so it's safe for them to simply write files to the current working directory.
+
 Each line in the archiver [config file](templates/etc/archiver.conf.j2) specifies
 a host to archive, along with a plugin invocation.
 
 Currently, plugins are used to archive [OPNsense](files/usr/local/libexec/archiver/archive_opnsense)
 and [EdgeSwitch](files/usr/local/libexec/archiver/archive_edgeswitch) configurations.
+
 
 Variables
 ---------
