@@ -60,5 +60,8 @@ Example playbook:
 - name: configure archive server
   hosts: archive_servers
   roles:
-    - archive_server
+    - role: archive_server
+      vars:
+        archive_dest_path: /mnt/networkshare/archive
+
 ````
