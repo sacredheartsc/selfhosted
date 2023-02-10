@@ -19,7 +19,7 @@ Archived files are sorted into subdirectories by hostname.
 
 ### Plugins
 
-For hosts that don't support rsync, such as network equipment, the _archiver_
+For hosts that don't support `rsync`, such as network equipment, the _archiver_
 provides a plugin-based method of retrieving files. A plugin is just an
 executable file in the [plugin directory](files/usr/local/libexec/archiver/)
 that takes a target hostname as the first argument (you can also pass additional
