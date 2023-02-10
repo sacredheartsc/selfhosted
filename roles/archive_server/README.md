@@ -12,11 +12,11 @@ will rsync these files to a central location each night.
 The `archive_server` role generates the [archiver script](templates/usr/local/bin/archiver.sh.j2),
 along with a corresponding FreeIPA user account and systemd timer. The archvier
 script runs daily. It iterates over each host in the `archive_clients` hostgroup
-and `rsync`s anything in `/var/spool/archive` to the location specified by
+and `rsync`'s anything in `/var/spool/archive` to the location specified by
 `archive_dest_path`.
 
-Since `rsync` uses a Kerberos keytab for SSH authentication, it can only be used
-for hosts within the FreeIPA domain.
+Since `rsync` uses a Kerberos keytab for SSH authentication, the archiver can
+only be used for hosts within the FreeIPA domain.
 
 Archived files are sorted into subdirectories by hostname.
 
