@@ -6,8 +6,8 @@ Description
 
 The _archiver_ is my method of performing periodic backups of application data.
 The general idea is that applications can write data to a dedicated directory in
-`/var/spool/archive`, and the archive server will rsync these files to a central
-location each night.
+`/var/spool/archive` via an [archive job](../archive_job), and the archive server
+will rsync these files to a central location each night.
 
 The `archive_server` role generates the [archiver script](templates/usr/local/bin/archiver.sh.j2),
 along with a corresponding FreeIPA user account and systemd timer. The archvier
