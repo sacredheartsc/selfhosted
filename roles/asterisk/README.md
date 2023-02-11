@@ -28,8 +28,8 @@ Variable                               | Default                                
 `asterisk_https_port`                  | 8089                                               | Listening port for the Asterisk HTTP server (HTTPS)
 `asterisk_voicemail_formats`           | `['wav49', 'gsm', 'wav']`                          | Audio formats used for voicemail recordings
 `asterisk_mail_from`                   | `asterisk-noreply@{{ email_domain }}`              | Email address used for new voicemail notifications
-`asterisk_voicemail_email_subject`     | see [vars.yml](defaults/vars.yml)                  | Email subject line for new voicemail notifications
-`asterisk_voicemail_email_body`        | see [vars.yml](defaults/vars.yml)                  | Email body used for new voicemail notifications
+`asterisk_voicemail_email_subject`     | see [default vars](defaults/main.yml)              | Email subject line for new voicemail notifications
+`asterisk_voicemail_email_body`        | see [default vars](defaults/main.yml)              | Email body used for new voicemail notifications
 `asterisk_voicemail_email_date_format` | `%A, %B %d, %Y at %r`                              | Email date format used for new voicemail notifications
 `asterisk_voicemail_min_password`      | 4                                                  | Minimum voicemail password length
 `asterisk_voicemail_max_message_count` | 100                                                | Maximum number of messages in each voice mailbox
