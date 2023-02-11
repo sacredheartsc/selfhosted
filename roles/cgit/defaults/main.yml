@@ -1,12 +1,11 @@
 cgit_clone_prefixes:
   - https://{{ ansible_fqdn }}
-  - ssh://{{ ansible_fqdn }}
+  - ssh://git@{{ ansible_fqdn }}
 
 cgit_title: '{{ organization }} Git Repository'
 cgit_description: Source code of various {{ organization }} projects.
 
 cgit_cache_size: 1000
-cgit_user: git
 cgit_project_list: /var/www/git/projects.list
 cgit_scan_path: /var/www/git/repositories
 
