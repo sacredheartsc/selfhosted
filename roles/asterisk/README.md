@@ -60,6 +60,9 @@ Key                | Default | Description
 `username`         | &nbsp;  | SIP account username
 `password`         | &nbsp;  | SIP account password
 
+Note that incoming calls from a SIP trunk will be assigned the dialplan context
+`from-TRUNKNAME`.
+
 
 ### asterisk\_sip\_extensions
 
@@ -85,8 +88,26 @@ Key                | Default          | Description
 The `asterisk_queues` variable describes your [call queues](https://wiki.asterisk.org/wiki/display/AST/Building+Queues).
  It should contain a list of dictionaries of the following format:
 
-Key                | Default          | Description
--------------------|------------------|------------
+Key                      | Default          | Description
+-------------------------|------------------|------------
+`name`                   | &nbsp;           | Name of the queue (no spaces)
+`music_class`            | &nbsp;           | Set hold music
+`strategy`               | &nbsp;           | Ring strategy
+`context`                | &nbsp;           | Dialplan context used when someone "dials out" of the queue
+`timeout`                | 15               | Queue timeout in seconds (see [documentation](https://github.com/asterisk/asterisk/blob/master/configs/samples/queues.conf.sample))
+`retry`                  | 5                | Queue retry time in seconds (see [documentation](https://github.com/asterisk/asterisk/blob/master/configs/samples/queues.conf.sample))
+`weight`                 | &nbsp;           | Relative weight of queue (see [documentation](https://github.com/asterisk/asterisk/blob/master/configs/samples/queues.conf.sample))
+`maxlen`                 | &nbsp;           | Maximum number of callers in queue
+`announce_holdtime`      | no               | Periodically inform callers of estimated hold time
+`announce_position`      | no               | Periodically inform callers of their position in the queue
+`announce_frequency`     | 0                | Frequency (in seconds) to play holdtime announcement
+`min_announce_frequency` | 15               | Minimum time (in seconds) between holdtime announcements
+`periodic_announce`      | &nbsp;           | Sounds to play periodically (comma-separated, or list)
+`monitor_format`         | &nbsp;           | Audio formats used to record calls (list)
+`join_empty`             | yes              | Allow callers to join queue when no members are available (see [documentation](https://github.com/asterisk/asterisk/blob/master/configs/samples/queues.conf.sample))
+`leave_when_empty`       | no               | Drop callers from queue when no members are available (see [documentation](https://github.com/asterisk/asterisk/blob/master/configs/samples/queues.conf.sample))
+`ring_in_use`            | yes              | Send calls to queue members even when their device state is "in use"
+`members`                | []               | List of local extensions having membership in the queue
 
 
 ### asterisk\_ari\_users
@@ -135,4 +156,74 @@ Example playbook:
       vars:
         asterisk_local_nets:
           - 192.168.1.0/24
+        asterisk_external_ip: 203.0.113.42
+        asterisk_public_fqdn: pbx.example.com
+        asterisk_password_salt: foobar
+
+        asterisk_sip_trunks:
+          - name: upstream-provider
+            host: 'sip.example.com:5060'
+            username: myusername
+            password: s3cret
+
+        vault_asterisk_sip_extensions:
+          - name: 7001
+            context: from-home
+            mailbox: 7000@default
+            cid_name: Living Room
+            password: s3cret
+
+          - name: 7002
+            context: from-home
+            mailbox: 7000@default
+            cid_name: Kitchen
+            password: s3cret
+
+          - name: 7003
+            context: from-home
+            mailbox: 7000@default
+            cid_name: Office
+            password: s3cret
+
+        asterisk_queues:
+          - name: home
+            strategy: ringall
+            retry: 1
+            timeout: 30
+            members:
+              - 7001
+              - 7002
+              - 7003
+
+        asterisk_ari_users:
+          - name: nagios
+            readonly: yes
+            password: s3cret
+
+        asterisk_voicemail_contexts:
+          default:
+            - address: 7000
+              password: 1234
+              name: Doe Family
+              email:
+                - johndoe@example.com
+                - janedoe@example.com
+
+        asterisk_dialplan: |
+          [from-upstream-provider]
+          ; Ring all house phones for incoming PSTN calls, if no answer send to voicemail.
+          exten => _X.,1,Queue(home,nr,,,25)
+           same => n,Answer(500)
+           same => n,Voicemail(7000@default,su)
+           same => n,Hangup()
+
+          [from-house-phones]
+          ; local voicemail access
+          exten => *99,1,Answer(500)
+           same => n,VoiceMailMain(7000@default,s)
+           same => n,Hangup()
+          ; pstn
+          exten => _+1NXXNXXXXXX,1,Set(CALLERID(all)=John Doe <5555555555>)
+           same => n,Dial(PJSIP/${EXTEN}@upstream-provider)
+           same => n,Hangup()
 ````
