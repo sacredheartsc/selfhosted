@@ -217,7 +217,7 @@ Example playbook:
            same => n,Voicemail(7000@default,su)
            same => n,Hangup()
 
-          [from-house-phones]
+          [from-home]
           ; local voicemail access
           exten => *99,1,Answer(500)
            same => n,VoiceMailMain(7000@default,s)
