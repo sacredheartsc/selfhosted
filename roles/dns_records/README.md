@@ -13,7 +13,7 @@ Variables
 This role **accepts** the following variables:
 
 Variable     | Default        | Description
-------------------------------|------------
+-------------|----------------|------------
 `dns_ip`     | `{{ ip }}`     | IP of the host
 `dns_fqdn`   | `{{ fqdn }}`   | FQDN of the host
 `dns_cnames` | `{{ cnames }}` | FQDN aliases of the host
