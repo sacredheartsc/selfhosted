@@ -34,41 +34,8 @@ asterisk_voicemail_max_message_secs: 300
 asterisk_voicemail_max_greeting_secs: 60
 asterisk_voicemail_max_failed_logins: 3
 
-asterisk_sip_trunks:
-  - name: example
-    host: sip.example.com:5061
-    codecs: g722,ulaw
-    username: testuser
-    password: testpass
-    transport: tls
-    media_encryption: sdes
-
-asterisk_sip_extensions:
-  - name: 6001
-    context: from-internal
-    mailbox: 6001@default
-    cid_name: Test User
-    username: 6001
-    password: testpassword
-    codecs: g722,ulaw
-
-asterisk_queues:
-  - name: home
-    strategy: ringall
-    retry: 1
-    timeout: 30
-    members:
-      - 6001
-      - 6002
-
-asterisk_ari_users:
-  - name: nagios
-    password: nagios
-    readonly: yes
-
-asterisk_voicemail_contexts:
-  default:
-    - address: 6001
-      password: 1234
-      name: John Doe
-      email: john@example.com
+asterisk_sip_trunks: []
+asterisk_sip_extensions: []
+asterisk_queues: []
+asterisk_ari_users: []
+asterisk_voicemail_contexts: {}
