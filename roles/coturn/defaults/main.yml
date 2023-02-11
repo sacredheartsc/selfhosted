@@ -1,4 +1,4 @@
 coturn_port: 3478
 coturn_min_port: 49152
 coturn_max_port: 65535
-coturn_realm: '{{ ansible_fqdn }}'
+coturn_realm: '{{ domain }}'
