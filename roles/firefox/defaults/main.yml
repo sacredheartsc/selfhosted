@@ -25,6 +25,7 @@ firefox_disable_search_suggestions: yes
 firefox_disable_highlights: yes
 firefox_disable_safe_browsing: yes
 firefox_disable_top_sites: yes
+firefox_disable_push_notifications: yes
 
 firefox_offer_to_save_logins_default: yes
 firefox_use_tracking_protection: no

@@ -96,6 +96,10 @@
       },
 
       {% endfor %}
+      "dom.push.connection.enabled": {
+        "Value": {{ (not firefox_disable_push_notifications) | bool | to_json }},
+        "Status": "default"
+      },
       "privacy.trackingprotection.socialtracking.enabled": {
         "Value": {{ firefox_use_tracking_protection | bool | to_json }},
         "Status": "locked"
