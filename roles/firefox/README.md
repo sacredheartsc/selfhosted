@@ -20,7 +20,7 @@ This role **accepts** the following variables:
 
 Variable                                   | Default                                | Description
 -------------------------------------------|----------------------------------------|------------
-`firefox_preferences`                      | `{}`                                   | List of `about:config` items to apply (see [format](#firefox_preferences) below)
+`firefox_preferences`                      | `[]`                                   | List of `about:config` items to apply (see [format](#firefox_preferences) below)
 `firefox_extensions`                       | `[]`                                   | List of extensions to install (see [format](#firefox_extensions) below)
 `firefox_managed_bookmarks`                | `[]`                                   | List of bookmarks to add (see [format](#firefox_managed_bookmarks) below)
 `firefox_managed_bookmarks_top_level_name` | `Intranet`                             | Folder name containing managed bookmarks
@@ -97,4 +97,50 @@ Example playbook:
   roles:
     - role: firefox
       vars:
+        firefox_offer_to_save_logins_default: no
+
+        firefox_extensions:
+          - name: ublock-origin
+            id: uBlock0@raymondhill.net
+            mode: force_installed
+            policy:
+              toOverwrite:
+                filterLists:
+                  - user-filters
+                  - ublock-filters
+                  - ublock-badware
+                  - ublock-privacy
+                  - ublock-abuse
+                  - ublock-unbreak
+                  - ublock-annoyances
+                  - easylist
+                  - easyprivacy
+                  - urlhaus-1
+                  - plowe-0
+                  - fanboy-annoyance
+                  - fanboy-thirdparty_social
+                  - adguard-spyware-url
+                  - ublock-quick-fixes
+              toAdd:
+                trustedSiteDirectives:
+                  - '{{ domain }}'
+
+          - name: bitwarden-password-manager
+            id: '{446900e4-71c2-419f-a6a7-df9c091e268b}'
+
+          - name: libredirect
+            id: 7esoorv3@alefvanoon.anonaddy.me
+
+        firefox_preferences:
+          - name: dom.security.https_only_mode
+            value: true
+            status: locked
+
+        firefox_managed_bookmarks:
+          - name: Bitwarden
+            url: 'https://bitwarden.{{ domain }}'
+          - name: Git
+            url: 'https://git.{{ domain }}'
+          - name: Wiki
+            url: 'https://wiki.{{ domain }}'
 ````
