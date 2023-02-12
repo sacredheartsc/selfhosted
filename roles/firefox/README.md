@@ -10,7 +10,7 @@ and enables Wayland for the browser.
 The global Firefox policy can be used to install extensions automatically and
 enforce various browser settings.
 
-The global policy is stored in [/usr/lib64/firefox/distribution/policies.json/(templates/usr/lib64/firefox/distribution/policies.json.j2).
+The global policy is stored in [/usr/lib64/firefox/distribution/policies.json](templates/usr/lib64/firefox/distribution/policies.json.j2).
 
 
 Variables
