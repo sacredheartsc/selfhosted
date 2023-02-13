@@ -11,9 +11,6 @@ freeipa_dns_max_negative_cache: 5  # seconds
 
 freeipa_nfs_homedirs: no
 
-freeipa_admin_password: ChangeMe123
-freeipa_ds_password: ChangeMe123
-
 freeipa_idstart: 100000
 freeipa_idmax:   299999
 
