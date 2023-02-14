@@ -10,8 +10,5 @@
     - role: archive_job
       archive_name: asterisk
       archive_user: asterisk
-      archive_shell: >-
-        TIMESTAMP=$(date +%Y%m%d%H%M%S);
-        tar czf "asterisk-${TIMESTAMP}.tar.gz"
-        --transform "s|^\.|asterisk-${TIMESTAMP}|" -C {{ asterisk_data_dir }} .
+      archive_shell: '{{ asterisk_archive_shell }}'
       tags: archive
