@@ -8,4 +8,4 @@ jellyfin_media_access_group: role-media-access
 jellyfin_access_group: role-media-access
 jellyfin_admin_group: role-media-admin
 
-jellyfin_ldap_server: '{{ freeipa_hosts[0] }}'
+jellyfin_ldap_servers: '{{ freeipa_hosts }}'
