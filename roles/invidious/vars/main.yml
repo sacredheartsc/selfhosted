@@ -13,6 +13,7 @@ invidious_packages:
   - git
   - python3-psycopg2
 
+invidious_user: invidious
 invidious_git_repo: https://github.com/iv-org/invidious
 invidious_home: /opt/invidious
 invidious_install_dir: '{{ invidious_home }}/invidious'

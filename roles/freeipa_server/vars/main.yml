@@ -63,3 +63,10 @@ freeipa_log_files:
     severity: error
 
 freeipa_custom_schema_dir: /usr/local/share/dirsrv/schema
+
+freeipa_archive_shell: >-
+  ipa-backup &&
+  find {{ freeipa_backup_dir | quote }} -mindepth 1 -maxdepth 1 -type d
+  -exec cp --preserve=timestamps -vr {} . \;
+  -exec rm -vrf {} \; &&
+  find . -mindepth 1 -type d -exec chmod -v 770 {} +

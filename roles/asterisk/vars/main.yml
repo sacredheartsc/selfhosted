@@ -18,3 +18,8 @@ asterisk_https_certificate_key_path: /etc/pki/tls/private/asterisk-https.key
 asterisk_ca_file:  /etc/pki/tls/certs/ca-bundle.crt
 
 asterisk_data_dir: /var/spool/asterisk
+
+asterisk_archive_shell: >-
+  TIMESTAMP=$(date +%Y%m%d%H%M%S);
+  tar czf "asterisk-${TIMESTAMP}.tar.gz"
+  --transform "s|^\.|asterisk-${TIMESTAMP}|" -C {{ asterisk_data_dir }} .

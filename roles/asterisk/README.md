@@ -139,9 +139,9 @@ Key        | Default | Description
 
 This role **exports** the following variables:
 
-Variable            | Description
---------------------|------------
-`asterisk_data_dir` | Path to asterisk data files (voicemails, etc)
+Variable                 | Description
+-------------------------|------------
+`asterisk_archive_shell` | Shell command for generating tarball of Asterisk data
 
 
 Usage

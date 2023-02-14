@@ -41,6 +41,11 @@ Variable                            | Default                        | Descripti
 `freeipa_admin_password_expiration` | 20310130235959                 | Password expiration time for `admin` account (YYYYMMDDHHMMSS)
 `freeipa_default_login_shell`       | `/bin/bash`                    | Default user login shell
 
+This role **exports** the following variables:
+
+Variable                | Description
+------------------------|------------
+`freeipa_archive_shell` | Shell command to generate IPA backup tarball
 
 Usage
 -----

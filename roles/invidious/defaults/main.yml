@@ -3,7 +3,6 @@ invidious_crystal_version: 1.5.0-1
 
 invidious_server_name: '{{ ansible_fqdn }}'
 invidious_port: 8080
-invidious_user: invidious
 invidious_db_user: s-invidious
 invidious_db_name: invidious
 invidious_db_host: '{{ postgresql_host }}'
@@ -13,7 +12,6 @@ invidious_update_on_calendar: weekly
 
 invidious_channel_threads: 1
 invidious_feed_threads: 1
-invidious_admin_email: 'root@{{ email_domain }}'
 invidious_registration_enabled: yes
 invidious_popular_enabled: no
 invidious_full_refresh: no

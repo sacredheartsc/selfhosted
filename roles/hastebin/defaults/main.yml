@@ -1,9 +1,4 @@
 hastebin_version: master
-hastebin_server_aliases: []
-hastebin_letsencrypt: no
 hastebin_upload_cidrs: []
 hastebin_port: 8080
-
 hastebin_expire_days: 0
-
-hastebin_user: hastebin

@@ -2,6 +2,7 @@ hastebin_packages:
   - git
   - nodejs
 
+hastebin_user: hastebin
 hastebin_home: /var/lib/hastebin
 hastebin_install_dir: '{{ hastebin_home }}/haste-server'
 hastebin_data_dir: '{{ hastebin_home }}/data'

@@ -10,6 +10,8 @@ gathio_git_repo: https://github.com/lowercasename/gathio
 gathio_home: /var/lib/gathio
 gathio_install_dir: '{{ gathio_home }}/gathio'
 
+gathio_user: gathio
+
 gathio_apache_config: |
   {{ apache_proxy_config }}
   ProxyPass        / http://127.0.0.1:{{ gathio_port }}/
