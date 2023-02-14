@@ -1,3 +1,2 @@
 journald_persistent: no
 journald_forward_to_syslog: yes
-journald_max_use: null

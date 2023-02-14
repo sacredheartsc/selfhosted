@@ -1,6 +1,6 @@
 [Journal]
 Storage=auto
-{% if journald_max_use %}
+{% if journald_max_use is defined %}
 {{ 'System' if journald_persistent else 'Runtime' }}MaxUse={{ journald_max_use }}
 {% endif %}
 ForwardToSyslog={{ journald_forward_to_syslog | bool | to_json }}
