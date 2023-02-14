@@ -3,7 +3,7 @@ linux_laptop_wifi_ssid: '{{ wifi_ssid }}'
 linux_laptop_wifi_ip: '{{ ip }}'
 linux_laptop_wifi_prefix: "{{ vlan.cidr | ansible.utils.ipaddr('prefix') }}"
 linux_laptop_wifi_gateway: '{{ vlan.gateway }}'
-linux_laptop_wifi_domain: '{{ ansible_domain }}'
+linux_laptop_wifi_domain: '{{ domain }}'
 linux_laptop_wifi_dns_servers: '{{ vlan.dns_servers }}'
 linux_laptop_wlan_device: wlan0
 linux_laptop_dirty_writeback_centisecs: 6000

@@ -13,7 +13,7 @@ organization: ACME, Inc.   # changeme
 
 # This variable will be used to configure an SSID with certificate-based auth
 # for any hosts in the linux-laptops group.
-wifi_ssid: acme-wifi
+linux_laptop_wifi_ssid: acme-wifi
 
 # Hosts in these CIDRs should be capable of kerberos authentication.
 # We use this in many apache configs to determine when to force GSSAPI auth.
