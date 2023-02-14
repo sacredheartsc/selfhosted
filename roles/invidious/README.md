@@ -71,4 +71,11 @@ Example playbook:
         invidious_db_host: postgres.ipa.example.com
         invidious_db_password: s3cret
         invidious_default_local: no
+        invidious_server_name: invidious.ipa.example.com
+
+    - role: apache_vhost
+      vars:
+        apache_server_name: '{{ invidious_server_name }}'
+        apache_server_aliases: []
+        apache_config: '{{ invidious_apache_config }}'
 ````
