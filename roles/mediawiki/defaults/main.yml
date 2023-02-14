@@ -15,7 +15,7 @@ mediawiki_max_upload_count: 32
 
 mediawiki_custom_namespaces: []
 
-mediawiki_use_subpages: true
+mediawiki_use_subpages: yes
 
 mediawiki_ldap_servers: '{{ freeipa_hosts }}'
 mediawiki_sysaccount_username: mediawiki
@@ -39,14 +39,8 @@ mediawiki_default_mobile_skin: minerva
 mediawiki_disable_anonymous_read: no
 mediawiki_disable_anonymous_edit: yes
 
-mediawiki_block_wan_login: yes
-
 mediawiki_apc_shm_size: 256M
 
 mediawiki_skins:
   - Vector
   - MinervaNeue
-
-# mediawiki_logo_1x: /path/to/1x/logo.jpg
-# mediawiki_logo_icon: /path/to/icon/logo.jpg
-# mediawiki_logo_favicon: /path/to/favicon.ico
