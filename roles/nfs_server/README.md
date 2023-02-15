@@ -20,7 +20,7 @@ is world-readable. Both of directories get added to the automount map
 This role was written with the assumption that you're using ZFS for the
 underlying storage.
 
-The lists and mappings in the variables in the role are somewhat complex. It's
+The lists and mappings for these role variables are somewhat complex. It's
 probably easiest to start with the example playbook in the [Usage](#usage)
 section at the bottom of this document.
 
