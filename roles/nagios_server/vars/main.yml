@@ -23,6 +23,7 @@ nagios_plugin_dir: /usr/lib64/nagios/plugins
 
 nagios_mib_dir: /usr/share/snmp/mibs
 
+nagios_manubulon_repo: https://github.com/SteScho/manubulon-snmp
 nagios_manubulon_install_dir: /usr/local/share/manubulon
 
 nagios_thirdparty_plugins:

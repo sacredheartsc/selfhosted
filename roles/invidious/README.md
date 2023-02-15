@@ -11,6 +11,9 @@ periodically.
 This role configures the application only; it does not configure a reverse
 proxy.
 
+Invidious uses PostgreSQL, but since it does not use `libpq`, it does not
+support GSSAPI authentication. Hence why the `invidious_db_password` variable
+is required.
 
 Variables
 ---------
