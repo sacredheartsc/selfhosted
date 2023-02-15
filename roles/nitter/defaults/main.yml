@@ -3,19 +3,14 @@ nitter_version: master
 nitter_server_name: '{{ ansible_fqdn }}'
 
 nitter_port: 8080
-nitter_user: nitter
 
 nitter_update_on_calendar: weekly
-
-nitter_hmac_key: secretKey
 
 nitter_max_connections: 100
 nitter_token_count: 10
 
 nitter_cache_list_minutes: 240
 nitter_cache_rss_minutes: 10
-nitter_redis_host: localhost
 nitter_redis_port: 6379
-nitter_redis_password: ''
 nitter_redis_connections: 20
 nitter_redis_max_connections: 30

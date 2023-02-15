@@ -1,6 +1,7 @@
 nitter_git_repo: https://github.com/zedeus/nitter
 nitter_home: /opt/nitter
 nitter_install_dir: '{{ nitter_home }}/nitter'
+nitter_user: nitter
 
 nitter_packages:
   - libsass
