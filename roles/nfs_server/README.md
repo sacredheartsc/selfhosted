@@ -14,7 +14,8 @@ owned by the user, whereas group home directories are group-owned by the group.
 In either case, two subdirectories are created: `priv` and `pub`.
 
 The `priv` directory is private to the user or group, while the `pub` directory
-is world-readable.
+is world-readable. Both of directories get added to the automount map
+`auto.nfs_user`, but the `priv` directory is also is automounted as `/home/$USER`.
 
 This role was written with the assumption that you're using ZFS for the
 underlying storage.
@@ -39,7 +40,7 @@ Variable                    | Default      | Description
 `nfs_homedir_priv_quota`    | `50G`        | Default usage quota for private home/group directories
 `nfs_homedir_pub_quota`     | `10G`        | Default usage quota for public home/group directories
 `nfs_homedir_options`       | `rw`         | Export options for home/group directories
-`nfs_homedir_clients`       | `[]`         | NFS clients for home/group directories (see [format](#nfs_homedir_clients) below
+`nfs_homedir_clients`       | `[]`         | NFS clients for home/group directories (see [format](#nfs_homedir_clients) below)
 
 ### nfs\_exports
 
