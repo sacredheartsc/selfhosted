@@ -1,2 +1,3 @@
 nsd_server_count: '{{ ansible_processor_vcpus }}'
 nsd_zones: []
+nsd_default_ttl: 10800

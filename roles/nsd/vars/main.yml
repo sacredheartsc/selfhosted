@@ -1,7 +1,5 @@
 nsd_init_serial: 10000
 
-nsd_default_ttl: 10800
-
 nsd_soa_block: |
   $TTL    {{ zone.ttl | default(nsd_default_ttl) }}
   $ORIGIN {{ zone.name }}.
