@@ -95,15 +95,15 @@ smtpd_recipient_restrictions =
   reject_unauth_pipelining,
   reject_unlisted_recipient,
   reject_unauth_destination,
-  check_policy_service {{ postfix_mailbox_quota_service }}
+  check_policy_service inet:{{ postfix_quota_host }}:{{ postfix_quota_port }}
 smtpd_data_restrictions =
   permit_mynetworks,
   reject_unauth_pipelining
 
-virtual_transport = {{ postfix_virtual_transport }}
+virtual_transport = lmtp:inet:{{ postfix_lmtp_host }}:{{ postfix_lmtp_port }}
 virtual_mailbox_domains = {{ freeipa_realm }} {{ postfix_virtual_domains | join(' ') }}
 virtual_mailbox_maps = ldap:$config_directory/virtual_mailboxes.cf
 virtual_alias_maps = ldap:$config_directory/virtual_aliases.cf
 
 milter_default_action = accept
-smtpd_milters = {{ postfix_milter }}
+smtpd_milters = inet:{{ postfix_rspamd_host }}:{{ postfix_rspamd_port }}

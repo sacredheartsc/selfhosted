@@ -6,8 +6,11 @@ postfix_myorigin: '{{ email_domain }}'
 postfix_mynetworks: "{{ vlans.values() | map(attribute='cidr') }}"
 postfix_myhostname: '{{ ansible_fqdn }}'
 
-postfix_virtual_transport: lmtp:inet:{{ imap_host }}:24
-postfix_mailbox_quota_service: inet:{{ imap_host }}:10993
-postfix_milter: inet:{{ rspamd_host }}:11332
+postfix_lmtp_host: '{{ imap_host }}'
+postfix_lmtp_port: 24
+postfix_quota_host: '{{ postfix_lmtp_host }}'
+postfix_quota_port: 10993
+postfix_rspamd_host: '{{ rspamd_host }}'
+postfix_rspamd_port: 11332
 
 postfix_recipient_group: role-imap-access
