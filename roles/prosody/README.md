@@ -47,7 +47,7 @@ Variable                         | Default                    | Description
 ---------------------------------|----------------------------|------------
 `prosody_admins`                 |  `[]`                      | JIDs of server admins
 `prosody_vhosts`                 |  `['{{ email_domain }}']`  | XMPP domains to serve
-`prosody_conference_vhosts`      |  `conference.`vhosts       | XMPP conference domains (usually `conference.example.com`)
+`prosody_conference_vhosts`      |  `conference.{{ vhosts }}` | XMPP conference domains (usually `conference.example.com`)
 `prosody_user`                   |  `s-prosody`               | Prosody FreeIPA user (will be created)
 `prosody_db_name`                |  `prosody`                 | Prosody database name (will be created)
 `prosody_db_host`                | `{{ postgresql_host }}`    | Prosody database host
