@@ -5,7 +5,8 @@ Description
 -----------
 
 The `gathio` role installs and configures [Nitter](https://github.com/zedeus/nitter),
-an open source Twitter frontend.
+an open source Twitter frontend. It also installs a script to update Nitter
+periodically.
 
 This role configures the application only; it does not configure a reverse proxy.
 
