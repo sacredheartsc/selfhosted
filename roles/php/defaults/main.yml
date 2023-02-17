@@ -3,7 +3,6 @@ php_upload_max_filesize: 25M
 php_max_file_uploads: 20
 php_timezone: '{{ timezone }}'
 
-php_fpm_pool: www
 php_fpm_user: apache
 php_fpm_group: apache
 php_fpm_max_children: 50
