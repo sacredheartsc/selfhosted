@@ -1,4 +1,9 @@
 pxe_root: /tftpboot
 pxe_http_port: 80
 pxe_grub_prefix: grub
-locale: en_US.UTF-8
+
+pxe_ks_locale: en_US.UTF-8
+pxe_ks_authorized_keys: '{{ root_authorized_keys }}'
+pxe_ks_timezone: '{{ timezone }}'
+pxe_ks_password: '{{ root_password }}'
+pxe_ks_password_salt: '{{ root_password_salt }}'

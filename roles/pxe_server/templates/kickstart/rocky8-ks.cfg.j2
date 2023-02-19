@@ -19,11 +19,11 @@ printf 'network --bootproto=dhcp --device=%q --hostname=%q --onboot=yes --noipv6
 # if ntp-server was specified by DHCP server, use it
 if [ -n "${dhcp[ntp_servers]:-}" ]; then
   printf 'timezone %q --utc --ntpservers=%q\n' \
-    {{ timezone | quote }}                     \
+    {{ pxe_ks_timezone | quote }}              \
     "${dhcp[ntp_servers]}"                     \
     > /tmp/timezone.ks
 else
-  printf 'timezone %q --utc\n' {{ timezone | quote }} > /tmp/timezone.ks
+  printf 'timezone %q --utc\n' {{ pxe_ks_timezone | quote }} > /tmp/timezone.ks
 fi
 %end
 
@@ -38,12 +38,12 @@ reboot
 firstboot --disabled
 firewall --disabled
 keyboard --vckeymap=us
-lang {{ locale }}
-rootpw --iscrypted {{ root_password | password_hash("sha512", root_password_salt | default("")) }}
+lang {{ pxe_ks_locale }}
+rootpw --iscrypted {{ pxe_ks_password | password_hash("sha512", pxe_ks_password_salt | default("")) }}
 selinux --disabled
 skipx
 
-{% for pubkey in root_authorized_keys %}
+{% for pubkey in pxe_ks_authorized_keys %}
 sshkey --username=root "{{ pubkey }}"
 {% endfor %}
 
