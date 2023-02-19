@@ -1,6 +1,6 @@
 compatibility_level = 2
 
-myorigin = {{ proxmox_mail_origin }}
+myorigin = {{ proxmox_postfix_myorigin }}
 
 # disable local delivery
 biff = no
@@ -10,7 +10,7 @@ inet_interfaces = loopback-only
 inet_protocols = all
 mynetworks_style = host
 
-relayhost = {{ proxmox_relayhost }}
+relayhost = {{ proxmox_postfix_relayhost }}
 
 alias_database = hash:/etc/aliases
 

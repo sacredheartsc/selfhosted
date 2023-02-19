@@ -1,7 +1,7 @@
 # These settings are used when provisioning new proxmox VMs.
 ---
 proxmox_api_host: '{{ groups["proxmox_hypervisors"] | first }}'
-proxmox_api_user: ansible@pam
+proxmox_api_user: ansible
 proxmox_api_password: '{{ vault_proxmox_api_password }}'
 proxmox_node: '{{ proxmox_api_host }}'
 proxmox_password_salt: '{{ vault_proxmox_password_salt }}'

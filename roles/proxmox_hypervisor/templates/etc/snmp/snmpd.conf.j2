@@ -5,6 +5,6 @@ sysServices    72
 
 master  agentx
 
-{% for user in snmp_v3_users %}
+{% for user in proxmox_snmp_v3_users %}
 rouser {{ user.name }}
 {% endfor %}

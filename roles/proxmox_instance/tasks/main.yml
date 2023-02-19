@@ -2,7 +2,7 @@
   proxmox_kvm:
     node: '{{ proxmox_node }}'
     api_host: localhost
-    api_user: '{{ proxmox_api_user }}'
+    api_user: '{{ proxmox_api_user }}@pam'
     api_password: '{{ proxmox_api_password }}'
     name: '{{ proxmox_hostname }}'
     storage: '{{ proxmox_storage }}'
@@ -32,7 +32,7 @@
   proxmox_kvm:
     node: '{{ proxmox_node }}'
     api_host: localhost
-    api_user: '{{ proxmox_api_user }}'
+    api_user: '{{ proxmox_api_user }}@pam'
     api_password: '{{ proxmox_api_password }}'
     bios: '{{ proxmox_bios }}'
     efidisk0:
@@ -132,7 +132,7 @@
   proxmox_kvm:
     node: '{{ proxmox_node }}'
     api_host: localhost
-    api_user: '{{ proxmox_api_user }}'
+    api_user: '{{ proxmox_api_user }}@pam'
     api_password: '{{ proxmox_api_password }}'
     vmid: '{{ proxmox_vmid.stdout }}'
     state: started

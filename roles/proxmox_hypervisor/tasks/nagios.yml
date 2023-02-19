@@ -57,7 +57,7 @@
     path: /var/lib/snmp/snmpd.conf
     line: 'createUser {{ item.name }} SHA "{{ item.auth_pass }}" AES "{{ item.priv_pass }}"'
     insertafter: EOF
-  loop: '{{ snmp_v3_users }}'
+  loop: '{{ proxmox_snmp_v3_users }}'
   loop_control:
     label: '{{ item.name }}'
 

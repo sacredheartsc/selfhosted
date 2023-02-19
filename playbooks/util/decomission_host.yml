@@ -47,7 +47,7 @@
       proxmox_kvm:
         node: '{{ proxmox_node }}'
         api_host: localhost
-        api_user: '{{ proxmox_api_user }}'
+        api_user: '{{ proxmox_api_user }}@pam'
         api_password: '{{ proxmox_api_password }}'
         name: '{{ inventory_hostname }}'
         force: yes
