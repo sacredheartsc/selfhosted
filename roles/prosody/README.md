@@ -35,7 +35,7 @@ problem for LetsEncrypt certificates.
 
 I didn't want to deal with DNS challenges for just this one use-case, so I made
 the [prosody\_letsencrypt\_proxy](../prosody_letsencrypt_proxy) role to retrieve
-certificates from an existing webserver.
+certificates from an existing webserver. This role is pulled in as a dependency.
 
 
 Variables
