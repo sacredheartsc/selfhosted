@@ -5,7 +5,7 @@ Description
 -----------
 
 The `postfix_client` role installs [Postfix](https://www.postfix.org/) as the
-local mail transfer agent, and configures it to relay all mail to a given STMP
+local mail transfer agent, and configures it to relay all mail to a given SMTP
 server.
 
 
