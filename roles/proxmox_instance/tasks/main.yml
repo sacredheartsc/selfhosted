@@ -41,7 +41,7 @@
       pre_enrolled_keys: 1
       format: unspecified
     name: '{{ proxmox_hostname }}'
-    agent: '{{ proxmox_kvm_guest_agent }}'
+    agent: '{{ proxmox_guest_agent }}'
     storage: '{{ proxmox_storage }}'
     onboot: '{{ proxmox_onboot }}'
     cpu: '{{ proxmox_cpu }}'
@@ -49,12 +49,12 @@
     cores: '{{ proxmox_cores }}'
     vcpus: '{{ proxmox_sockets * proxmox_cores }}'
     memory: '{{ proxmox_memory }}'
-    vga: '{{ proxmox_kvm_vga }}'
-    scsihw: '{{ proxmox_kvm_scsihw }}'
+    vga: '{{ proxmox_vga }}'
+    scsihw: '{{ proxmox_scsihw }}'
     nameservers: "{{ proxmox_nameservers | join(',') }}"
     searchdomains: '{{ proxmox_searchdomain }}'
     sshkeys: "{{ proxmox_pubkeys | join('\n') }}"
-    ciuser: '{{ proxmox_kvm_ciuser }}'
+    ciuser: '{{ proxmox_username }}'
     cipassword: '{{ proxmox_password }}'
     cicustom: 'user={{ proxmox_userdata }}'
     ipconfig:

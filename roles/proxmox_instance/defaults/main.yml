@@ -24,8 +24,8 @@ proxmox_searchdomain: '{{ domain }}'
 proxmox_discard: yes
 proxmox_ssd: yes
 
-proxmox_kvm_vga: serial0
-proxmox_kvm_ciuser: root
-proxmox_kvm_scsihw: virtio-scsi-pci
-proxmox_kvm_guest_agent: yes
+proxmox_vga: serial0
+proxmox_username: root
+proxmox_scsihw: virtio-scsi-pci
+proxmox_guest_agent: yes
 proxmox_userdata: local:snippets/userdata.yaml
