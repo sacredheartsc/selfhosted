@@ -1,21 +1,8 @@
 psitransfer_version: 2.1.2
 psitransfer_port: 8080
 
-psitransfer_server_name: '{{ ansible_fqdn }}'
-psitransfer_server_aliases: '{{ cnames }}'
-
 psitransfer_upload_cidrs: []
 psitransfer_admin_cidrs: []
-
-psitransfer_retentions:
-  one-time: one time download
-  3600: 1 hour
-  86400: 1 day
-  604800: 1 week
-  2419200: 1 month
-  4838400: 2 months
-
-psitransfer_default_retention: 604800
 
 psitransfer_max_file_size: 1 GB
 psitransfer_max_bucket_size: 5 GB

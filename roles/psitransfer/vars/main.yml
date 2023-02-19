@@ -4,6 +4,16 @@ psitransfer_data_dir: '{{ psitransfer_home }}/data'
 psitransfer_user: psitransfer
 psitransfer_url: https://github.com/psi-4ward/psitransfer/releases/download/v{{ psitransfer_version }}/psitransfer-v{{ psitransfer_version }}.tar.gz
 
+psitransfer_default_retention: 604800
+psitransfer_retentions:
+  one-time: one time download
+  3600: 1 hour
+  86400: 1 day
+  604800: 1 week
+  2419200: 1 month
+  4838400: 2 months
+
+
 psitransfer_archive_shell: >-
   TIMESTAMP=$(date +%Y%m%d%H%M%S);
   tar czf "psitransfer-${TIMESTAMP}.tar.gz"
