@@ -74,4 +74,4 @@ Example playbook:
       vars:
         proxmox_api_user: ansible
         proxmox_api_password: s3cret
-```
+````

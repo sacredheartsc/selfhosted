@@ -84,4 +84,4 @@ Example playbook:
           - 10.10.10.2
           - 10.10.10.3
         proxmox_searchdomain: example.com
-```
+````
