@@ -20,7 +20,6 @@ Variable                         | Default   | Description
 ---------------------------------|-----------|------------
 `polkit_admin_group`             | `wheel`   | Group name for system administrators
 
-This role **exports** the following variables:
 
 Usage
 -----
