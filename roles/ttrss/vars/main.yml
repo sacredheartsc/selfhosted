@@ -17,7 +17,6 @@ ttrss_home: /var/www/ttrss
 ttrss_keytab: /var/lib/gssproxy/clients/{{ ttrss_user }}.keytab
 
 ttrss_git_repo: https://git.tt-rss.org/fox/tt-rss
-ttrss_version: HEAD
 
 ttrss_freeipa_plugin_url: https://raw.githubusercontent.com/sacredheartsc/ttrss-freeipa/master/auth_freeipa/init.php
 
