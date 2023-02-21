@@ -4,6 +4,7 @@ teddit_packages:
   - git
 
 teddit_git_repo: https://codeberg.org/teddit/teddit
+teddit_user: teddit
 teddit_home: /opt/teddit
 teddit_install_dir: '{{ teddit_home }}/teddit'
 

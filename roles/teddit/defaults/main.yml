@@ -1,5 +1,4 @@
 teddit_version: main
-teddit_user: teddit
 teddit_port: 8080
 teddit_server_name: '{{ ansible_fqdn }}'
 
