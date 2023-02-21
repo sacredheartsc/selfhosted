@@ -2,10 +2,3 @@ timer_persistent: yes
 timer_user: root
 timer_shell: no
 timer_enabled: yes
-
-# timer_group: groupname
-# timer_chdir: /path/to/working/directory
-#
-# timer_shell: some $shell | command
-#   OR
-# timer_exec: command to exec
