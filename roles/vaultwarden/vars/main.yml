@@ -19,9 +19,6 @@ vaultwarden_web_dir: '{{ vaultwarden_home }}/web-vault'
 vaultwarden_data_dir: /var/lib/vaultwarden
 vaultwarden_keytab: /var/lib/gssproxy/clients/{{ vaultwarden_user }}.keytab
 
-vaultwarden_admin_hbac_hostgroup: bitwarden_servers
-vaultwarden_admin_hbac_service: bitwarden-admin
-
 vaultwarden_apache_config: |
   {{ apache_proxy_config }}
   <Location />

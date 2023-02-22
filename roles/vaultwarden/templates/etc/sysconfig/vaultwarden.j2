@@ -26,7 +26,7 @@ INVITATIONS_ALLOWED={{ vaultwarden_invitations_allowed }}
 USER_ATTACHMENT_LIMIT={{ vaultwarden_user_attachment_limit_kb }}
 {% endif %}
 
-DOMAIN={{ vaultwarden_url }}
+DOMAIN=https://{{ vaultwarden_server_name }}
 
 {% if vaultwarden_yubico_client_id is defined %}
 YUBICO_CLIENT_ID={{ vaultwarden_yubico_client_id }}

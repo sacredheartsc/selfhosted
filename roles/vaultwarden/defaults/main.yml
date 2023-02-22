@@ -5,7 +5,6 @@ vaultwarden_port: 8008
 vaultwarden_websocket_port: 8009
 
 vaultwarden_server_name: '{{ ansible_fqdn }}'
-vaultwarden_url: https://{{ vaultwarden_server_name }}
 
 vaultwarden_user: s-vaultwarden
 vaultwarden_db_name: vaultwarden
