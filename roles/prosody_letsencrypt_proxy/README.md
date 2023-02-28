@@ -13,11 +13,11 @@ are on the same host.
 
 This role has two modes: `master` and `slave`.
 
-The `master` role should be run on your domain's webserver. Certificates for
+The `master` mode should be run on your domain's webserver. Certificates are
 retrieved from LetsEncrypt via Certbot, and placed in a special `sftp`-accessible
 location.
 
-The `slave` role should be run on your XMPP host. It periodically scrapes the
+The `slave` mode should be run on your XMPP host. It periodically scrapes the
 new certificates from the `master`, and reloads Prosody if necessary.
 
 
