@@ -23,7 +23,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: all
+- name: configure host as a nagios client
+  hosts: all
   roles:
     - role: nagios_client
       vars:

@@ -75,7 +75,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: mail_servers
+- name: set up public mail server
+  hosts: mail_servers
   roles:
     - role: postfix_server
       vars:

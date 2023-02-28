@@ -36,7 +36,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: hastebin_servers
+- name: configure hastebin web application
+  hosts: hastebin_servers
   roles:
     - role: hastebin
       hastebin_port: 8080

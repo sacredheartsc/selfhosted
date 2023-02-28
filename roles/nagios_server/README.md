@@ -189,7 +189,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: nagios_servers
+- name: configure nagios monitoring server
+  hosts: nagios_servers
   roles:
     - role: nagios_server
       vars:

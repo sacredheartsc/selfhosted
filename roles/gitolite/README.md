@@ -44,7 +44,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: git_servers
+- name: configure gitolite
+  hosts: git_servers
   roles:
     - role: gitolite
       vars:

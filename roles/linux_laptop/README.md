@@ -34,7 +34,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: linux_laptops
+- name: perform laptop setup tasks
+  hosts: linux_laptops
   roles:
     - role: linux_laptop
       vars:

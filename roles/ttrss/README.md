@@ -51,7 +51,7 @@ Usage
 Example playbook:
 
 ````yaml
-- name: configure tinytinyrss
+- name: configure tinytinyrss web application
   hosts: ttrss_servers
   roles:
     - role: ttrss

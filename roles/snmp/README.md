@@ -36,7 +36,7 @@ Usage
 Example playbook:
 
 ````yaml
-- name: configure SNMP
+- name: configure SNMP client
   hosts: all
   roles:
     - role: snmp

@@ -24,7 +24,7 @@ Usage
 Example playbook:
 
 ````yaml
-- name: set root password
+- name: set password for root user
   hosts: all
   roles:
     - role: root_password

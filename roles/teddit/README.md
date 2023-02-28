@@ -50,7 +50,7 @@ Usage
 Example playbook:
 
 ````yaml
-- name: configure teddit
+- name: configure teddit web application
   hosts: privbrowse_servers
   roles:
     - role: teddit

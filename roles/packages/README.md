@@ -21,7 +21,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: all
+- name: install standard packages
+  hosts: all
   roles:
     - role: packages
       vars:

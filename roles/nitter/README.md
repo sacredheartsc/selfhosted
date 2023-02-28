@@ -43,9 +43,13 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: nitter_servers
+- name: configure nitter web application
+  hosts: nitter_servers
   roles:
     - role: nitter
+      vars:
+        nitter_server_name: nitter.example.com
+        nitter_hmac_key: s3cret
 
     - role: apache_vhost
       apache_server_name: '{{ nitter_server_name }}'

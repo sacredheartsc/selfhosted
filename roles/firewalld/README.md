@@ -16,7 +16,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: all
+- name: enable firewalld
+  hosts: all
   roles:
     - role: firewalld
 ````

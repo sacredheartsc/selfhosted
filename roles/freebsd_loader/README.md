@@ -27,7 +27,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: opnsense_firewalls
+- name: configure freebsd bootloader
+  hosts: opnsense_firewalls
   roles:
     - role: freebsd_loader
       vars:

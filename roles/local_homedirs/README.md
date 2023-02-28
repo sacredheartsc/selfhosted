@@ -19,7 +19,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: linux_desktops
+- name: set up additional home directories on the local disk
+  hosts: linux_desktops
   roles:
     - role: local_homedirs
 ````

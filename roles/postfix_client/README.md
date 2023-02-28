@@ -27,7 +27,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: all
+- name: configure postfix mail client
+  hosts: all
   roles:
     - role: postfix_client
       vars:

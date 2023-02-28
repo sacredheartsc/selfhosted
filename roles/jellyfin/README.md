@@ -45,6 +45,10 @@ Example playbook:
 - hosts: invidious_servers
   roles:
     - role: jellyfin
+      vars:
+        jellyfin_access_group: jellyfin-users
+        jellyfin_media_access_group: media-file-access
+        jellyfin_admin_group: jellyfin-admins
 
     - role: apache_vhost
       vars:

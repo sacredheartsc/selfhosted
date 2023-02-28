@@ -47,7 +47,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: photostructure_servers
+- name: install photostructure web application
+  hosts: photostructure_servers
   roles:
     - role: photostructure
 

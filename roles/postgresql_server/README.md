@@ -25,7 +25,7 @@ Usage
 Example playbook:
 
 ````yaml
-- name: configure postgresql
+- name: configure postgresql database
   hosts: postgresql_servers
   roles:
     - role: postgresql

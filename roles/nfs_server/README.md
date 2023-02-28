@@ -131,7 +131,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: nas1
+- name: configure nfs/smb exports
+  hosts: nas1
   roles:
     - role: nfs_server
       vars:

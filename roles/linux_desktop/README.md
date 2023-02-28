@@ -33,7 +33,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: linux_desktops
+- name: configure gnome desktop
+  hosts: linux_desktops
   roles:
     - role: linux_desktop
       vars:

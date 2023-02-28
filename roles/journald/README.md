@@ -24,7 +24,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: all
+- name: configure systemd journal
+  hosts: all
   roles:
     - role: journald
       vars:

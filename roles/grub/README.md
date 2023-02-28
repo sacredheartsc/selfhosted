@@ -23,7 +23,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: proxmox_instances
+- name: configure grub bootloader
+  hosts: proxmox_instances
   roles:
     - role: grub
       vars:

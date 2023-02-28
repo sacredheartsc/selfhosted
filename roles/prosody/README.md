@@ -72,7 +72,7 @@ Usage
 Example playbook:
 
 ````yaml
-- name: configure prosody
+- name: configure prosody xmpp server
   hosts: xmpp_servers
   roles:
     - role: prosody

@@ -24,7 +24,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: all
+- name: join host to freeipa domain
+  hosts: all
   roles:
     - role: freeipa_client
       vars:

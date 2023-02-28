@@ -53,7 +53,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: freeipa_master
+- name: configure freeipa master server
+  hosts: freeipa_master
   roles:
     - role: freeipa_server
       vars:
@@ -64,7 +65,8 @@ Example playbook:
         freeipa_admin_password: s3cret
         freeipa_ds_password: rea11y_s3cret
 
-- hosts: freeipa_servers:!freeipa_master
+- name: configure freeipa replicas
+  hosts: freeipa_servers:!freeipa_master
   roles:
     - role: freeipa_server
       vars:

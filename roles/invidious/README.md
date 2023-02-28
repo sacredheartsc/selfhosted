@@ -67,7 +67,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: invidious_servers
+- name: configure invidious youtube proxy
+  hosts: invidious_servers
   roles:
     - role: invidious
       vars:

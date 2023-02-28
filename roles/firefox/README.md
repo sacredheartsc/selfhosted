@@ -93,7 +93,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: linux_desktops
+- name: configure firefox
+  hosts: linux_desktops
   roles:
     - role: firefox
       vars:

@@ -14,7 +14,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: all
+- name: remove motd spam
+  hosts: all
   roles:
     - role: motd
 ````

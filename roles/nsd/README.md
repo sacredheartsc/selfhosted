@@ -36,7 +36,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: authoritative_nameservers
+- name: configure public nameservers
+  hosts: authoritative_nameservers
   roles:
     - role: nsd
       vars:

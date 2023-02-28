@@ -27,7 +27,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: all
+- name: configure polkit
+  hosts: all
   roles:
     - role: polkit
       vars:

@@ -150,7 +150,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: asterisk_servers
+- name: configure asterisk pbx
+  hosts: asterisk_servers
   roles:
     - role: asterisk
       vars:

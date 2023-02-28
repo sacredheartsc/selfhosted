@@ -39,7 +39,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: radius_servers
+- name: configure freeradius
+  hosts: radius_servers
   roles:
     - role: freeradius
       vars:

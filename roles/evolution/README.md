@@ -34,7 +34,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: linux_desktops
+- name: configure evolution mail client
+  hosts: linux_desktops
   roles:
     - role: evolution
       vars:

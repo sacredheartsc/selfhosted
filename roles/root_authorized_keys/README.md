@@ -24,7 +24,7 @@ Usage
 Example playbook:
 
 ````yaml
-- name: set root authorized_keys
+- name: set authorized_keys for root user
   hosts: all
   roles:
     - role: root_authorized_keys

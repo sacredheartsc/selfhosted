@@ -36,7 +36,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: gathio_servers
+- name: configure gathio web application
+  hosts: gathio_servers
   roles:
     - role: gathio
       gathio_port: 8080

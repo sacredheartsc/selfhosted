@@ -23,7 +23,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: all
+- name: set the system locale
+  hosts: all
   roles:
     - role: locale
       vars:

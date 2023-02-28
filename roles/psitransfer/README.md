@@ -40,7 +40,7 @@ Usage
 Example playbook:
 
 ````yaml
-- name: configure psitransfer
+- name: set up psitransfer web application
   hosts: filedrop_servers
   roles:
     - role: psitransfer

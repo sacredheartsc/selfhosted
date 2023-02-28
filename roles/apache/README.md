@@ -36,7 +36,8 @@ Usage
 Example playbook:
 
 ````yaml
-- hosts: webservers
+- name: configure apache
+  hosts: webservers
   roles:
     - role: apache
       vars:
