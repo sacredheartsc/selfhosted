@@ -6,61 +6,25 @@ An Ansible framework for selfhosted infrastructure, based on
 
 ## What is this?
 
-`sacredheart-selfhosted` is a collection of Ansible roles based on multiple years
-of experience self-hosting my family's digital infrastructure.
+This is a collection of Ansible roles for provisioning self-hosted applications,
+configuring Linux infrastructure, and managing Linux desktops.
 
-I believe that self-hosting our online services is the best way to recapture the
-original pioneer spirit of the Internet. I use these Ansible playbooks to manage
-my entire digital footprint, including baremetal servers, virtual machines, and
-desktop workstations.
+I use these Ansible playbooks to manage my entire digital footprint, including
+baremetal servers, virtual machines, and desktop workstations.
 
 Although this project is not intended to be a turn-key appliance, it should be
 easy to adapt it to your own environment with some basic sysadmin skills. I've
 provided an example inventory to get you started.
 
-## Prerequisites
-
-The [example inventory](inventory-example) is based on my home network, which
-consists of the following:
-
-  - A residential internet connection with a handful of static IPv4 addresses.
-
-  - Some desktop computers, laptops, VOIP phones, and a NAS.
-
-  - A [Proxmox](https://www.proxmox.com/en/proxmox-ve) hypervisor for running
-    virtual machines.
-
-  - An [OPNsense](https://opnsense.org/) firewall and various VLANs for managing
-    internet and intranet traffic.
-
-It's assumed that you already have a working network. Other than setting VLAN
-tags and `cloud-init` IP configuration for virtual machines, none of the playbooks
-touch your network infrastructure.
-
-## Design
-
-`sacredheart-selfhosted` is designed for [Rocky Linux](https://rockylinux.org/)
-9. A small number of roles require Rocky Linux 8 due to package availability.
-
-There's no Docker, no containers, and no `curl | bash.` Everything is installed
-from official repos or [EPEL](https://docs.fedoraproject.org/en-US/epel/),
-and managed using systemd. For services that lack official RPMs, the software is
-built locally from the upstream source repository during the playbook.
-
-All network services listen on the local IP of the host. If you want to expose
-a service to the internet, it is assumed that you will configure your firewall
-for 1:1 NAT.
-
-There is no IPv6 support whatsoever. If my ISP ever rolls out IPv6, I'll look
-into it.
-
 ## Features
 
-Modular [Ansible roles](roles) are used to create VMs, apply common base
-configuration, and configure each service.
+Modular Ansible roles are used to create virtual machines, apply common base
+configuration, and configure each service. A summary of the included roles is
+provided in the table below. For a complete listing, check out the [roles](roles/)
+directory.
 
-| Role                                      | Description |
---------------------------------------------|-------------|
+ Role                                       | Description 
+--------------------------------------------|-------------
 [proxmox\_instance](roles/proxmox_instance) | Automatically provisions a [Proxmox](https://www.proxmox.com/) VM with the given hardware and cloud-init configuration
 [common](roles/common/meta/main.yml)        | Meta-role that pulls in common configuration roles (local repos, freeipa client, DNS/NTP, SSH keys, etc)
 [freeipa\_server](roles/freeipa_server)     | [FreeIPA](https://www.freeipa.org/) provides provides identity management, access control, certificate management, and single sign-on
@@ -93,10 +57,132 @@ configuration, and configure each service.
 [unifi](roles/unifi)                        | [UniFi](https://www.ui.com/) controller for managing Ubiquiti access points
 [freeradius](roles/freeradius)              | WPA Enterprise authentication for WiFi using FreeIPA credentials or SSL certificates
 
-All services authenticate against the local FreeIPA domain. On a domain-joined
-workstation, Kerberos/GSSAPI is used for single sign-on.
+## Design Choices
 
-## Todo
+### Ansible
 
-Currently, this repository is just a big pile of YAML. More documentation and
-how-to guides are coming soon!
+All configuration is performed using Ansible playbooks. The Ansible [playbooks](playbooks/)
+are just the orchestration layer for the modular Ansible [roles](roles/),
+which do all the heavy lifting. All host metadata is stored in the [inventory](inventory-example).
+
+Why Ansible? Ansible is awful. And full of YAML. And SLOW.
+
+Unfortunately, it seems to be the least awful option out there:
+
+  1. No agent. If you can SSH to a host you can configure it with Ansible.
+
+  2. An insane number of community modules (admittedly, of varying quality...)
+
+  3. Easy escape hatches. If you're knee deep in a YAML tarpit, it's easy to
+     write a custom Python filter or module to do what you want.
+
+  4. There's an extremely convenient [FreeIPA project](https://github.com/freeipa/ansible-freeipa)
+     that lets you manage your entire FreeIPA domain with Ansible.
+
+When you self-host, 80% of your effort is figuring out exactly what arcane Unix
+incantations are needed to make the stupid $THING work in a reproducible way.
+And since Ansible is ultimately just a YAML listing of tasks to execute, it
+provides a nice self-documenting way of doing that.
+
+Ansible has very little magic, so the YAML is often obtuse. But a positive
+side of its stupid simplicity is that anyone can look at the task files and
+easily deduce exactly what steps are needed to configure a given thing.
+       
+### Rocky Linux
+
+All the roles are designed for [Rocky Linux 9](https://rockylinux.org/) (a
+few roles still require version 8 due to package availability). 
+
+Why Rocky Linux? Mostly due to the 10-year support cycle. I've been self-hosting
+for a long time, and I'm now at a stage of life where fiddling with config files
+to keep up with frequent version updates is no longer enjoyable. I take comfort
+in knowing that I can coast on this setup for a decade before I need to get in
+the weeds again.
+
+I don't have any strong opinions about Rocky vs Alma; at the time, I thought
+Rocky Linux had a cooler logo 😎
+
+I chose a RedHat distro for the first-class FreeIPA support.
+
+### FreeIPA
+
+I use FreeIPA for 100% of authentication and authorization logic, and Kerberos/GSSAPI
+for single sign-on (where possible).
+
+All my desktop computers also run Rocky Linux, and are joined to the FreeIPA
+domain. When you log in with GDM, you'll get a Kerberos ticket that is used by
+[Firefox](roles/firefox/), [Evolution](roles/evolution/), and other applications
+to automatically authenticate you without having to type your password again.
+
+For services that don't support Kerberos (or devices that don't support it, like
+smartphones), everything falls back to username/password authentication over TLS.
+
+Authorization is performed using FreeIPA group memberships. This is especially
+handy since FreeIPA supports nested groups. For example, all my family members
+are a member of the FreeIPA group `mylastname`. If I want to grant them access
+to `myapp`, I'll use a FreeIPA group called `role-myapp-access`, and then make
+the group `mylastname` a member of that group.
+
+FreeIPA is also used to provision TLS certificates for all internal hosts. For
+non-managed devices like smartphones, you'll have to install the local FreeIPA
+Root CA. (There is also a [certbot role](roles/certbot/) for public-facing
+services.)
+
+
+### KVM Virtual Machines
+
+Each of my applications runs on a dedicated Proxmox KVM virtual machine. The
+[common](roles/common/) role spins up a dedicated [Proxmox instance](roles/proxmox_instance)
+on the fly when configuring a new VM for the first time.
+
+You can certainly use any of the included roles on non-Proxmox hosts, and they
+will work fine. Proxmox is just what I decided to use for my own homelab.
+Why Proxmox? It's free, and I was already familiar with it.
+
+I still run everything on KVM virtual machines. I briefly looked into Linux
+containers, but decided against them. My environment relies heavily on NFS and
+automount, both of which only barely work within containers at this point.
+
+There's no Docker whatsoever in this project. Everything is installed from
+official repos or [EPEL](https://docs.fedoraproject.org/en-US/epel/), and
+and managed using plain old systemd units. For services that lack official RPMs,
+the software is built locally from the upstream source repository during the
+playbook.
+
+### Networking
+
+Each role that exposes a network service uses `0.0.0.0` for all available
+interfaces.
+
+It is assumed that you already have a working network. Other than setting VLAN
+tags and `cloud-init` IP configuration for virtual machines, none of the playbooks
+in this project touch your network infrastructure.
+
+For my homelab, I don't expose anything to the internet unless absolutely
+necessary. I run an [OPNsense](https://opnsense.org/) firewall and configure all
+mobile devices with a persistent Wireguard VPN back to my intranet.
+
+You can configure your network and VLANs however you see fit. I actually run everything
+from a small rack in my basement and a residential cable internet connection, with
+a block of static IPv4 addresses from my ISP.
+
+### Backup and Restore
+
+In my environment, periodic backups are performed by the [archiver](roles/archive_server/).
+Basically, applications run periodic [archive jobs](roles/archive_job/) that
+write data to `/var/spool/archive`, and a special process `rsync`'s this data each
+night to a central location.
+
+In addition, [backup](playbooks/util/backup.yml) and [restore](playbooks/util/restore.yml)
+playbooks are provided.
+
+The [backup playbook](playbooks/util/backup.yml) will export all transient state
+for each service (email inboxes, FreeIPA domain, PostgreSQL databases, etc) to
+tarballs on the Ansible controller.
+
+The [restore playbook](playbooks/util/restore.yml) will safely perform the
+service-specific tasks necessary to restore each backup.
+
+In a disaster recovery scenario, I can rebuild all my VMs from scratch using the
+[site.yml playbook](playbooks/site.yml) playbook. Then, I can use the [restore playbook](playbooks/util/restore.yml)
+(along with my most recent backup) to restore all the data for each service.
