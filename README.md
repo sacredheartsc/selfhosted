@@ -105,8 +105,8 @@ the weeds again.
 I don't have any strong opinions about Rocky vs Alma; at the time, I thought
 Rocky Linux had a cooler logo 😎
 
-All hosts run with with SELinux **enabled**. Often this required writing my
-own SELinux modules, but I made it work.
+All my hosts run with with SELinux **enabled**, because I dislike [making Dan Walsh weep](https://stopdisablingselinux.com/).
+Often this required writing my own SELinux modules, but I made it work.
 
 I chose a RedHat-based distro for the first-class FreeIPA support.
 
