@@ -196,8 +196,8 @@ and other random stuff.
 
 In my environment, periodic backups are performed by the [archiver](roles/archive_server).
 Basically, applications run periodic [archive jobs](roles/archive_job) that
-write data to `/var/spool/archive`, and a special process `rsync`'s this data each
-night to a central location.
+write data to `/var/spool/archive`, and a special process `rsync`'s this data
+to a central location each night.
 
 In addition, [backup](playbooks/util/backup.yml) and [restore](playbooks/util/restore.yml)
 playbooks are provided.
