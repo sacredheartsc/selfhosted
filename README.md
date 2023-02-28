@@ -124,10 +124,10 @@ For services that don't support Kerberos (or devices that don't support it, like
 smartphones), everything falls back to username/password authentication over TLS.
 
 Authorization is performed using FreeIPA group memberships. This is especially
-handy since FreeIPA supports nested groups. For example, all my family members
-are a member of the FreeIPA group `mylastname`. If I want to grant them access
-to `myapp`, I'll use a FreeIPA group called `role-myapp-access`, and then make
-the group `mylastname` a member of that group.
+handy since FreeIPA supports nested groups. For example, everyone in my family
+is a member of the FreeIPA group `mylastname`. If I want to grant them access
+to `myapp`, I'll make a FreeIPA group called `role-myapp-access`, and then add
+the `mylastname` group as a member.
 
 FreeIPA is also used to provision TLS certificates for all internal hosts. For
 non-managed devices like smartphones, you'll have to install the local FreeIPA
