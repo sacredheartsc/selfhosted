@@ -23,6 +23,9 @@ configuration, and configure each service. A summary of the included roles is
 provided in the table below. For a complete listing, check out the [roles](roles)
 directory.
 
+Each role has its own README file that describes how it should be invoked and what
+variables it accepts.
+
  Role                                       | Description 
 --------------------------------------------|-------------
 [proxmox\_instance](roles/proxmox_instance) | Automatically provisions a [Proxmox](https://www.proxmox.com/) VM with the given hardware and cloud-init configuration
