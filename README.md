@@ -105,7 +105,7 @@ the weeds again.
 I don't have any strong opinions about Rocky vs Alma; at the time, I thought
 Rocky Linux had a cooler logo 😎
 
-All my hosts run with with SELinux **enabled**, because I dislike [making Dan Walsh weep](https://stopdisablingselinux.com/).
+All my hosts run with SELinux **enabled**, because I dislike [making Dan Walsh weep](https://stopdisablingselinux.com/).
 Often this required writing my own SELinux modules, but I made it work.
 
 I chose a RedHat-based distro for the first-class FreeIPA support.
@@ -168,8 +168,9 @@ necessary. I run an [OPNsense](https://opnsense.org/) firewall and configure all
 mobile devices with a persistent Wireguard VPN back to my intranet.
 
 You can configure your network and VLANs however you see fit. I actually run everything
-from a small rack in my basement and a residential cable internet connection, with
-a block of static IPv4 addresses from my ISP.
+from a small rack of used eBay gear in my basement! I have a residential cable
+internet connection, with a block of static IPv4 addresses from my ISP, and it
+works fine for everything so far.
 
 I use RFC1918 local IP addresses for all my VMs. For services that need to be publicly
 accessible, like [SMTP](roles/postfix_server), [Asterisk](roles/asterisk), and [XMPP](roles/prosody),
@@ -178,7 +179,7 @@ mapping.
 
 ### Monitoring
 
-I use [Nagios](roles/nagios). I know. I KNOW! I'm sorry.
+I use [Nagios](roles/nagios_server). I know. I KNOW! I'm sorry.
 
 It's honestly perfect for my use case. I have a bunch of static VMs that once
 built, basically never change. The [configs](roles/nagios_server/templates/etc/nagios/objects)
