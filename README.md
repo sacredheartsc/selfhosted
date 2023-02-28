@@ -175,15 +175,15 @@ mapping.
 I use [Nagios](roles/nagios). I know. I KNOW! I'm sorry.
 
 It's honestly perfect for my use case. I have a bunch of static VMs that once
-built, basically never change. The configs are all generated automatically from
-my Ansible inventory, and I get an email whenever something goes wrong.
+built, basically never change. The [configs](roles/nagios_server/templates/etc/nagios/objects)
+are all generated automatically from my Ansible inventory, and I get an email
+whenever something goes wrong.
 
 I don't use Nagios for any metrics gathering--only health checks. In addition
 to the usual ping/disk usage/load/network interface/certificate validity checks,
 I also have a few custom plugins that check for [failed systemd units](roles/nagios_client/files/usr/lib64/nagios/plugins/check_systemd),
 [dead asterisk endpoints](roles/nagios_server/files/usr/lib64/nagios/plugins/check_asterisk_endpoints),
 and other random stuff.
-
 
 ### Backup and Restore
 
