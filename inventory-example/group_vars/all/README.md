@@ -1,8 +1,8 @@
 Default Variables
 =================
 
-This directory specifies sensible defaults for all role variables used in the
-project.
+This directory specifies sensible defaults and example values for all role
+variables that you'd need to override in a "real" deployment.
 
 The variables are organized into different files, corresponding (roughly) to each
 role.
