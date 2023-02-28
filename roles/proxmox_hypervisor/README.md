@@ -40,8 +40,8 @@ Variable                          | Default                   | Description
 `proxmox_storage`                 | `local-zfs`               | Template VM storage name
 `proxmox_zfs_trim_on_calendar`    | `monthly`                 | Systemd [calendar interval](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) for ZFS SSD trim
 `proxmox_zfs_scrub_on_calendar`   | `monthly`                 | Systemd [calendar interval](https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events) for ZFS scrub
-`proxmox_zed_email`               | `root`                    | Destination em
-`proxmox_zed_verbose`             | yes                       | Email address for ZFS Event Daemon (ZED) alerts
+`proxmox_zed_email`               | `root`                    | Email address for ZFS Event Daemon (ZED) alerts
+`proxmox_zed_verbose`             | yes                       | Show details in ZED emails
 `proxmox_zed_notify_interval_sec` | 3600                      | Notification interval for ZED alerts (seconds)
 `proxmox_nagios_ssh_pubkey`       | `{{ nagios_ssh_pubkey }}` | Nagios SSH public key
 `proxmox_snmp_location`           | `unknown`                 | SNMP location string
