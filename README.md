@@ -20,7 +20,7 @@ provided an example inventory to get you started.
 
 Modular Ansible roles are used to create virtual machines, apply common base
 configuration, and configure each service. A summary of the included roles is
-provided in the table below. For a complete listing, check out the [roles](roles/)
+provided in the table below. For a complete listing, check out the [roles](roles)
 directory.
 
  Role                                       | Description 
@@ -61,8 +61,8 @@ directory.
 
 ### Ansible
 
-All configuration is performed using Ansible playbooks. The Ansible [playbooks](playbooks/)
-are just the orchestration layer for the modular Ansible [roles](roles/),
+All configuration is performed using Ansible playbooks. The Ansible [playbooks](playbooks)
+are just the orchestration layer for the modular Ansible [roles](roles),
 which do all the heavy lifting. All host metadata is stored in the [inventory](inventory-example).
 
 Why Ansible? Ansible is awful. And full of YAML. And SLOW.
@@ -102,16 +102,16 @@ the weeds again.
 I don't have any strong opinions about Rocky vs Alma; at the time, I thought
 Rocky Linux had a cooler logo 😎
 
-I chose a RedHat distro for the first-class FreeIPA support.
+I chose a RedHat-based distro for the first-class FreeIPA support.
 
 ### FreeIPA
 
 I use FreeIPA for 100% of authentication and authorization logic, and Kerberos/GSSAPI
 for single sign-on (where possible).
 
-All my desktop computers also run Rocky Linux, and are joined to the FreeIPA
+All my desktop computers also run Rocky Linux, and are joined to my FreeIPA
 domain. When you log in with GDM, you'll get a Kerberos ticket that is used by
-[Firefox](roles/firefox/), [Evolution](roles/evolution/), and other applications
+[Firefox](roles/firefox), [Evolution](roles/evolution), and other applications
 to automatically authenticate you without having to type your password again.
 
 For services that don't support Kerberos (or devices that don't support it, like
@@ -125,14 +125,13 @@ the group `mylastname` a member of that group.
 
 FreeIPA is also used to provision TLS certificates for all internal hosts. For
 non-managed devices like smartphones, you'll have to install the local FreeIPA
-Root CA. (There is also a [certbot role](roles/certbot/) for public-facing
+Root CA. (There is also a [certbot role](roles/certbot) for public-facing
 services.)
-
 
 ### KVM Virtual Machines
 
 Each of my applications runs on a dedicated Proxmox KVM virtual machine. The
-[common](roles/common/) role spins up a dedicated [Proxmox instance](roles/proxmox_instance)
+[common](roles/common) role spins up a dedicated [Proxmox instance](roles/proxmox_instance)
 on the fly when configuring a new VM for the first time.
 
 You can certainly use any of the included roles on non-Proxmox hosts, and they
@@ -166,10 +165,30 @@ You can configure your network and VLANs however you see fit. I actually run eve
 from a small rack in my basement and a residential cable internet connection, with
 a block of static IPv4 addresses from my ISP.
 
+I use RFC1918 local IP addresses for all my VMs. For services that need to be publicly
+accessible, like [SMTP](roles/postfix_server), [Asterisk](roles/asterisk), and [XMPP](roles/prosody),
+I add a static IP alias to the WAN interface of my firewall and use a [1:1 NAT](https://docs.opnsense.org/manual/nat.html#one-to-one)
+mapping.
+
+### Monitoring
+
+I use [Nagios](roles/nagios). I know. I KNOW! I'm sorry.
+
+It's honestly perfect for my use case. I have a bunch of static VMs that once
+built, basically never change. The configs are all generated automatically from
+my Ansible inventory, and I get an email whenever something goes wrong.
+
+I don't use Nagios for any metrics gathering--only health checks. In addition
+to the usual ping/disk usage/load/network interface/certificate validity checks,
+I also have a few custom plugins that check for [failed systemd units](roles/nagios_client/files/usr/lib64/nagios/plugins/check_systemd),
+[dead asterisk endpoints](roles/nagios_server/files/usr/lib64/nagios/plugins/check_asterisk_endpoints),
+and other random stuff.
+
+
 ### Backup and Restore
 
-In my environment, periodic backups are performed by the [archiver](roles/archive_server/).
-Basically, applications run periodic [archive jobs](roles/archive_job/) that
+In my environment, periodic backups are performed by the [archiver](roles/archive_server).
+Basically, applications run periodic [archive jobs](roles/archive_job) that
 write data to `/var/spool/archive`, and a special process `rsync`'s this data each
 night to a central location.
 
