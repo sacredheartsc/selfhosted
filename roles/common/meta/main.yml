@@ -73,7 +73,7 @@ dependencies:
     tags: chrony,ntp
 
   - role: dnf_automatic
-    tags: yum
+    tags: yum,dnf-automatic
 
   - role: ssh
     tags: ssh
