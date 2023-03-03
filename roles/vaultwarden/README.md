@@ -30,7 +30,7 @@ Variable                               | Default                                
 `vaultwarden_invitations_allowed`      | no                                     | Allow admins to invite users
 `vaultwarden_user_attachment_limit_kb` | 1048576                                | Per-user attachment size limit (KB)
 `vaultwarden_admin_group`              | `role-bitwarden-admin`                 | FreeIPA group for Vaultwarden administrators (will be created)
-`vaultwarden_smtp_host`                | `{{ mail_host }}`                      | SMTP host
+`vaultwarden_smtp_host`                | `127.0.0.1`                            | SMTP host
 `vaultwarden_smtp_from`                | `bitwarden-noreply@{{ email_domain }}` | Email `From:` address
 `vaultwarden_smtp_from_name`           | `Bitwarden`                            | Email `From:` name
 

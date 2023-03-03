@@ -15,6 +15,6 @@ vaultwarden_invitations_allowed: false
 vaultwarden_user_attachment_limit_kb: 1048576 # 1 GB
 vaultwarden_admin_group: role-bitwarden-admin
 
-vaultwarden_smtp_host: '{{ mail_host }}'
+vaultwarden_smtp_host: 127.0.0.1
 vaultwarden_smtp_from: bitwarden-noreply@{{ email_domain }}
 vaultwarden_smtp_from_name: Bitwarden
