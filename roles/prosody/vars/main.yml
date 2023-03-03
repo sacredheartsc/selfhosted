@@ -25,8 +25,14 @@ prosody_selinux_policy_te: |
     type gssproxy_t;
     type gssproxy_var_lib_t;
     type ldap_port_t;
+    type unconfined_service_t;
+    type unreserved_port_t;
+    type sysctl_net_t;
     class dir search;
+    class key read;
+    class file { read open getattr};
     class sock_file write;
+    class udp_socket name_bind;
     class unix_stream_socket connectto;
     class tcp_socket name_connect;
   }
@@ -36,3 +42,7 @@ prosody_selinux_policy_te: |
   allow prosody_t gssproxy_var_lib_t:sock_file write;
   allow prosody_t gssproxy_t:unix_stream_socket connectto;
   allow prosody_t ldap_port_t:tcp_socket name_connect;
+  allow prosody_t sysctl_net_t:dir search;
+  allow prosody_t sysctl_net_t:file { read open getattr };
+  allow prosody_t unconfined_service_t:key read;
+  allow prosody_t unreserved_port_t:udp_socket name_bind;
