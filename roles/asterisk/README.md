@@ -70,17 +70,19 @@ The `asterisk_sip_extensions` variable describes your internal SIP extensions
 (AKA your internal phone numbers). It should contain a list of dictionaries of
 the following format:
 
-Key                | Default          | Description
--------------------|------------------|------------
-`name`             | &nbsp;           | Name of the extension (usually a 3- or 4-digit number)
-`codecs`           | &nbsp;           | Allowed codecs (comma-separated, or list)
-`context`          | &nbsp;           | Dialplan context for inbound calls
-`mailbox`          | &nbsp;           | Mailbox name (comma-separated, or list)
-`cid_name`         | &nbsp;           | Caller ID name
-`cid_number`       | `{{ ext.name }}` | Caller ID number
-`username`         | `{{ ext.name }}` | Extension SIP username
-`password`         | &nbsp;           | Extension SIP password
-`max_contacts`     | 1                | Maximum simultaneous logins
+Key                 | Default          | Description
+--------------------|------------------|------------
+`name`              | &nbsp;           | Name of the extension (usually a 3- or 4-digit number)
+`codecs`            | &nbsp;           | Allowed codecs (comma-separated, or list)
+`context`           | &nbsp;           | Dialplan context for inbound calls
+`mailbox`           | &nbsp;           | Mailbox name (comma-separated, or list)
+`cid_name`          | &nbsp;           | Caller ID name
+`cid_number`        | `{{ ext.name }}` | Caller ID number
+`username`          | `{{ ext.name }}` | Extension SIP username
+`password`          | &nbsp;           | Extension SIP password
+`max_contacts`      | 1                | Maximum simultaneous logins
+`direct_media`      | yes              | Allow direct media traffic (disable for NAT)
+`qualify_frequency` | 30               | Interval between [qualify](https://wiki.asterisk.org/wiki/display/AST/Asterisk+13+Configuration_res_pjsip#Asterisk13Configuration_res_pjsip-contact_qualify_frequency) attempts (seconds)
 
 
 ### asterisk\_queues

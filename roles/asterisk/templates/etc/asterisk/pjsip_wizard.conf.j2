@@ -39,7 +39,6 @@ type                       = wizard
 accepts_registrations      = yes
 accepts_auth               = yes
 aor/remove_existing        = yes
-aor/qualify_frequency      = 30
 endpoint/allow             = !all,g722,ulaw
 endpoint/from_domain       = {{ asterisk_from_domain }}
 endpoint/subscribe_context = subscribe
@@ -55,5 +54,7 @@ endpoint/callerid     = {{ ext.cid_name }} <{{ ext.cid_number | default(ext.name
 inbound_auth/username = {{ ext.username | default(ext.name) }}
 inbound_auth/password = {{ ext.password }}
 aor/max_contacts      = {{ ext.max_contacts | default(1) }}
+aor/qualify_frequency = {{ ext.qualify_frequency | default(30) }}
+endpoint/direct_media = {{ 'yes' if ext.direct_media | default(true) else 'no' }}
 
 {% endfor %}
