@@ -89,6 +89,5 @@ Example playbook:
         postfix_myhostname: mx1.example.com
         postfix_lmtp_host: imap.ipa.example.com
         postfix_rspamd_host: rspamd.ipa.example.com
-        postfix_relayhost: '[mx1.example.com]:25'
         postfix_recipient_group: mail-recipients
 ````
