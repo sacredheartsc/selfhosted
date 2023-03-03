@@ -23,3 +23,9 @@
     - '{{ coturn_port }}/udp'
     - '{{ coturn_min_port }}-{{ coturn_max_port }}/udp'
   tags: firewalld
+
+- name: enable coturn
+  systemd:
+    name: coturn
+    state: enabled
+    started: yes
