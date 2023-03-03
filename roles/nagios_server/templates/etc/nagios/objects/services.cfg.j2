@@ -374,7 +374,7 @@ define service {
 {% for host in groups.freeipa_servers %}
 define service {
   service_description ldap
-  hostgroups          freeipa_servers
+  host_name           {{ host }}
   use                 generic-service
   check_command       check_ldaps!{{ freeipa_basedn }}!{{ hostvars[host].nagios_certificate_warn }}!{{ hostvars[host].nagios_certificate_crit }}
 }

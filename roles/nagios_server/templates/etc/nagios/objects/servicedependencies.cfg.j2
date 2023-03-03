@@ -6,3 +6,12 @@ define servicedependency {
   execution_failure_criteria     c,u
   notification_failure_criteria  c,u
 }
+
+# dns checks depend on internet link being up
+define servicedependency {
+  host_name                      {{ inventory_hostname }}
+  service_description            upstream-packet-loss
+  dependent_servicegroup_name    dns
+  execution_failure_criteria     c,u
+  notification_failure_criteria  c,u
+}

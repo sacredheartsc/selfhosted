@@ -41,6 +41,7 @@ define service {
   retain_nonstatus_information   1
   is_volatile                    0
   max_check_attempts             3
+  check_period                   24x7-except-reboot-window
   check_interval                 10
   retry_interval                 1
   notification_options           w,u,c,r,f
