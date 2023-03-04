@@ -24,8 +24,25 @@
     - '{{ coturn_min_port }}-{{ coturn_max_port }}/udp'
   tags: firewalld
 
+- name: create systemd override directory
+  file:
+    path: /etc/systemd/system/coturn.service.d
+    state: directory
+
+- name: create systemd override file
+  copy:
+    src: etc/systemd/system/coturn.service.d/override.conf
+    dest: /etc/systemd/system/coturn.service.d/override.conf
+  register: coturn_systemd_unit
+  notify: restart coturn
+
+- name: reload systemd units
+  systemd:
+    daemon_reload: yes
+  when: coturn_systemd_unit.changed
+
 - name: enable coturn
   systemd:
     name: coturn
-    state: enabled
-    started: yes
+    enabled: yes
+    state: started
