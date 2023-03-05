@@ -83,6 +83,8 @@ Key                 | Default          | Description
 `max_contacts`      | 1                | Maximum simultaneous logins
 `direct_media`      | yes              | Allow direct media traffic (disable for NAT)
 `qualify_frequency` | 30               | Interval between [qualify](https://wiki.asterisk.org/wiki/display/AST/Asterisk+13+Configuration_res_pjsip#Asterisk13Configuration_res_pjsip-contact_qualify_frequency) attempts (seconds)
+`qualify_frequency` | 30               | Interval between [qualify](https://wiki.asterisk.org/wiki/display/AST/Asterisk+13+Configuration_res_pjsip#Asterisk13Configuration_res_pjsip-contact_qualify_frequency) attempts (seconds)
+`qualify_timeout`   | 3.0              | [Qualify timeout](https://wiki.asterisk.org/wiki/display/AST/Asterisk+13+Configuration_res_pjsip#Asterisk13Configuration_res_pjsip-contact_qualify_timeout) (seconds)
 
 
 ### asterisk\_queues

@@ -55,6 +55,7 @@ inbound_auth/username = {{ ext.username | default(ext.name) }}
 inbound_auth/password = {{ ext.password }}
 aor/max_contacts      = {{ ext.max_contacts | default(1) }}
 aor/qualify_frequency = {{ ext.qualify_frequency | default(30) }}
+aor/qualify_timeout   = {{ ext.qualify_timeout | default(3.0) }}
 endpoint/direct_media = {{ 'yes' if ext.direct_media | default(true) else 'no' }}
 
 {% endfor %}
