@@ -3,8 +3,6 @@
 # In other words, this should be the only place where you should see variables
 # without a 'rolename_' prefix.
 ---
-ansible_python_interpreter: /usr/libexec/platform-python
-
 timezone: America/New_York
 domain: ipa.example.com    # changeme
 email_domain: example.com  # changeme
@@ -88,18 +86,5 @@ vlans:
 
 
 # standard freeipa variables
-freeipa_realm: '{{ domain | upper }}'
-freeipa_basedn: "dc={{ domain.split('.') | join(',dc=') }}"
-freeipa_hosts: "{{ groups['freeipa_servers'] | map('regex_replace', '$', '.' ~ domain) }}"
-freeipa_ldap_uri: "{{ groups['freeipa_servers'] | map('regex_replace', '^(.*)$', 'ldap://\\1.' ~ domain) | join(' ') }}"
-freeipa_master: "{{ groups['freeipa_master'][0] }}"
-freeipa_sysaccount_basedn: 'cn=sysaccounts,cn=etc,{{ freeipa_basedn }}'
-freeipa_user_basedn: cn=users,cn=accounts,{{ freeipa_basedn }}
-freeipa_group_basedn: cn=groups,cn=accounts,{{ freeipa_basedn }}
-freeipa_accounts_basedn: cn=accounts,{{ freeipa_basedn }}
-freeipa_service_basedn: cn=services,cn=accounts,{{ freeipa_basedn }}
 freeipa_ds_password: '{{ vault_freeipa_ds_password }}'
 freeipa_admin_password: '{{ vault_freeipa_admin_password }}'
-ipa_host: '{{ freeipa_master }}.{{ domain }}'
-ipa_user: admin
-ipa_pass: '{{ freeipa_admin_password }}'

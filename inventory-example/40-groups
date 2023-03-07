@@ -1,3 +1,5 @@
+# Required Groups
+# ===============
 # Hosts that aren't ready for Rocky 9 yet.
 [el8:children]
 asterisk_servers
@@ -8,7 +10,99 @@ rspamd_servers
 unifi_controllers
 xmpp_servers
 
-##### Nagios Hostgroups #####
+
+# Required Variables
+# ==================
+[all:vars]
+ansible_python_interpreter = /usr/libexec/platform-python
+freeipa_realm = '{{ domain | upper }}'
+freeipa_basedn = "dc={{ domain.split('.') | join(',dc=') }}"
+freeipa_hosts = "{{ groups['freeipa_servers'] | map('regex_replace', '$', '.' ~ domain) }}"
+freeipa_ldap_uri = "{{ groups['freeipa_servers'] | map('regex_replace', '^(.*)$', 'ldap://\\1.' ~ domain) | join(' ') }}"
+freeipa_master = "{{ groups['freeipa_master'][0] }}"
+freeipa_sysaccount_basedn = 'cn=sysaccounts,cn=etc,{{ freeipa_basedn }}'
+freeipa_user_basedn = cn=users,cn=accounts,{{ freeipa_basedn }}
+freeipa_group_basedn = cn=groups,cn=accounts,{{ freeipa_basedn }}
+freeipa_accounts_basedn = cn=accounts,{{ freeipa_basedn }}
+freeipa_service_basedn = cn=services,cn=accounts,{{ freeipa_basedn }}
+ipa_host = '{{ freeipa_master }}.{{ domain }}'
+ipa_user = admin
+ipa_pass = '{{ freeipa_admin_password }}'
+
+[dav_servers:vars]
+apache_can_sendmail = True
+apache_can_network_connect_db = True
+apache_can_connect_ldap = True
+apache_gssapi = True
+nagios_http_status = 401
+
+[el8:vars]
+proxmox_template = rocky8.7
+proxmox_bios = seabios
+
+[freeipa_master:vars]
+# The initial FreeIPA installation requires an upstream DNS server to bootstrap itself.
+proxmox_nameservers = '{{ freeipa_dns_forwarders }}'
+# Update the FreeIPA master every _other_ day. If there's a botched automatic
+# update, we don't want to take the entire domain down overnight.
+dnf_automatic_on_calendar = '*-*-1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31 04:00:00'
+
+[git_servers:vars]
+apache_gssapi = True
+
+[linux_desktops:vars]
+tuned_profile = desktop
+
+[linux_laptops:vars]
+tuned_profile = powersave
+rsyslog_forward = no
+
+[nagios_servers:vars]
+apache_gssapi = True
+
+[opnsense_firewalls:vars]
+ansible_python_interpreter = /usr/local/bin/python3
+
+[photostructure_servers:vars]
+apache_gssapi = True
+nagios_http_status = 401
+
+[proxmox_hypervisors:vars]
+ansible_python_interpreter = /usr/bin/python3
+
+[proxmox_instances:vars]
+tuned_profile = virtual-guest
+grub_cmdline = 'console=ttyS0,115200n8 no_timer_check net.ifnames=0'
+
+[rspamd_servers:vars]
+apache_gssapi = True
+nagios_http_status = 401
+
+[syncthing_servers:vars]
+apache_gssapi = True
+
+[ttrss_servers:vars]
+apache_gssapi = True
+apache_can_sendmail = True
+apache_can_network_connect_db = True
+apache_can_network_connect = True
+apache_can_connect_ldap = True
+
+[wiki_servers:vars]
+apache_gssapi = True
+apache_can_sendmail = True
+apache_can_network_connect_db = True
+apache_can_connect_ldap = True
+apache_can_network_connect = True
+nagios_http_status = 401
+
+[xmpp_servers:vars]
+apache_can_network_connect = True
+nagios_https_vhosts = '["{{ prosody_http_host | default(ansible_fqdn) }}"]'
+
+
+# Nagios hostgroups
+# =================
 [nagios_net_snmp_clients:children]
 nagios_ansible_managed_clients
 opnsense_firewalls

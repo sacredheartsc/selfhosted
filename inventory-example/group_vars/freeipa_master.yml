@@ -1,6 +1,0 @@
-# The initial FreeIPA installation requires an upstream DNS server to bootstrap itself.
-proxmox_nameservers: '{{ freeipa_dns_forwarders }}'
-
-# Update the FreeIPA master every *other* day. If there's a botched automatic
-# update, we don't want to take the entire domain down overnight.
-dnf_automatic_on_calendar: '*-*-1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31 04:00:00'
