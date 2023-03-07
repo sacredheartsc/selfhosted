@@ -21,10 +21,10 @@ freeipa_hosts = "{{ groups['freeipa_servers'] | map('regex_replace', '$', '.' ~ 
 freeipa_ldap_uri = "{{ groups['freeipa_servers'] | map('regex_replace', '^(.*)$', 'ldap://\\1.' ~ domain) | join(' ') }}"
 freeipa_master = "{{ groups['freeipa_master'][0] }}"
 freeipa_sysaccount_basedn = 'cn=sysaccounts,cn=etc,{{ freeipa_basedn }}'
-freeipa_user_basedn = cn=users,cn=accounts,{{ freeipa_basedn }}
-freeipa_group_basedn = cn=groups,cn=accounts,{{ freeipa_basedn }}
-freeipa_accounts_basedn = cn=accounts,{{ freeipa_basedn }}
-freeipa_service_basedn = cn=services,cn=accounts,{{ freeipa_basedn }}
+freeipa_user_basedn = 'cn=users,cn=accounts,{{ freeipa_basedn }}'
+freeipa_group_basedn = 'cn=groups,cn=accounts,{{ freeipa_basedn }}'
+freeipa_accounts_basedn = 'cn=accounts,{{ freeipa_basedn }}'
+freeipa_service_basedn = 'cn=services,cn=accounts,{{ freeipa_basedn }}'
 ipa_host = '{{ freeipa_master }}.{{ domain }}'
 ipa_user = admin
 ipa_pass = '{{ freeipa_admin_password }}'
