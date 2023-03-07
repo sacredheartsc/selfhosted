@@ -1,6 +1,5 @@
 - name: configure tinytinyrss
   hosts: ttrss_servers
-  tags: ttrss
   roles:
     - role: common
       tags: common
