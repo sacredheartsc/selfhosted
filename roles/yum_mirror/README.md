@@ -4,7 +4,7 @@ Yum Mirror
 Description
 -----------
 
-The `yum_mirro` role configures a local Yum repository that mirrors packages
+The `yum_mirror` role configures a local Yum repository that mirrors packages
 from different upstream repositories.
 
 Mirrored repositories are configured in the [vars file](vars/main.yml).

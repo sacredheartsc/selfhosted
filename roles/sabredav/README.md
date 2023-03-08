@@ -6,7 +6,7 @@ Description
 
 The `sabredav` role installs and configures the [sabre/dav](https://sabre.io/dav/)
 CalDAV/CardDAV server. Authentication and group memberships are provided by
-FreeIPA using the [sabredav-freeipa(https://github.com/sacredheartsc/sabredav-freeipa)
+FreeIPA using the [sabredav-freeipa](https://github.com/sacredheartsc/sabredav-freeipa)
 project.
 
 This role configures the PHP application only; it does not configure the webserver.
