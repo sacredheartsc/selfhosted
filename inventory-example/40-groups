@@ -43,9 +43,15 @@ proxmox_bios = seabios
 [freeipa_master:vars]
 # The initial FreeIPA installation requires an upstream DNS server to bootstrap itself.
 proxmox_nameservers = '{{ freeipa_dns_forwarders }}'
-# Update the FreeIPA master every _other_ day. If there's a botched automatic
-# update, we don't want to take the entire domain down overnight.
+# Don't update all freeipa servers at once
 dnf_automatic_on_calendar = '*-*-1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31 04:00:00'
+
+[freeipa_replicas:vars]
+# Don't update all freeipa servers at once
+dnf_automatic_on_calendar = '*-*-2,4,6,8,10,12,14,16,18,20,22,24,26,28,30 04:00:00'
+
+[freeipa_servers:vars]
+dnf_automatic_restart = False
 
 [git_servers:vars]
 apache_gssapi = True

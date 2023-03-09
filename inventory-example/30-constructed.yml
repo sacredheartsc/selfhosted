@@ -10,6 +10,7 @@ compose:
   proxmox_memory: (ram | default('4g') | human_to_bytes / 1048576) | int
   proxmox_cores: cores | default(2)
 groups:
+  freeipa_replicas: "'freeipa_servers' in group_names and 'freeipa_master' not in group_names"
   el:                             (group_names | intersect(['unmanaged','opnsense_firewalls','proxmox_hypervisors']) | length) == 0
   nagios_ansible_managed_clients: (group_names | intersect(['unmanaged','opnsense_firewalls','linux_laptops']) | length) == 0
   nagios_el_clients:              (group_names | intersect(['unmanaged','opnsense_firewalls','linux_laptops','proxmox_hypervisors']) | length) == 0
