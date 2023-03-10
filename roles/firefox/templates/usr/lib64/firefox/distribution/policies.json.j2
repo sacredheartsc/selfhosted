@@ -104,6 +104,14 @@
         "Value": {{ firefox_use_tracking_protection | bool | to_json }},
         "Status": "locked"
       },
+      "browser.urlbar.suggest.quicksuggest.nonsponsored": {
+        "Value": {{ (not firefox_disable_urlbar_suggestions) | bool | to_json }},
+        "Status": "locked"
+      },
+      "browser.urlbar.suggest.quicksuggest.sponsored": {
+        "Value": {{ (not firefox_disable_urlbar_suggestions) | bool | to_json }},
+        "Status": "locked"
+      },
       "browser.toolbars.bookmarks.visibility": {
         "Value": "newtab",
         "Status": "default"
