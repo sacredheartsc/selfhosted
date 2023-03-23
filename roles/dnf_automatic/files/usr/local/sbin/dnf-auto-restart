@@ -13,7 +13,7 @@ SERVICES=()
 dnf needs-restarting --services | while read -r service; do
   if [[ $service = user@* ]]; then
     continue
-  elif [ "$(systemctl show "$service" -P RefuseManualStop)" = yes ]; then
+  elif [ "$(systemctl show "$service" --property RefuseManualStop --value)" = yes ]; then
     continue
   else
     SERVICES+=("$service")
