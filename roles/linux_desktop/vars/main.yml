@@ -45,7 +45,11 @@ linux_desktop_excluded_packages:
 
 linux_desktop_hbac_hostgroup: linux_desktops
 
-linux_desktop_flathub_repo: https://dl.flathub.org/repo/flathub.flatpakrepo
+linux_desktop_flathub_repos:
+  - name: flathub
+    url: https://dl.flathub.org/repo/flathub.flatpakrepo
+  - name: flathub-beta
+    url: https://flathub.org/beta-repo/flathub-beta.flatpakrepo
 
 linux_desktop_flatpaks:
   - org.signal.Signal
@@ -56,10 +60,8 @@ linux_desktop_flatpaks:
   - com.makemkv.MakeMKV
   - org.gnucash.GnuCash
   - org.gnome.Rhythmbox3
-  - org.gajim.Gajim
-  - org.gajim.Gajim.Plugin.omemo
+  - im.dino.Dino
 
 linux_desktop_flatpak_overrides:
   org.gnome.EasyTAG:    --filesystem=host
   org.gnome.Rhythmbox3: --filesystem=host
-  org.signal.Signal:    --env=SIGNAL_USE_TRAY_ICON=1

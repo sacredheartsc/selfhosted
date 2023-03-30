@@ -70,9 +70,10 @@
 
 - name: add flathub flatpak repository
   flatpak_remote:
-    name: flathub
-    flatpakrepo_url: '{{ linux_desktop_flathub_repo }}'
+    name: '{{ item.name }}'
+    flatpakrepo_url: '{{ item.url }}'
     state: present
+  loop: '{{ linux_desktop_flathub_repos }}'
 
 - name: install flatpak applications
   flatpak:

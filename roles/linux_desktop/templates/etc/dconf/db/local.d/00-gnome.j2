@@ -8,11 +8,3 @@ show-image-thumbnails='always'
 
 [org/gnome/nautilus/list-view]
 use-tree-view=true
-
-{% if linux_desktop_enable_window_buttons %}
-[org/gnome/desktop/wm/preferences]
-button-layout=':minimize,maximize,close'
-{% endif %}
-
-[org/gnome/shell]
-enabled-extensions=['appindicatorsupport@rgcjonas.gmail.com', 'dash-to-dock@gnome-shell-extensions.gcampax.github.com']
