@@ -77,7 +77,8 @@
 
 - name: install flatpak applications
   flatpak:
-    name: '{{ item }}'
+    name: '{{ item if item is string else item.name }}'
+    remote: "{{ 'flathub' if item is string or item.remote is not defined else item.remote }}"
     state: present
   loop: '{{ linux_desktop_flatpaks }}'
 
