@@ -34,10 +34,57 @@ linux_desktop_packages:
   - ntfs-3g
   - ntfsprogs
   - exfatprogs
-  - gnome-shell-extension-appindicator
-  - gnome-shell-extension-dash-to-dock
   - chromium
   - gnome-extensions-app
+  - papirus-icon-theme
+  - audacious
+
+  # MATE
+  - adwaita-gtk2-theme
+  - atril atril-caja
+  - atril-thumbnailer 
+  - caja caja-actions
+  - caja-image-converter
+  - caja-open-terminal
+  - caja-sendto
+  - caja-wallpaper
+  - caja-xattr-tags
+  - engrampa
+  - eom
+  - gtk2-engines
+  - gucharmap
+  - libmatekbd
+  - libmatemixer
+  - libmateweather
+  - marco mate-applets
+  - mate-backgrounds
+  - mate-calc
+  - mate-control-center
+  - mate-desktop
+  - mate-dictionary
+  - mate-disk-usage-analyzer 
+  - mate-icon-theme
+  - mate-media mate-menus
+  - mate-menus-preferences-category-menu
+  - mate-notification-daemon
+  - mate-panel
+  - mate-polkit
+  - mate-power-manager
+  - mate-screensaver
+  - mate-screenshot
+  - mate-search-tool
+  - mate-session-manager
+  - mate-settings-daemon
+  - mate-system-log
+  - mate-system-monitor
+  - mate-terminal
+  - mate-themes
+  - mate-user-admin
+  - mate-user-guide
+  - mozo
+  - network-manager-applet
+  - pluma
+  - seahorse-caja
 
 linux_desktop_excluded_packages:
   - gnome-software
