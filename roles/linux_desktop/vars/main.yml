@@ -60,9 +60,8 @@ linux_desktop_flatpaks:
   - com.makemkv.MakeMKV
   - org.gnucash.GnuCash
   - org.gnome.Rhythmbox3
-
-  - name: im.dino.Dino
-    remote: flathub-beta
+  - org.gajim.Gajim
+  - org.gajim.Gajim.Plugin.omemo
 
 linux_desktop_flatpak_overrides:
   org.gnome.EasyTAG:    --filesystem=host
