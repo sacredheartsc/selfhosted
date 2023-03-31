@@ -74,3 +74,19 @@
   loop:
     - session optional pam_exec.so {{ local_homedir_script_ssh }}
     - session optional pam_env.so conffile={{ local_homedir_pam_env_path }}
+
+- name: create systemd environment generator directory
+  file:
+    path: /etc/systemd/user-environment-generators
+    state: directory
+
+- name: create systemd environment generator
+  copy:
+    src: etc/systemd/user-environment-generators/local-homedirs.sh
+    dest: /etc/systemd/user-environment-generators/local-homedirs.sh
+  register: local_homedirs_systemd_environment_generator
+
+- name: reload daemons
+  systemd:
+    daemon_reload: yes
+  when: local_homedirs_systemd_environment_generator.changed
