@@ -41,8 +41,9 @@ linux_desktop_packages:
 
   # MATE
   - adwaita-gtk2-theme
-  - atril atril-caja
-  - atril-thumbnailer 
+  - atril
+  - atril-caja
+  - atril-thumbnailer
   - caja caja-actions
   - caja-image-converter
   - caja-open-terminal
