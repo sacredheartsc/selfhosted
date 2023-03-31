@@ -84,6 +84,7 @@
   copy:
     src: etc/systemd/user-environment-generators/local-homedirs.sh
     dest: /etc/systemd/user-environment-generators/local-homedirs.sh
+    mode: 0555
   register: local_homedirs_systemd_environment_generator
 
 - name: reload daemons
