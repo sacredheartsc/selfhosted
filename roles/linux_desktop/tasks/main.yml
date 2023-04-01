@@ -36,22 +36,14 @@
     dest: /etc/systemd/system/default.target
     state: link
 
-- name: generate gdm configuration
-  template:
-    src: etc/gdm/custom.conf.j2
-    dest: /etc/gdm/custom.conf
-  notify: restart gdm
-
 - name: check if graphical target is active
   command: systemctl is-active graphical.target
   register: graphical_target
   changed_when: false
   failed_when: false
 
-- name: start display manager
-  command: systemctl isolate graphical.target
-  when: graphical_target.rc != 0
-  notify: restart gdm
+- name: configure display manager
+  include_tasks: '{{ linux_desktop_display_manager }}.yml'
 
 - name: enable fractional scaling
   copy:
@@ -107,5 +99,8 @@
   copy:
     src: usr/local/share/thumbnailers/totem.thumbnailer
     dest: /usr/local/share/thumbnailers/totem.thumbnailer
+
+- import_tasks: theme.yml
+  tags: theme
 
 - import_tasks: freeipa.yml

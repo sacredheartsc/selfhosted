@@ -3,5 +3,10 @@
     name: gdm
     state: restarted
 
+- name: restart lightdm
+  systemd:
+    name: lightdm
+    state: restarted
+
 - name: update dconf
   command: dconf update

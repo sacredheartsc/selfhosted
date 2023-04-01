@@ -65,6 +65,17 @@
     - auth optional pam_env.so conffile={{ local_homedir_pam_env_path }}
   when: "'gdm' in ansible_facts.packages"
 
+- name: modify LightDM PAM configuration for local homedirs
+  lineinfile:
+    path: /etc/pam.d/lightdm
+    line: '{{ item }}'
+    insertbefore: auth\s+optional\s+pam_gnome_keyring\.so$
+    state: present
+  loop:
+    - auth optional pam_exec.so {{ local_homedir_script_gdm }}
+    - auth optional pam_env.so conffile={{ local_homedir_pam_env_path }}
+  when: "'lightdm' in ansible_facts.packages"
+
 - name: modify pam configs for sshd
   lineinfile:
     path: /etc/pam.d/sshd

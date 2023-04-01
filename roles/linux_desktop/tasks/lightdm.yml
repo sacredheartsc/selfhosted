@@ -1,0 +1,17 @@
+- name: configure lightdm greeter
+  template:
+    src: etc/lightdm/lightdm-gtk-greeter.conf.j2
+    dest: /etc/lightdm/lightdm-gtk-greeter.conf
+  notify: restart lightdm
+
+- name: disable gdm
+  systemd:
+    name: gdm
+    enabled: no
+    state: stopped
+
+- name: enable lightdm
+  systemd:
+    name: lightdm
+    enabled: yes
+    state: started

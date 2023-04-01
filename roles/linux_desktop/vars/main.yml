@@ -36,56 +36,26 @@ linux_desktop_packages:
   - exfatprogs
   - chromium
   - gnome-extensions-app
-  - papirus-icon-theme
   - audacious
 
-  # MATE
-  - adwaita-gtk2-theme
-  - atril
-  - atril-caja
-  - atril-thumbnailer
-  - caja caja-actions
-  - caja-image-converter
-  - caja-open-terminal
-  - caja-sendto
-  - caja-wallpaper
-  - caja-xattr-tags
-  - engrampa
-  - eom
+  # xfce
+  - '@Xfce'
+  - ristretto
+  - parole
+  - mousepad
+  - xfce4-weather-plugin
+  - xfce4-taskmanager
+  - xfce4-notifyd
+  - xfce4-screenshooter
+  - xfce4-whiskermenu-plugin
+
+  # lightdm
+  - lightdm
+  - lightdm-gtk
+
+  # qogir theme
   - gtk2-engines
-  - gucharmap
-  - libmatekbd
-  - libmatemixer
-  - libmateweather
-  - marco mate-applets
-  - mate-backgrounds
-  - mate-calc
-  - mate-control-center
-  - mate-desktop
-  - mate-dictionary
-  - mate-disk-usage-analyzer 
-  - mate-icon-theme
-  - mate-media mate-menus
-  - mate-menus-preferences-category-menu
-  - mate-notification-daemon
-  - mate-panel
-  - mate-polkit
-  - mate-power-manager
-  - mate-screensaver
-  - mate-screenshot
-  - mate-search-tool
-  - mate-session-manager
-  - mate-settings-daemon
-  - mate-system-log
-  - mate-system-monitor
-  - mate-terminal
-  - mate-themes
-  - mate-user-admin
-  - mate-user-guide
-  - mozo
-  - network-manager-applet
-  - pluma
-  - seahorse-caja
+  - gtk-murrine-engine
 
 linux_desktop_excluded_packages:
   - gnome-software
@@ -96,8 +66,6 @@ linux_desktop_hbac_hostgroup: linux_desktops
 linux_desktop_flathub_repos:
   - name: flathub
     url: https://dl.flathub.org/repo/flathub.flatpakrepo
-  - name: flathub-beta
-    url: https://flathub.org/beta-repo/flathub-beta.flatpakrepo
 
 linux_desktop_flatpaks:
   - org.signal.Signal
@@ -114,3 +82,8 @@ linux_desktop_flatpaks:
 linux_desktop_flatpak_overrides:
   org.gnome.EasyTAG:    --filesystem=host
   org.gnome.Rhythmbox3: --filesystem=host
+
+linux_desktop_qogir_url: https://github.com/vinceliuice/Qogir-theme/archive/refs/tags/{{ linux_desktop_qogir_version }}.tar.gz
+linux_desktop_qogir_icon_url: https://github.com/vinceliuice/Qogir-icon-theme/archive/refs/tags/{{ linux_desktop_qogir_icon_version }}.tar.gz
+linux_desktop_qogir_source_dir: /usr/local/src/qogir
+linux_desktop_qogir_icon_source_dir: /usr/local/src/qogir-icons

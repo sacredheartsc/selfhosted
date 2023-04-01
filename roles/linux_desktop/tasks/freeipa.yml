@@ -1,3 +1,12 @@
+- name: create lightdm HBAC service
+  ipahbacsvc:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: lightdm
+    description: LightDM Display Manager
+    state: present
+  run_once: yes
+
 - name: create linux-desktops hostgroup
   ipahostgroup:
     ipaadmin_principal: '{{ ipa_user }}'
@@ -30,4 +39,5 @@
     hbacsvc:
       - gdm
       - gdm-password
+      - lightdm
   run_once: yes
