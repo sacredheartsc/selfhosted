@@ -31,6 +31,7 @@ Variable                                   | Default                           |
 `linux_desktop_lightdm_gtk_theme`          | `Qogir`                           | LightDM GTK theme name
 `linux_desktop_lightdm_icon_theme`         | `Qogir`                           | LightDM icon theme name
 `linux_desktop_lightdm_cursor_theme`       | `Qogir`                           | LightDM cursor theme name
+`linux_desktop_lightdm_font_name`          | `Liberation Sans 9`               | LightDM font name
 
 Usage
 -----

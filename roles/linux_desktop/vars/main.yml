@@ -48,6 +48,7 @@ linux_desktop_packages:
   - xfce4-notifyd
   - xfce4-screenshooter
   - xfce4-whiskermenu-plugin
+  - engrampa
 
   # lightdm
   - lightdm
