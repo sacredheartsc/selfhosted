@@ -41,6 +41,16 @@
     - { sebool: httpd_can_sendmail,           value: '{{ apache_can_sendmail }}' }
   tags: selinux
 
+- name: create SELinux policy for apache to allow kerberos with php fpm (why?)
+  include_role:
+    name: selinux_policy
+    apply:
+      tags: selinux
+  vars:
+    selinux_policy_name: apache_php_gss
+    selinux_policy_te: '{{ apache_selinux_policy_te }}'
+  tags: selinux
+
 - name: configure mod_gssapi
   import_tasks: gssapi.yml
   when: apache_gssapi or apache_use_nfs
