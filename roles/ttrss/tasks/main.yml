@@ -15,6 +15,17 @@
     version: '{{ ttrss_version }}'
     update: yes
 
+- name: create SELinux policy for apache to allow kerberos auth
+  include_role:
+    name: selinux_policy
+    apply:
+      tags: selinux
+  vars:
+    selinux_policy_name: apache_php_gss
+    selinux_policy_te: '{{ ttrss_selinux_policy_te }}'
+  tags: selinux
+
+
 - name: set httpd_sys_rw_content_t selinux context for writable directories
   sefcontext:
     target: '{{ ttrss_home }}/{{ item }}(/.*)?'

@@ -44,3 +44,13 @@ ttrss_apache_config: |
       ErrorDocument 401 /index.php?noext=1
     </If>
   </LocationMatch>
+
+ttrss_selinux_policy_te: |
+  require {
+    type unconfined_service_t;
+    type httpd_t;
+    class key { read view write };
+  }
+
+  #============= httpd_t ==============
+  allow httpd_t unconfined_service_t:key { read view write };
