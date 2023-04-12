@@ -37,11 +37,11 @@ apache_gzip_types:
   - text/xml
 
 apache_selinux_policy_te: |
-	require {
-		type unconfined_service_t;
-		type httpd_t;
-		class key read;
-	}
+  require {
+    type unconfined_service_t;
+    type httpd_t;
+    class key read;
+  }
 
-	#============= httpd_t ==============
-	allow httpd_t unconfined_service_t:key read;
+  #============= httpd_t ==============
+  allow httpd_t unconfined_service_t:key read;
