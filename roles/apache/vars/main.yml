@@ -36,7 +36,7 @@ apache_gzip_types:
   - text/plain
   - text/xml
 
-apache_selinux_policy_te:
+apache_selinux_policy_te: |
 	require {
 		type unconfined_service_t;
 		type httpd_t;
