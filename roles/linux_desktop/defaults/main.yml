@@ -1,8 +1,6 @@
 linux_desktop_access_group: role-linux-desktop-access
 linux_desktop_flatpak_update_on_calendar: daily
-linux_desktop_enable_wayland: yes
 linux_desktop_thumbnail_cache_size: 4096 # MB
-linux_desktop_display_manager: gdm
 linux_desktop_qogir_version: 2023-02-27
 linux_desktop_qogir_icon_version: 2023-02-23
 

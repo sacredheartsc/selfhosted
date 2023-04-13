@@ -1,12 +1,10 @@
 linux_desktop_packages:
-  - '@gnome-desktop'
   - '@fonts'
   - '@hardware-support'
   - '@internet-browser'
   - '@base-x'
   - '@networkmanager-submodules'
   - '@print-client'
-  - gnome-tweaks
   - evolution
   - libreoffice-calc
   - libreoffice-draw
@@ -27,7 +25,6 @@ linux_desktop_packages:
   - intel-media-driver
   - seahorse
   - inkscape
-  - dconf-editor
   - libdvdcss
   - gimp
   - brasero
@@ -83,6 +80,7 @@ linux_desktop_flatpaks:
 linux_desktop_flatpak_overrides:
   org.gnome.EasyTAG:    --filesystem=host
   org.gnome.Rhythmbox3: --filesystem=host
+  org.signal.Signal:    --env=SIGNAL_USE_TRAY_ICON=1
 
 linux_desktop_qogir_url: https://github.com/vinceliuice/Qogir-theme/archive/refs/tags/{{ linux_desktop_qogir_version }}.tar.gz
 linux_desktop_qogir_icon_url: https://github.com/vinceliuice/Qogir-icon-theme/archive/refs/tags/{{ linux_desktop_qogir_icon_version }}.tar.gz

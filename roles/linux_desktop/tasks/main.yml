@@ -42,23 +42,17 @@
   changed_when: false
   failed_when: false
 
-- name: configure display manager
-  include_tasks: '{{ linux_desktop_display_manager }}.yml'
-
-- name: enable fractional scaling
-  copy:
-    src: '{{ item[1:] }}'
-    dest: '{{ item }}'
-  loop:
-    - /etc/dconf/db/local.d/00-hidpi
-    - /etc/dconf/db/local.d/locks/hidpi
-  notify: update dconf
-
-- name: add local dconf settings
+- name: configure lightdm greeter
   template:
-    src: etc/dconf/db/local.d/00-gnome.j2
-    dest: /etc/dconf/db/local.d/00-gnome
-  notify: update dconf
+    src: etc/lightdm/lightdm-gtk-greeter.conf.j2
+    dest: /etc/lightdm/lightdm-gtk-greeter.conf
+  notify: restart lightdm
+
+- name: enable lightdm
+  systemd:
+    name: lightdm
+    enabled: yes
+    state: started
 
 - name: add flathub flatpak repository
   flatpak_remote:
