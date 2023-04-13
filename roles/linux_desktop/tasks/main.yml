@@ -83,16 +83,11 @@
   changed_when: no
   loop: '{{ linux_desktop_flatpak_overrides | dict2items }}'
 
-- name: create /usr/local/share/thumbnailers
+# https://gitlab.xfce.org/apps/xfce4-screensaver/-/issues/39
+- name: workaround user switching bug for xfce-screensaver
   file:
-    path: /usr/local/share/thumbnailers
-    state: directory
-
-# see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=973942
-- name: patch totem thumbnailer to support large mp4 files
-  copy:
-    src: usr/local/share/thumbnailers/totem.thumbnailer
-    dest: /usr/local/share/thumbnailers/totem.thumbnailer
+    path: /usr/share/dbus-1/services/org.xfce.ScreenSaver.service
+    state: absent
 
 - import_tasks: theme.yml
   tags: theme
