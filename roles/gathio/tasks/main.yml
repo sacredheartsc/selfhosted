@@ -99,3 +99,9 @@
     immediate: yes
     state: enabled
   tags: firewalld
+
+- name: enable gathio
+  systemd:
+    name: gathio
+    state: started
+    enabled: yes
