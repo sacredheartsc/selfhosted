@@ -32,8 +32,9 @@ linux_desktop_packages:
   - ntfsprogs
   - exfatprogs
   - chromium
-  - gnome-extensions-app
   - audacious
+  - gnome-keyring
+  - gnome-keyring-pam
 
   # xfce
   - '@Xfce'
