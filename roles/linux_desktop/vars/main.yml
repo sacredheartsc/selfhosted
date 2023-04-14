@@ -33,8 +33,6 @@ linux_desktop_packages:
   - exfatprogs
   - chromium
   - audacious
-  - gnome-keyring
-  - gnome-keyring-pam
 
   # xfce
   - '@Xfce'
@@ -46,7 +44,12 @@ linux_desktop_packages:
   - xfce4-notifyd
   - xfce4-screenshooter
   - xfce4-whiskermenu-plugin
+
+  # extra apps
   - engrampa
+  - gnome-keyring
+  - gnome-keyring-pam
+  - evince
 
   # lightdm
   - lightdm
