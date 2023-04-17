@@ -50,6 +50,7 @@ linux_desktop_packages:
   - gnome-keyring
   - gnome-keyring-pam
   - evince
+  - totem-video-thumbnailer
 
   # lightdm
   - lightdm

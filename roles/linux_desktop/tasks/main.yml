@@ -89,6 +89,17 @@
     path: /usr/share/dbus-1/services/org.xfce.ScreenSaver.service
     state: absent
 
+- name: create /usr/local/share/thumbnailers
+  file:
+    path: /usr/local/share/thumbnailers
+    state: directory
+
+# see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=973942
+- name: patch totem thumbnailer to support large mp4 files
+  copy:
+    src: usr/local/share/thumbnailers/totem.thumbnailer
+    dest: /usr/local/share/thumbnailers/totem.thumbnailer
+
 - import_tasks: theme.yml
   tags: theme
 
