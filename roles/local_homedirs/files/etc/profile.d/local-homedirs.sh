@@ -13,4 +13,10 @@ if (( UID >= 1000 )); then
 
   # flatpak
   ln -sfn "/opt/flatpak/${USER}" "${HOME}/.var"
+
+  # kwallet
+  if [ -f "${HOME}/.local/share/kwalletd/kdewallet.salt" ]; then
+    mkdir -p "/usr/local/home/${USER}/.local/share/kwalletd"
+    ln -sfn "${HOME}/.local/share/kwalletd/kdewallet.salt" "/usr/local/home/${USER}/.local/share/kwalletd/kdewallet.salt"
+  fi
 fi
