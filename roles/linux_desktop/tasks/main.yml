@@ -64,4 +64,14 @@
   changed_when: no
   loop: '{{ linux_desktop_flatpak_overrides | dict2items }}'
 
+- name: enable kde user switching
+  ini_file:
+    path: /usr/share/kde-settings/kde-profile/default/xdg/kdeglobals
+    section: KDE Action Restrictions
+    option: '{{ item }}'
+    value: 'true'
+  loop:
+    - action/start_new_session
+    - action/switch_user
+
 - import_tasks: freeipa.yml
