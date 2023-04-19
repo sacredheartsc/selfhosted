@@ -30,7 +30,7 @@ linux_desktop_packages:
   - exfatprogs
   - chromium
   - audacious
-
+  - dragon
 
 linux_desktop_excluded_packages:
   - libva-intel-driver
