@@ -1,12 +1,4 @@
-- name: restart gdm
+- name: restart sddm
   systemd:
-    name: gdm
+    name: sddm
     state: restarted
-
-- name: restart lightdm
-  systemd:
-    name: lightdm
-    state: restarted
-
-- name: update dconf
-  command: dconf update
