@@ -74,4 +74,10 @@
     - action/start_new_session
     - action/switch_user
 
+- name: fix notification sound in GTK apps
+  replace:
+    path: /usr/share/xdg-desktop-portal/portals/kde.portal
+    regexp: org\.freedesktop\.impl\.portal\.Notification;
+    regexp: ''
+
 - import_tasks: freeipa.yml
