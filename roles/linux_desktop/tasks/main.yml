@@ -79,6 +79,6 @@
   replace:
     path: /usr/share/xdg-desktop-portal/portals/kde.portal
     regexp: org\.freedesktop\.impl\.portal\.Notification;
-    regexp: ''
+    replace: ''
 
 - import_tasks: freeipa.yml
