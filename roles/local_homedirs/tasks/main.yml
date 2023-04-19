@@ -26,6 +26,20 @@
   when: local_homedir_sefcontext.changed
   tags: selinux
 
+- name: copy kwallet script
+  copy:
+    src: '{{ local_homedir_kwallet_script[1:] }}'
+    dest: '{{ local_homedir_kwallet_script }}'
+    mode: 0555
+    setype: xdm_unconfined_exec_t
+
+- name: set xdm_unconfined_exec_t sefcontext on kwallet script
+  sefcontext:
+    target: '{{ local_homedir_kwallet_script }}'
+    state: present
+    setype: xdm_unconfined_exec_t
+  tags: selinux
+
 - name: copy profile script
   copy:
     src: etc/profile.d/local-homedirs.sh
@@ -63,6 +77,14 @@
   loop:
     - auth optional pam_exec.so {{ local_homedir_script_sddm }}
     - auth optional pam_env.so conffile={{ local_homedir_pam_env_path }}
+  when: "'sddm' in ansible_facts.packages"
+
+- name: modify sddm PAM configuration for kwallet
+  lineinfile:
+    path: /etc/pam.d/sddm
+    line: auth optional pam_exec.so {{ local_homedir_kwallet_script }}
+    insertafter: auth\s+optional\s+pam_kwallet\.so$
+    state: present
   when: "'sddm' in ansible_facts.packages"
 
 - name: modify pam configs for sshd

@@ -19,6 +19,13 @@
   changed_when: ipa_client_automount.rc != 3
   when: freeipa_autofs
 
+- name: set use_nfs_home_dirs selinux boolean
+  seboolean:
+    name: use_nfs_home_dirs
+    state: '{{ freeipa_autofs }}'
+    persistent: yes
+  tags: selinux
+
 - name: configure gssproxy
   copy:
     src: etc/gssproxy/99-nfs-client.conf
