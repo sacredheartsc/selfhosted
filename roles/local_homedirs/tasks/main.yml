@@ -11,18 +11,18 @@
     setype: _default
   loop:
     - '{{ local_homedir_script_ssh }}'
-    - '{{ local_homedir_script_gdm }}'
+    - '{{ local_homedir_script_sddm }}'
 
 - name: set xdm_unconfined_exec_t sefcontext on homedir creation script
   sefcontext:
-    target: '{{ local_homedir_script_gdm }}'
+    target: '{{ local_homedir_script_sddm }}'
     state: present
     setype: xdm_unconfined_exec_t
   tags: selinux
   register: local_homedir_sefcontext
 
 - name: apply selinux context to homedir creation script
-  command: 'restorecon -R {{ local_homedir_script_gdm }}'
+  command: 'restorecon -R {{ local_homedir_script_sddm }}'
   when: local_homedir_sefcontext.changed
   tags: selinux
 
@@ -50,31 +50,20 @@
   command: restorecon -R /usr/local/home
   when: local_homedirs_fcontext.changed
 
-- name: check if gdm is installed
+- name: check if sddm is installed
   package_facts:
     manager: auto
 
-- name: modify GDM PAM configuration for local homedirs
+- name: modify sddm PAM configuration for local homedirs
   lineinfile:
-    path: /etc/pam.d/gdm-password
-    line: '{{ item }}'
-    insertbefore: ^auth\s+optional\s+pam_gnome_keyring\.so$
-    state: present
-  loop:
-    - auth optional pam_exec.so {{ local_homedir_script_gdm }}
-    - auth optional pam_env.so conffile={{ local_homedir_pam_env_path }}
-  when: "'gdm' in ansible_facts.packages"
-
-- name: modify LightDM PAM configuration for local homedirs
-  lineinfile:
-    path: /etc/pam.d/lightdm
+    path: /etc/pam.d/sddm
     line: '{{ item }}'
     insertbefore: auth\s+optional\s+pam_gnome_keyring\.so$
     state: present
   loop:
-    - auth optional pam_exec.so {{ local_homedir_script_gdm }}
+    - auth optional pam_exec.so {{ local_homedir_script_sddm }}
     - auth optional pam_env.so conffile={{ local_homedir_pam_env_path }}
-  when: "'lightdm' in ansible_facts.packages"
+  when: "'sddm' in ansible_facts.packages"
 
 - name: modify pam configs for sshd
   lineinfile:

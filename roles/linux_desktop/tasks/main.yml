@@ -4,19 +4,6 @@
     exclude: '{{ linux_desktop_excluded_packages }}'
     state: present
 
-# Sticking with tuned for now. On my thinkpad, the power-profiles-daemon sets the
-# CPU governor to "performance" in the "power-save" profile!
-- name: mask power-profiles-daemon
-  systemd:
-    name: power-profiles-daemon
-    state: stopped
-    masked: yes
-
-- name: make sure tuned wasn't killed by power-profiles-daemon
-  systemd:
-    name: tuned
-    state: started
-
 - name: enable GuC for intel card
   copy:
     content: |
@@ -36,21 +23,15 @@
     dest: /etc/systemd/system/default.target
     state: link
 
-- name: check if graphical target is active
-  command: systemctl is-active graphical.target
-  register: graphical_target
-  changed_when: false
-  failed_when: false
+- name: generate sddm configuration
+  copy:
+    src: etc/sddm.conf
+    dest: /etc/sddm.conf
+  notify: restart sddm
 
-- name: configure lightdm greeter
-  template:
-    src: etc/lightdm/lightdm-gtk-greeter.conf.j2
-    dest: /etc/lightdm/lightdm-gtk-greeter.conf
-  notify: restart lightdm
-
-- name: enable lightdm
+- name: enable sddm
   systemd:
-    name: lightdm
+    name: sddm
     enabled: yes
     state: started
 
@@ -82,25 +63,5 @@
   command: flatpak override {{ item.key }} {{ item.value }}
   changed_when: no
   loop: '{{ linux_desktop_flatpak_overrides | dict2items }}'
-
-# https://gitlab.xfce.org/apps/xfce4-screensaver/-/issues/39
-- name: workaround user switching bug for xfce-screensaver
-  file:
-    path: /usr/share/dbus-1/services/org.xfce.ScreenSaver.service
-    state: absent
-
-- name: create /usr/local/share/thumbnailers
-  file:
-    path: /usr/local/share/thumbnailers
-    state: directory
-
-# see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=973942
-- name: patch totem thumbnailer to support large mp4 files
-  copy:
-    src: usr/local/share/thumbnailers/totem.thumbnailer
-    dest: /usr/local/share/thumbnailers/totem.thumbnailer
-
-- import_tasks: theme.yml
-  tags: theme
 
 - import_tasks: freeipa.yml

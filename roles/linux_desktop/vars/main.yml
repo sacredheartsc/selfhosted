@@ -5,7 +5,7 @@ linux_desktop_packages:
   - '@base-x'
   - '@networkmanager-submodules'
   - '@print-client'
-  - evolution
+  - '@KDE Plasma Workspaces'
   - libreoffice-calc
   - libreoffice-draw
   - libreoffice-impress
@@ -14,7 +14,6 @@ linux_desktop_packages:
   - ffmpeg-libs
   - ffmpeg
   - nfs4-acl-tools
-  - hexchat
   - vlc
   - youtube-dl
   - gstreamer1-plugins-ugly
@@ -23,45 +22,17 @@ linux_desktop_packages:
   - gstreamer1-vaapi
   - libva-utils
   - intel-media-driver
-  - seahorse
   - inkscape
   - libdvdcss
   - gimp
-  - brasero
   - ntfs-3g
   - ntfsprogs
   - exfatprogs
   - chromium
   - audacious
 
-  # xfce
-  - '@Xfce'
-  - ristretto
-  - parole
-  - mousepad
-  - xfce4-weather-plugin
-  - xfce4-taskmanager
-  - xfce4-notifyd
-  - xfce4-screenshooter
-  - xfce4-whiskermenu-plugin
-
-  # extra apps
-  - engrampa
-  - gnome-keyring
-  - gnome-keyring-pam
-  - evince
-  - totem-video-thumbnailer
-
-  # lightdm
-  - lightdm
-  - lightdm-gtk
-
-  # qogir theme
-  - gtk2-engines
-  - gtk-murrine-engine
 
 linux_desktop_excluded_packages:
-  - gnome-software
   - libva-intel-driver
 
 linux_desktop_hbac_hostgroup: linux_desktops
@@ -78,7 +49,6 @@ linux_desktop_flatpaks:
   - org.gnome.EasyTAG
   - com.makemkv.MakeMKV
   - org.gnucash.GnuCash
-  - org.gnome.Rhythmbox3
   - org.gajim.Gajim
   - org.gajim.Gajim.Plugin.omemo
 
@@ -86,8 +56,3 @@ linux_desktop_flatpak_overrides:
   org.gnome.EasyTAG:    --filesystem=host
   org.gnome.Rhythmbox3: --filesystem=host
   org.signal.Signal:    --env=SIGNAL_USE_TRAY_ICON=1
-
-linux_desktop_qogir_url: https://github.com/vinceliuice/Qogir-theme/archive/refs/tags/{{ linux_desktop_qogir_version }}.tar.gz
-linux_desktop_qogir_icon_url: https://github.com/vinceliuice/Qogir-icon-theme/archive/refs/tags/{{ linux_desktop_qogir_icon_version }}.tar.gz
-linux_desktop_qogir_source_dir: /usr/local/src/qogir
-linux_desktop_qogir_icon_source_dir: /usr/local/src/qogir-icons

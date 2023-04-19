@@ -1,11 +1,2 @@
 linux_desktop_access_group: role-linux-desktop-access
 linux_desktop_flatpak_update_on_calendar: daily
-linux_desktop_thumbnail_cache_size: 4096 # MB
-linux_desktop_qogir_version: 2023-02-27
-linux_desktop_qogir_icon_version: 2023-02-23
-
-linux_desktop_lightdm_background: /usr/share/backgrounds/rocky-default-9-onyx-mountains.png
-linux_desktop_lightdm_gtk_theme: Qogir
-linux_desktop_lightdm_icon_theme: Qogir
-linux_desktop_lightdm_cursor_theme: Qogir
-linux_desktop_lightdm_font_name: Liberation Sans 9
