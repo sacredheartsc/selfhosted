@@ -23,10 +23,11 @@
     dest: /etc/systemd/system/default.target
     state: link
 
-- name: generate sddm configuration
-  copy:
-    src: etc/sddm.conf
-    dest: /etc/sddm.conf
+- name: set sddm to use x11
+  lineinfile:
+    path: /etc/sddm.conf
+    regexp: ^DisplayServer=
+    line: DisplayServer=x11
   notify: restart sddm
 
 - name: enable sddm
