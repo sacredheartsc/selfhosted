@@ -20,8 +20,6 @@ linux_desktop_packages:
   - gstreamer1-plugins-bad-freeworld
   - gstreamer1-libav
   - gstreamer1-vaapi
-  - libva-utils
-  - intel-media-driver
   - inkscape
   - libdvdcss
   - gimp
