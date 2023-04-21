@@ -24,10 +24,11 @@
     state: link
 
 - name: set sddm to use x11
-  lineinfile:
+  ini_file:
     path: /etc/sddm.conf
-    regexp: ^DisplayServer=
-    line: DisplayServer=x11
+    section: General
+    option: DisplayServer
+    value: x11
   notify: restart sddm
 
 - name: enable sddm
