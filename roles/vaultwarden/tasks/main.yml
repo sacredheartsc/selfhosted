@@ -18,7 +18,7 @@
   get_url:
     url: https://sh.rustup.rs
     dest: '{{ vaultwarden_home }}/rustup.sh'
-    mode: 0555
+    mode: 0755
   become: yes
   become_user: '{{ vaultwarden_user }}'
   register: rustup
