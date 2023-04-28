@@ -28,6 +28,7 @@ gitolite_selinux_policy_te: |
   #============= sshd_t ==============
   allow sshd_t gssproxy_t:unix_stream_socket connectto;
   allow sshd_t gssproxy_var_lib_t:sock_file write;
+  allow sshd_t httpd_unconfined_script_t:key { read view };
 
   #============= httpd_t ==============
   allow httpd_t httpd_unconfined_script_t:key { read view };
