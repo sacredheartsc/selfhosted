@@ -3,7 +3,6 @@
 # Hosts that aren't ready for Rocky 9 yet.
 [el8:children]
 asterisk_servers
-git_servers
 imap_servers
 nagios_servers
 rspamd_servers
