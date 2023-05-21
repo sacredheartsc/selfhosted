@@ -82,4 +82,8 @@
     regexp: org\.freedesktop\.impl\.portal\.Notification;
     replace: ''
 
+- import_tasks: gajim.yml
+  tags: gajim
+
 - import_tasks: freeipa.yml
+  tags: freeipa

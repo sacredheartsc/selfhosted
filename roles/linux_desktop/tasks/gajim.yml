@@ -1,0 +1,15 @@
+- name: install gajim
+  dnf:
+    name: gajim
+    state: present
+
+- name: install axolotl
+  pip:
+    name: python-axolotl
+    state: present
+
+- name: override gajim launch script
+  copy:
+    src: usr/local/bin/gajim
+    dest: /usr/local/bin/gajim
+    mode: 0555
