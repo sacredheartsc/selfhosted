@@ -2,4 +2,4 @@
   replace:
     path: /etc/lvm/lvm.conf
     regexp: '^(\s*)use_devicesfile\s*='
-    replace: '\1use_devicesfile = {{ lvm_use_devicesfile | int }}
+    replace: '\1use_devicesfile = {{ lvm_use_devicesfile | int }}'
