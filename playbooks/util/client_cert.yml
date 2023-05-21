@@ -50,7 +50,7 @@
     - name: generate PKCS#12 file
       command:
         cmd: >
-          openssl pkcs12 -export
+          openssl pkcs12 -legacy -export
           -out {{ p12_path }}
           -inkey {{ key_path }}
           -in {{ crt_path }}
