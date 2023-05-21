@@ -29,6 +29,7 @@ linux_desktop_packages:
   - chromium
   - audacious
   - dragon
+  - konversation
 
 linux_desktop_excluded_packages:
   - libva-intel-driver
