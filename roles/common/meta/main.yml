@@ -27,6 +27,9 @@ dependencies:
   - role: grub
     tags: grub
 
+  - role: lvm
+    tags: lvm
+
   - role: sudo
     tags: sudo,sudoers
 
