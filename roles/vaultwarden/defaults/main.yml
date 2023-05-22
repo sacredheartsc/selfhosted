@@ -1,5 +1,5 @@
 vaultwarden_version: 1.28.1
-vaultwarden_web_version: 2023.4.0
+vaultwarden_web_version: 2023.4.2
 
 vaultwarden_port: 8008
 vaultwarden_websocket_port: 8009
