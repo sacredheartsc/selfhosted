@@ -1,6 +1,8 @@
-- name: install gajim
+- name: install gajim dependencies
   dnf:
-    name: gajim
+    name:
+      - gajim
+      - python3-devel
     state: present
 
 - name: install axolotl
