@@ -20,8 +20,8 @@ cd "$SRCDIR"
 
 as-nitter git fetch
 
-local_rev=$(git rev-parse HEAD)
-upstream_rev=$(git rev-parse '@{u}')
+local_rev=$(as-nitter git rev-parse HEAD)
+upstream_rev=$(as-nitter git rev-parse '@{u}')
 
 echo "local: $local_rev"
 echo "upstream: $upstream_rev"

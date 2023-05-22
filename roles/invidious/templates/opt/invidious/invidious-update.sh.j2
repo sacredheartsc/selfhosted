@@ -19,12 +19,12 @@ fi
 
 cd "$SRCDIR"
 
-old_rev=$(git rev-list --max-count=1 --abbrev-commit HEAD)
+old_rev=$(as-invidious git rev-list --max-count=1 --abbrev-commit HEAD)
 
 as-invidious git fetch
 
-local_rev=$(git rev-parse HEAD)
-upstream_rev=$(git rev-parse '@{u}')
+local_rev=$(as-invidious git rev-parse HEAD)
+upstream_rev=$(as-invidious git rev-parse '@{u}')
 
 echo "local: $local_rev"
 echo "upstream: $upstream_rev"
