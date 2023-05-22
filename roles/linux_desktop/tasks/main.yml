@@ -68,7 +68,7 @@
 
 - name: enable kde user switching
   ini_file:
-    path: /usr/share/kde-settings/kde-profile/default/xdg/kdeglobals
+    path: /etc/xdg/kdeglobals
     section: KDE Action Restrictions
     option: '{{ item }}'
     value: 'true'
