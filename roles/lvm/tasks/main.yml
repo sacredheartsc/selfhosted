@@ -1,5 +1,4 @@
 - name: set use_devicesfile option
-  replace:
-    path: /etc/lvm/lvm.conf
-    regexp: '^(\s*)use_devicesfile\s*=.*'
-    replace: '\1use_devicesfile = {{ lvm_use_devicesfile | int }}'
+  template:
+    src: etc/lvm/lvm.conf.j2
+    dest: /etc/lvm/lvm.conf
