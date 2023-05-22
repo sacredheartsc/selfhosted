@@ -23,12 +23,10 @@
     dest: /etc/systemd/system/default.target
     state: link
 
-- name: set sddm to use x11
-  ini_file:
-    path: /etc/sddm.conf
-    section: General
-    option: DisplayServer
-    value: x11
+- name: copy sddm configuration
+  copy:
+    src: etc/sddm.conf
+    dest: /etc/sddm.conf
   notify: restart sddm
 
 - name: enable sddm
