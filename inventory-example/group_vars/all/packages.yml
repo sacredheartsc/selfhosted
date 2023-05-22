@@ -2,3 +2,4 @@ packages_install:
   - man
   - less
   - tmux
+  - python3-dnf-plugin-versionlock
