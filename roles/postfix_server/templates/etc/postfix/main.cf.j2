@@ -61,6 +61,9 @@ smtpd_tls_dh1024_param_file = {{ postfix_dhparams_path }}
 smtpd_sasl_security_options = noanonymous, noplaintext
 smtpd_sasl_tls_security_options = noanonymous
 
+# FreeIPA kerberos tickets can be quite large.
+line_length_limit = 12288
+
 smtpd_helo_required = yes
 
 smtp_tls_security_level = may
