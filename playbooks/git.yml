@@ -44,6 +44,7 @@
         </LocationMatch>
 
         Alias /static "{{ cgit_static_dir }}"
+        Alias /robots.txt "{{ cgit_static_dir }}/robots.txt"
 
         ScriptAliasMatch "{{ git_backend_regex }}" "{{ gitolite_cgi_script }}/$1"
         ScriptAlias "/" "{{ cgit_cgi_script }}/"
