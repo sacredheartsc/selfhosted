@@ -30,6 +30,7 @@ linux_desktop_packages:
   - audacious
   - dragon
   - konversation
+  - k3b
 
 linux_desktop_excluded_packages:
   - libva-intel-driver
@@ -44,7 +45,6 @@ linux_desktop_flatpaks:
   - org.signal.Signal
   - com.bitwarden
   - org.libretro.RetroArch
-  - ca.littlesvr.asunder
   - org.gnome.EasyTAG
   - com.makemkv.MakeMKV
   - org.gnucash.GnuCash
