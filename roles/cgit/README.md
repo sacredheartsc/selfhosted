@@ -25,6 +25,8 @@ Variable                 | Default                                              
 `cgit_repository_sort`   | `name`                                                           | Sort repositories by either `name` or `age`
 `cgit_branch_sort`       | `name`                                                           | Sort branches by either `name` or `age`
 `cgit_about_html`        | see [default vars](defaults/main.yml)                            | HTML to include in About page
+`cgit_enable_blame`      | yes                                                              | Enable `git blame` functionality
+`cgit_robots`            | `index, nofollow`                                                | Value for the `robots` meta tag
 `cgit_favicon`           | &nbsp;                                                           | Path to custom favicon image
 `cgit_logo`              | &nbsp;                                                           | Path to custom logo image (ideally 96x64)
 `cgit_css`               | &nbsp;                                                           | Path to custom CSS file

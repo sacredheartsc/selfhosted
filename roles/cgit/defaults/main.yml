@@ -8,6 +8,8 @@ cgit_description: Source code of various {{ organization }} projects.
 cgit_cache_size: 1000
 cgit_project_list: /var/www/git/projects.list
 cgit_scan_path: /var/www/git/repositories
+cgit_robots: 'index, nofollow'
+cgit_enable_blame: yes
 
 cgit_enable_http_clone: no
 

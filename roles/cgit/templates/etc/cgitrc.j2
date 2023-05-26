@@ -1,7 +1,7 @@
 cache-size={{ cgit_cache_size }}
 clone-prefix={{ cgit_clone_prefixes | join(' ') }}
 enable-http-clone={{ cgit_enable_http_clone | int }}
-enable-blame=1
+enable-blame={{ cgit_enable_blame | int }}
 enable-commit-graph=1
 enable-log-filecount=1
 enable-log-linecount=1
@@ -26,6 +26,7 @@ root-readme={{ cgit_static_dir }}/about.html
 repository-sort={{ cgit_repository_sort }}
 snapshots=tar.gz zip
 local-time=1
+robots={{ cgit_robots }}
 
 mimetype.gif=image/gif
 mimetype.html=text/html
