@@ -40,7 +40,7 @@ Variable               | Default                        | Description
 `proxmox_sockets`      | 1                              | Virtual CPU sockets
 `proxmox_cores`        | 2                              | Cores per socket
 `proxmox_bios`         | `ovmf`                         | either `ovmf` or `seabios`
-`proxmox_template`     | `rocky9.1`                     | Template VM name
+`proxmox_template`     | `rocky9.2`                     | Template VM name
 `proxmox_vlan`         | `{{ vlan.id }}`                | Virtual NIC VLAN tag
 `proxmox_ssd`          | yes                            | Emulate an SSD
 `proxmox_discard`      | yes                            | Enable TRIM commands from guest

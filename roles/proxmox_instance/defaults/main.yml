@@ -11,7 +11,7 @@ proxmox_sockets: 1
 proxmox_cores: 2
 proxmox_bios: ovmf # 'ovmf' for UEFI, 'seabios' for BIOS
 
-proxmox_template: rocky9.1
+proxmox_template: rocky9.2
 proxmox_password: '{{ root_password }}'
 proxmox_pubkeys: '{{ root_authorized_keys }}'
 proxmox_vlan: '{{ vlan.id }}'
