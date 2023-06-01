@@ -5,7 +5,7 @@ Description
 -----------
 
 The `synapse` role installs and configures the [synapse](https://github.com/matrix-org/synapse/)
-[Matrix](https://matrix.org/) homeserver.
+homeserver for the [Matrix](https://matrix.org/) network.
 
 Users authenticate against the local FreeIPA domain using
 the [matrix-synapse-ldap3](https://github.com/matrix-org/matrix-synapse-ldap3) plugin.
