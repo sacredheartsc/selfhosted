@@ -31,6 +31,7 @@ linux_desktop_packages:
   - dragon
   - konversation
   - k3b
+  - ark
 
 linux_desktop_excluded_packages:
   - libva-intel-driver
@@ -48,8 +49,8 @@ linux_desktop_flatpaks:
   - org.gnome.EasyTAG
   - com.makemkv.MakeMKV
   - org.gnucash.GnuCash
+  - im.riot.Riot
 
 linux_desktop_flatpak_overrides:
   org.gnome.EasyTAG:    --filesystem=host
-  org.gnome.Rhythmbox3: --filesystem=host
   org.signal.Signal:    --env=SIGNAL_USE_TRAY_ICON=1
