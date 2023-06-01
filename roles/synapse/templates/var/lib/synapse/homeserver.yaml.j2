@@ -54,7 +54,9 @@ url_preview_ip_range_blacklist: {{ synapse_url_preview_blacklist | to_yaml }}
 url_preview_ip_range_whitelist: {{ synapse_url_preview_whitelist | to_yaml }}
 
 enable_registration: {{ synapse_enable_registration | bool | to_yaml }}
+{% if synapse_registration_shared_secret is defined %}
 registration_shared_secret: {{ synapse_registration_shared_secret | to_yaml }}
+{% endif %}
 
 {% if synapse_auto_join_rooms %}
 auto_join_rooms:
