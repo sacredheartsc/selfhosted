@@ -1,0 +1,8 @@
+synapse_registration_shared_secret: '{{ vault_synapse_registration_shared_secret }}'
+synapse_macaroon_secret_key: '{{ vault_synapse_macaroon_secret_key }}'
+synapse_form_secret: '{{ vault_synapse_form_secret }}'
+synapse_sysaccount_password: '{{ vault_synapse_sysaccount_password }}'
+
+synapse_domain: example.com
+synapse_server_name: matrix.example.com
+synapse_enable_registration: no

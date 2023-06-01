@@ -4,7 +4,7 @@ apache_server_aliases: '{{ [] if apache_letsencrypt else cnames }}'
 apache_default_vhost: no
 apache_config_name: '{{ apache_server_name }}'
 
-apache_listen: '*'
+apache_listen_ip: '*'
 
 apache_autoindex: no
 
@@ -12,5 +12,6 @@ apache_letsencrypt: no
 apache_use_ssl: yes
 apache_use_http2: yes
 apache_redirect_to_https: yes
+apache_ssl_only: no
 
 apache_config: ''

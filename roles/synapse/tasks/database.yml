@@ -1,0 +1,21 @@
+- name: create database
+  postgresql_db:
+    name: '{{ synapse_db_name }}'
+    encoding: UTF-8
+    lc_collate: C
+    lc_ctype: C
+    template: template0
+    state: present
+  delegate_to: "{{ postgresql_inventory_host }}"
+  become: yes
+  become_user: postgres
+
+- name: create database user
+  postgresql_user:
+    name: '{{ synapse_user }}'
+    db: '{{ synapse_db_name }}'
+    priv: ALL
+    state: present
+  delegate_to: "{{ postgresql_inventory_host }}"
+  become: yes
+  become_user: postgres

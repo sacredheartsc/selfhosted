@@ -1,0 +1,96 @@
+server_name: {{ synapse_domain }}
+
+pid_file: {{ synapse_runtime_dir }}/homeserver.pid
+
+public_baseurl: https://{{ synapse_server_name }}:{{ synapse_client_port }}/
+
+listeners:
+  - port: {{ synapse_local_client_port }}
+    tls: false
+    type: http
+    x_forwarded: true
+    bind_addresses: ['::1', '127.0.0.1']
+    resources:
+      - names: [client]
+        compress: false
+
+  - port: {{ synapse_local_federation_port }}
+    tls: false
+    type: http
+    x_forwarded: true
+    bind_addresses: ['::1', '127.0.0.1']
+    resources:
+      - names: [federation]
+        compress: false
+
+email:
+  smtp_host: 127.0.0.1
+  smtp_port: 25
+  enable_tls: false
+  notif_from: {{ synapse_email_from | to_yaml }}
+  enable_notifs: {{ synapse_enable_email_notifications | bool | to_yaml }}
+
+client_base_url: https://{{ synapse_server_name }}
+
+database:
+  name: psycopg2
+  args:
+    user: '{{ synapse_user }}'
+    database: '{{ synapse_db_name }}'
+    host: '{{ synapse_db_host }}'
+    cp_min: 5
+    cp_max: 10
+    keepalives_idle: 10
+    keepalives_interval: 10
+    keepalives_count: 3
+
+log_config: {{ synapse_home }}/logging.config
+
+media_store_path: {{ synapse_home }}/media_store
+max_upload_size: {{ synapse_max_upload_size | human_to_bytes }}
+
+url_preview_enabled: true
+url_preview_ip_range_blacklist: {{ synapse_url_preview_blacklist | to_yaml }}
+url_preview_ip_range_whitelist: {{ synapse_url_preview_whitelist | to_yaml }}
+
+enable_registration: {{ synapse_enable_registration | bool | to_yaml }}
+registration_shared_secret: {{ synapse_registration_shared_secret | to_yaml }}
+
+{% if synapse_auto_join_rooms %}
+auto_join_rooms:
+{% for room in synapse_auto_join_rooms %}
+  - '#{{ room }}:{{ synapse_domain }}'
+{% endfor %}
+{% endif %}
+autocreate_auto_join_rooms: true
+autocreate_auto_join_rooms_federated: false
+
+turn_uris: ['turn:{{ synapse_turn_host }}']
+turn_shared_secret: {{ synapse_turn_secret }}
+turn_allow_guests: false
+
+report_stats: false
+
+macaroon_secret_key: {{ synapse_macaroon_secret_key | to_yaml }}
+form_secret: {{ synapse_form_secret | to_yaml }}
+
+signing_key_path: {{ synapse_home }}/{{ synapse_domain }}.signing.key
+
+trusted_key_servers:
+  - server_name: matrix.org
+suppress_key_server_warning: true
+
+modules:
+  - module: ldap_auth_provider.LdapAuthProviderModule
+    config:
+      enabled: true
+      uri: {{ freeipa_ldap_uri | split | to_yaml }}
+      start_tls: true
+      base: {{ freeipa_user_basedn }}
+      attributes:
+        uid: matrixUsername
+        mail: mail
+        name: matrixUsername
+      bind_dn: uid={{ synapse_sysaccount_username }},{{ freeipa_sysaccount_basedn }}
+      bind_password: {{ synapse_sysaccount_password }}
+      filter: '(memberOf=cn={{ synapse_access_group }},{{ freeipa_group_basedn }})'

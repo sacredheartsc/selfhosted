@@ -14,6 +14,8 @@ This role **accepts** the following variables:
 
 Variable                         | Default   | Description
 ---------------------------------|-----------|------------
+`apache_listen_ports`            | `[80]`    | HTTP ports to listen on
+`apache_ssl_listen_ports`        | `[443]`   | HTTPS ports to listen on
 `apache_use_nfs`                 | no        | Value of the `httpd_use_nfs` SELinux boolean
 `apache_can_network_relay`       | yes       | Value of the `httpd_can_network_relay` SELinux boolean
 `apache_can_network_connect`     | no        | Value of the `httpd_can_network_connect` SELinux boolean

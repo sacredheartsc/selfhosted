@@ -1,0 +1,67 @@
+- name: install packages
+  dnf:
+    name: '{{ synapse_packages }}'
+    state: present
+
+- import_tasks: freeipa.yml
+
+- name: create home directory
+  file:
+    path: '{{ item }}'
+    owner: '{{ synapse_user }}'
+    group: '{{ synapse_user }}'
+    mode: 0700
+    state: directory
+  loop:
+    - '{{ synapse_home }}'
+    - '{{ synapse_venv }}'
+
+- name: install synapse
+  pip:
+    name: '{{ synapse_pip_packages }}'
+    virtualenv: '{{ synapse_venv }}'
+    state: latest
+  become: yes
+  become_user: '{{ synapse_user }}'
+
+- name: generate synapse configuration
+  template:
+    src: '{{ synapse_home[1:] }}/{{ item }}.j2'
+    dest: '{{ synapse_home }}/{{ item }}'
+    owner: '{{ synapse_user }}'
+    group: '{{ synapse_user }}'
+    mode: 0600
+  notify: restart synapse
+  loop:
+    - homeserver.yaml
+    - logging.config
+
+- name: generate signing key
+  shell:
+    cmd: >-
+      source {{ synapse_venv }}/bin/activate &&
+      python -m synapse.app.homeserver --config-path {{ synapse_home }}/homeserver.yaml --generate-keys
+    creates: '{{ synapse_home }}/{{ synapse_domain }}.signing.key'
+  become: yes
+  become_user: '{{ synapse_user }}'
+
+- name: create systemd unit
+  template:
+    src: etc/systemd/system/synapse.service.j2
+    dest: /etc/systemd/system/synapse.service
+  notify: restart synapse
+
+- name: reload systemd daemons
+  systemd:
+    daemon_reload: yes
+
+- import_tasks: database.yml
+
+- name: enable systemd unit
+  systemd:
+    name: synapse
+    enabled: yes
+    state: started
+
+- import_tasks: element.yml
+  tags: element

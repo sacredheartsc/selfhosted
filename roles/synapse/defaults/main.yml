@@ -1,0 +1,58 @@
+synapse_version: 1.84.1
+synapse_ldap_version: 0.2.2
+synapse_element_version: 1.11.31
+synapse_local_client_port: 8008
+synapse_local_federation_port: 8009
+synapse_client_port: 8443
+synapse_federation_port: 8448
+
+synapse_user: s-synapse
+synapse_access_group: role-matrix-access
+
+synapse_db_host: '{{ postgresql_host }}'
+synapse_db_name: synapse
+
+synapse_sysaccount_username: synapse
+#synapse_sysaccount_password
+
+synapse_domain: '{{ email_domain }}'
+
+synapse_server_name: '{{ ansible_fqdn }}'
+
+#synapse_registration_shared_secret
+#synapse_macaroon_secret_key
+#synapse_form_secret
+
+synapse_turn_host: '{{ coturn_realm }}'
+synapse_turn_secret: '{{ coturn_auth_secret }}'
+
+synapse_enable_email_notifications: yes
+synapse_email_from: 'Matrix <matrix-noreply@{{ email_domain }}>'
+
+synapse_enable_registration: no
+
+synapse_max_upload_size: 50m
+
+synapse_auto_join_rooms: []
+
+synapse_url_preview_whitelist: []
+synapse_url_preview_blacklist:
+  - '127.0.0.0/8'
+  - '10.0.0.0/8'
+  - '172.16.0.0/12'
+  - '192.168.0.0/16'
+  - '100.64.0.0/10'
+  - '192.0.0.0/24'
+  - '169.254.0.0/16'
+  - '192.88.99.0/24'
+  - '198.18.0.0/15'
+  - '192.0.2.0/24'
+  - '198.51.100.0/24'
+  - '203.0.113.0/24'
+  - '224.0.0.0/4'
+  - '::1/128'
+  - 'fe80::/10'
+  - 'fc00::/7'
+  - '2001:db8::/32'
+  - 'ff00::/8'
+  - 'fec0::/10'

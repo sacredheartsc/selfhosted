@@ -34,6 +34,7 @@ nsd_zones:
       xmpp1       IN  A      203.0.113.57
       turn1       IN  A      203.0.113.58
       pbx1        IN  A      203.0.113.59
+      matrix      IN  A      203.0.113.60
       www         IN  CNAME  www1
       xmpp        IN  CNAME  xmpp1
       conference  IN  CNAME  xmpp1
@@ -52,3 +53,5 @@ nsd_zones:
       _sip._udp                     IN  SRV  0  5  5060  pbx1
       _sip._tcp                     IN  SRV  0  5  5060  pbx1
       _sip._tls                     IN  SRV  0  5  5061  pbx1
+
+      _matrix._tcp                  IN  SRV  0  5  8448  matrix

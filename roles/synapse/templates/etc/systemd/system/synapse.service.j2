@@ -1,0 +1,42 @@
+[Unit]
+Description=Synapse Matrix Homeserver
+Documentation=https://github.com/matrix-org/synapse
+Wants=gssproxy.service
+After=network-online.target nss-user-lookup.target gssproxy.service
+
+[Service]
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+DevicePolicy=closed
+ProtectSystem=strict
+ProtectHome=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+ReadWritePaths={{ synapse_home }}
+
+User={{ synapse_user }}
+Group={{ synapse_user }}
+
+Type=notify
+NotifyAccess=main
+WorkingDirectory={{ synapse_home }}
+Environment=GSS_USE_PROXY=yes
+EnvironmentFile=-/etc/sysconfig/synapse
+
+ExecStart={{ synapse_venv }}/bin/python -m synapse.app.homeserver --config-path={{ synapse_home }}/homeserver.yaml
+ExecReload=/bin/kill -HUP $MAINPID
+
+Restart=always
+RestartSec=3
+
+SyslogIdentifier=synapse
+
+[Install]
+WantedBy=multi-user.target

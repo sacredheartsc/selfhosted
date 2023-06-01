@@ -12,6 +12,7 @@ freeipa_users:
     sn: Doe
     mail: john@example.com
     jid: john@example.com
+    mxid: johnnybravo
     mail_aliases:
       - john.nickname@example.com
       - john.alias@exmaple.com
@@ -21,12 +22,14 @@ freeipa_users:
     sn: Tables
     mail: btables@example.com
     jid: btables@example.com
+    mxid: aMatrixUsername
 
   - name: janedoe
     givenname: Jane
     sn: Doe
     mail: jane@example.com
     jid: jane@example.com
+    mxid: plainjane
 
 freeipa_groups:
   # built-in freeipa admin group - be careful!
@@ -124,6 +127,9 @@ freeipa_groups:
 
   - name: role-git-admin
     group: sysadmins
+
+  - name: role-matrix-access
+    group: doefamily
 
 freeipa_hbac_rules:
   - name: sysadmins_ssh_and_console_to_all

@@ -6,6 +6,12 @@ apache_can_connect_ldap: no
 apache_can_sendmail: no
 apache_gssapi: no
 
+apache_listen_ports:
+  - 80
+
+apache_ssl_listen_ports:
+  - 443
+
 apache_sysaccount_username: apache
 
 apache_backup_dirs: []

@@ -1,0 +1,37 @@
+- name: create user
+  ipauser:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ synapse_user }}'
+    loginshell: /sbin/nologin
+    homedir: '{{ synapse_home }}'
+    givenname: Synapse
+    sn: Service Account
+    state: present
+  run_once: yes
+
+- name: retrieve user keytab
+  include_role:
+    name: freeipa_keytab
+  vars:
+    keytab_principal: '{{ synapse_user }}'
+    keytab_path: '{{ synapse_keytab }}'
+
+- name: configure gssproxy for kerberized postgres
+  include_role:
+    name: gssproxy_client
+  vars:
+    gssproxy_name: synapse
+    gssproxy_section: service/synapse
+    gssproxy_client_keytab: '{{ synapse_keytab }}'
+    gssproxy_cred_usage: initiate
+    gssproxy_euid: '{{ synapse_user }}'
+
+- name: create access group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ synapse_access_group }}'
+    nonposix: yes
+    state: present
+  run_once: yes

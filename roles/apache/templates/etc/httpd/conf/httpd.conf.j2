@@ -1,6 +1,8 @@
 ServerRoot "/etc/httpd"
 
-Listen 80
+{% for port in apache_listen_ports %}
+Listen {{ port }}
+{% endfor %}
 
 Include conf.modules.d/*.conf
 

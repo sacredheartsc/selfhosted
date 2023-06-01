@@ -65,6 +65,9 @@ rsyslog_forward = no
 [nagios_servers:vars]
 apache_gssapi = True
 
+[matrix_servers:vars]
+apache_ssl_listen_ports='[443,{{ synapse_client_port }},{{ synapse_federation_port }}]'
+
 [opnsense_firewalls:vars]
 ansible_python_interpreter = /usr/local/bin/python3
 

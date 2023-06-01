@@ -1,0 +1,47 @@
+synapse_packages:
+  - libtiff-devel
+  - libjpeg-devel
+  - libzip-devel
+  - freetype-devel
+  - libwebp-devel
+  - libxml2-devel
+  - libxslt-devel
+  - libpq-devel
+  - python3-virtualenv
+  - libffi-devel
+  - openssl-devel
+  - python3-devel
+  - libicu-devel
+  - python3-psycopg2
+  - systemd-devel
+  - gcc
+
+synapse_pip_packages:
+  - 'matrix-synapse[postgres]=={{ synapse_version }}'
+  - 'matrix-synapse-ldap3=={{ synapse_ldap_version }}'
+  - lxml
+  - systemd-python
+
+synapse_home: /var/lib/synapse
+synapse_keytab: /var/lib/gssproxy/clients/{{ synapse_user }}.keytab
+synapse_venv: '{{ synapse_home }}/venv'
+synapse_runtime_dir: /run/synapse
+synapse_element_url: https://github.com/vector-im/element-web/releases/download/v{{ synapse_element_version }}/element-v{{ synapse_element_version }}.tar.gz
+synapse_element_webroot: /var/www/element
+
+synapse_apache_client_config: |
+  LimitRequestBody {{ synapse_max_upload_size | human_to_bytes }}
+  AllowEncodedSlashes NoDecode
+  {{ apache_proxy_config }}
+  <Location />
+    ProxyPass        http://127.0.0.1:{{ synapse_local_client_port }}/ nocanon
+    ProxyPassReverse http://127.0.0.1:{{ synapse_local_client_port }}/
+  </Location>
+
+synapse_apache_federation_config: |
+  AllowEncodedSlashes NoDecode
+  {{ apache_proxy_config }}
+  <Location />
+    ProxyPass        http://127.0.0.1:{{ synapse_local_federation_port }}/ nocanon
+    ProxyPassReverse http://127.0.0.1:{{ synapse_local_federation_port }}/
+  </Location>

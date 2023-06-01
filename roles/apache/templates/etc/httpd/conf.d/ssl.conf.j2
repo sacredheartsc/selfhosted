@@ -1,4 +1,6 @@
-Listen 443 https
+{% for port in apache_ssl_listen_ports %}
+Listen {{ port }} https
+{% endfor %}
 
 SSLPassPhraseDialog exec:/usr/libexec/httpd-ssl-pass-dialog
 

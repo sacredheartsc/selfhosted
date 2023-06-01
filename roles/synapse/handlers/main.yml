@@ -1,0 +1,4 @@
+- name: restart synapse
+  systemd:
+    name: synapse
+    state: restarted

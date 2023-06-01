@@ -1,0 +1,37 @@
+- name: configure matrix servers
+  hosts: matrix_servers
+  roles:
+    - role: common
+      tags: common
+
+    - role: synapse
+      tags: synapse
+
+    - role: apache_vhost
+      apache_server_name: '{{ synapse_server_name }}'
+      apache_server_aliases: []
+      apache_ssl_only: yes
+      apache_letsencrypt: yes
+      apache_listen_port: '{{ synapse_federation_port }}'
+      apache_config: '{{ synapse_apache_federation_config }}'
+      apache_config_name: '{{ synapse_server_name }}-federation'
+      tags: apache
+
+    - role: apache_vhost
+      apache_server_name: '{{ synapse_server_name }}'
+      apache_server_aliases: []
+      apache_ssl_only: yes
+      apache_letsencrypt: yes
+      apache_listen_port: '{{ synapse_client_port }}'
+      apache_config: '{{ synapse_apache_client_config }}'
+      apache_config_name: '{{ synapse_server_name }}-client'
+      tags: apache
+
+    - role: apache_vhost
+      apache_server_name: '{{ synapse_server_name }}'
+      apache_server_aliases: []
+      apache_letsencrypt: yes
+      apache_redirect_to_https: yes
+      apache_document_root: '{{ synapse_element_webroot }}'
+      apache_config_name: '{{ synapse_server_name }}-element'
+      tags: apache

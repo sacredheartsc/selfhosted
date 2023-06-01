@@ -4,11 +4,16 @@
     state: directory
     recurse: yes
 
-- name: copy jid schema
+- name: copy custom schemas
   copy:
-    src: '{{ freeipa_custom_schema_dir[1:] }}/jid.ldif'
-    dest: '{{ freeipa_custom_schema_dir }}/jid.ldif'
+    src: '{{ freeipa_custom_schema_dir[1:] }}/{{ item }}.ldif'
+    dest: '{{ freeipa_custom_schema_dir }}/{{ item }}.ldif'
+  loop:
+    - jid
+    - matrix
 
+
+# begin JIDObject schema
 - name: check if JIDObject exists in schema
   shell: ldapsearch -QLLL -s base -b cn=schema objectclasses | grep -q JIDObject
   changed_when: no
@@ -54,6 +59,55 @@
     bind_pw: '{{ freeipa_ds_password }}'
     server_uri: ldaps://{{ ipa_host }}
   when: jid_index.changed
+# end JIDObject schema
+
+# begin matrixUser schema
+- name: check if matrixUser exists in schema
+  shell: ldapsearch -QLLL -s base -b cn=schema objectclasses | grep -q matrixUser
+  changed_when: no
+  failed_when: no
+  register: ldapsearch_matrixuser
+
+- block:
+    - name: extend freeipa schema for matrix usernames
+      command: ipa-ldap-updater --schema-file '{{ freeipa_custom_schema_dir }}/matrix.ldif'
+
+    - name: restart httpd
+      systemd:
+        name: httpd
+        state: restarted
+  when: ldapsearch_matrixuser.rc != 0
+
+- name: add index to matrixUsername attribute
+  ldap_entry:
+    dn: 'cn=matrixUsername,cn=index,cn=userRoot,cn=ldbm database,cn=plugins,cn=config'
+    objectClass:
+      - top
+      - nsIndex
+    attributes:
+      cn: matrixUsername
+      nsSystemIndex: false
+      nsIndexType: eq
+    bind_dn: cn=Directory Manager
+    bind_pw: '{{ freeipa_ds_password }}'
+    server_uri: ldaps://{{ ipa_host }}
+  register: matrixusername_index
+
+- name: regenerate indexes for matrixUsername attribute
+  ldap_entry:
+    dn: cn=matrixusernameindex,cn=index,cn=tasks,cn=config
+    objectClass:
+      - top
+      - extensibleObject
+    attributes:
+      cn: matrixusernameindex
+      nsInstance: userRoot
+      nsIndexAttribute: 'matrixUsername:eq'
+    bind_dn: cn=Directory Manager
+    bind_pw: '{{ freeipa_ds_password }}'
+    server_uri: ldaps://{{ ipa_host }}
+  when: matrixusername_index.changed
+# end matrixUser schema
 
 - name: add default user object classes
   ldap_attrs:
@@ -62,6 +116,7 @@
       ipaUserObjectClasses:
         - mailRecipient
         - JIDObject
+        - matrixUser
     state: present
     bind_dn: cn=Directory Manager
     bind_pw: '{{ freeipa_ds_password }}'
@@ -86,6 +141,7 @@
     attrs:
       - mailAlternateAddress
       - jid
+      - matrixUsername
     action: member
     state: present
 

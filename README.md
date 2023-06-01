@@ -39,6 +39,7 @@ variables it accepts.
 [rspamd](roles/rspamd)                      | [Rspamd](https://rspamd.com/) spam filtering system
 [sabredav](roles/sabredav)                  | [sabre/dav](https://sabre.io/) CalDAV and CardDAV server with custom FreeIPA integration
 [prosody](roles/prosody)                    | [Prosody](https://prosody.im/) XMPP server
+[synapse](roles/synapse)                    | [Matrix](https://matrix.org/) homeserver
 [gitolite](roles/gitolite)                  | Git repository with [Gitolite](https://gitolite.com/gitolite/index.html) access control
 [cgit](roles/cgit)                          | [cgit](https://git.zx2c4.com/cgit/) web frontend for Git
 [vaultwarden](roles/vaultwarden)            | [Bitwarden-compatible password manager](https://github.com/dani-garcia/vaultwarden)

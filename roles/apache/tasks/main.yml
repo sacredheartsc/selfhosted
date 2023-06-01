@@ -45,6 +45,14 @@
   import_tasks: gssapi.yml
   when: apache_gssapi or apache_use_nfs
 
+- name: set http_port_t selinux context for http ports
+  seport:
+    ports: '{{ apache_listen_ports + apache_ssl_listen_ports }}'
+    proto: tcp
+    setype: http_port_t
+    state: present
+  tags: selinux
+
 - name: enable apache
   systemd:
     name: httpd
@@ -53,11 +61,9 @@
 
 - name: open firewall ports
   firewalld:
-    service: '{{ item }}'
+    port: '{{ item }}/tcp'
     permanent: yes
     immediate: yes
     state: enabled
-  loop:
-    - http
-    - https
+  loop: '{{ apache_listen_ports + apache_ssl_listen_ports }}'
   tags: firewalld

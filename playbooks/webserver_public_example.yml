@@ -10,6 +10,8 @@
       apache_canonical_hostname: www.example.com
       apache_letsencrypt: yes
       apache_document_root: /var/www/www.example.com
+      apache_config: |
+        Alias /.well-known/matrix /var/www/well-known/example.com/matrix
       tags: apache
 
     - role: archive_job
@@ -34,4 +36,25 @@
         owner: root
         group: webmasters
         mode: 02770
+      tags: apache
+
+    - name: create well-known directories
+      file:
+        path: '/var/www/well-known/{{ item }}'
+        state: directory
+        recurse: yes
+      loop:
+        - example.com/matrix
+      tags: apache
+
+    - name: create .well-known/matrix/server for example.com
+      copy:
+        content: '{"m.server": "matrix.example.com:8448"}'
+        dest: /var/www/well-known/example.com/matrix/server
+      tags: apache
+
+    - name: create .well-known/matrix/client for example.com
+      copy:
+        content: '{"m.homeserver": {"base_url": "https://matrix.example.com:8443"}}'
+        dest: /var/www/well-known/example.com/matrix/client
       tags: apache

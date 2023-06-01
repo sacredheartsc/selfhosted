@@ -18,13 +18,15 @@ Variable                    | Default                                     | Desc
 `apache_server_name`        | `{{ ansible_fqdn }}`                        | [ServerName](https://httpd.apache.org/docs/2.4/mod/core.html#servername) value
 `apache_server_aliases`     | `[]` if `apache_letsencrypt`, else `cnames` | [ServerAlias](https://httpd.apache.org/docs/2.4/mod/core.html#serveralias) values
 `apache_config_name`        | `{{ apache_server_name }}`                  | Name of config file in `/etc/httpd/conf.d`
-`apache_listen`             | `*`                                         | Network interface for VirtualHost
+`apache_listen_ip`          | `*`                                         | Listening IP for virtual host
+`apache_listen_port`        | `80` for HTTP, `443` for HTTPS              | Listening port for virtual host
 `apache_default_vhost`      | no                                          | Make this VirtualHost the default if no other VirtualHosts match the request
 `apache_document_root`      | &nbsp;                                      | Path to [DocumentRoot](https://httpd.apache.org/docs/2.4/mod/core.html#documentroot)
 `apache_autoindex`          | no                                          | Automatically generate file listings
 `apache_use_ssl`            | yes                                         | Enable HTTPS
 `apache_letsencrypt`        | no                                          | Use LetsEncrypt (rather than FreeIPA) to acquire certificates
 `apache_redirect_to_https`  | yes                                         | 301 redirect HTTP requests to HTTPS
+`apache_ssl_only`           | yes                                         | Disable HTTP listener
 `apache_use_http2`          | yes                                         | Enable HTTP2 protocol
 `apache_canonical_hostname` | &nbsp;                                      | 301 redirect all requests to this hostname
 `apache_config`             | &nbsp;                                      | VirtualHost config block (see usage below)

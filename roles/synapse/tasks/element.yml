@@ -1,0 +1,17 @@
+- name: create element webroot
+  file:
+    path: '{{ synapse_element_webroot }}'
+    state: directory
+
+- name: extract element tarball
+  unarchive:
+    src: '{{ synapse_element_url }}'
+    remote_src: yes
+    dest: '{{ synapse_element_webroot }}'
+    extra_opts:
+      - '--strip-components=1'
+
+- name: generate element configuration
+  template:
+    src: '{{ synapse_element_webroot[1:] }}/config.json.j2'
+    dest: '{{ synapse_element_webroot }}/config.json'
