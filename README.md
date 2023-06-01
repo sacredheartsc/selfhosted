@@ -118,8 +118,8 @@ for single sign-on (where possible).
 
 All my desktop computers also run Rocky Linux, and are joined to my FreeIPA
 domain. When you log in with GDM, you'll get a Kerberos ticket that is used by
-[Firefox](roles/firefox), [Evolution](roles/evolution), and other applications
-to automatically authenticate you without having to type your password again.
+[Firefox](roles/firefox) and other applications to automatically authenticate
+you without having to type your password again.
 
 For services that don't support Kerberos (or devices that don't support it, like
 smartphones), everything falls back to username/password authentication over TLS.

@@ -16,8 +16,5 @@
     - role: firefox
       tags: firefox
 
-    - role: evolution
-      tags: evolution
-
     - role: cups_client
       tags: cups
