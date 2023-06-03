@@ -1,10 +1,16 @@
 znc_packages:
   - znc
+  - znc-devel
+  - zlib-devel
   - cyrus-sasl
   - cyrus-sasl-plain
 
 znc_home: /var/lib/znc/.znc
 znc_clone_user: cloneuser
+
+znc_clientbuffer_url: https://github.com/CyberShadow/znc-clientbuffer/archive/refs/heads/master.tar.gz
+znc_clientbuffer_src_path: /usr/local/src/znc-clientbuffer
+znc_module_path: /usr/lib64/znc
 
 znc_hbac_hostgroup: znc_servers
 znc_hbac_service: znc

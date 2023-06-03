@@ -46,15 +46,45 @@
     - 'moddata'
     - 'moddata/cyrusauth'
 
-- name: generate config files
+- name: create znc custom module directories
+  file:
+    path: '{{ item }}'
+    state: directory
+  loop:
+    - '{{ znc_module_path }}'
+    - '{{ znc_clientbuffer_src_path }}'
+
+- name: extract znc-clientbuffer tarball
+  unarchive:
+    src: '{{ znc_clientbuffer_url }}'
+    remote_src: yes
+    dest: '{{ znc_clientbuffer_src_path }}'
+    extra_opts:
+      - '--strip-components=1'
+  register: znc_clientbuffer_src
+
+- name: build znc-clientbuffer
+  command:
+    chdir: '{{ znc_module_path }}'
+    cmd: znc-buildmod {{ znc_clientbuffer_src_path }}/clientbuffer.cpp
+  when: znc_clientbuffer_src.changed
+  notify: restart znc
+
+- name: generate znc.conf if it does not exist
   template:
-    src: '{{ znc_home[1:] }}/{{ item }}.j2'
-    dest: '{{ znc_home }}/{{ item }}'
+    src: '{{ znc_home[1:] }}/configs/znc.conf.j2'
+    dest: '{{ znc_home }}/configs/znc.conf'
     owner: znc
     group: znc
-  loop:
-    - configs/znc.conf
-    - moddata/cyrusauth/.registry
+    force: no
+  notify: reload znc
+
+- name: generate cyrusauth configuration
+  template:
+    src: '{{ znc_home[1:] }}/moddata/cyrusauth/.registry.j2'
+    dest: '{{ znc_home }}/moddata/cyrusauth/.registry'
+    owner: znc
+    group: znc
   notify: reload znc
 
 - name: start znc

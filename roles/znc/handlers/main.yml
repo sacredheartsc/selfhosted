@@ -6,3 +6,8 @@
 - name: reload znc
   command: pkill -HUP znc
   failed_when: no
+
+- name: restart znc
+  systemd:
+    name: znc
+    state: restarted
