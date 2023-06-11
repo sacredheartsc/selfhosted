@@ -32,6 +32,7 @@ linux_desktop_packages:
   - konversation
   - k3b
   - ark
+  - flac
 
 linux_desktop_excluded_packages:
   - libva-intel-driver
@@ -46,11 +47,11 @@ linux_desktop_flatpaks:
   - org.signal.Signal
   - com.bitwarden
   - org.libretro.RetroArch
-  - org.gnome.EasyTAG
   - com.makemkv.MakeMKV
   - org.gnucash.GnuCash
   - im.riot.Riot
+  - org.kde.kid3
 
 linux_desktop_flatpak_overrides:
-  org.gnome.EasyTAG:    --filesystem=host
+  org.kde.kid3:         --filesystem=host
   org.signal.Signal:    --env=SIGNAL_USE_TRAY_ICON=1
