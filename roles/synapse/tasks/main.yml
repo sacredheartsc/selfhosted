@@ -31,7 +31,7 @@
     dest: '{{ synapse_home }}/{{ item }}'
     owner: '{{ synapse_user }}'
     group: '{{ synapse_user }}'
-    mode: 0644
+    mode: 0600
   notify: restart synapse
   loop:
     - homeserver.yaml
@@ -44,7 +44,7 @@
     dest: '{{ synapse_home }}/{{ synapse_domain }}.signing.key'
     owner: '{{ synapse_user }}'
     group: '{{ synapse_user }}'
-    mode: 0644
+    mode: 0600
   become: yes
   become_user: '{{ synapse_user }}'
 
