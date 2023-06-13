@@ -56,3 +56,6 @@ synapse_url_preview_blacklist:
   - '2001:db8::/32'
   - 'ff00::/8'
   - 'fec0::/10'
+
+synapse_local_media_lifetime: 365d
+synapse_remote_media_lifetime: 90d

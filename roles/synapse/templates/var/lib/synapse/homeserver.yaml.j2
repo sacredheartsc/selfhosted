@@ -47,6 +47,9 @@ database:
 log_config: {{ synapse_home }}/logging.config
 
 media_store_path: {{ synapse_home }}/media_store
+media_retention:
+  local_media_lifetime: {{ synapse_local_media_lifetime }}
+  remote_media_lifetime: {{ synapse_remote_media_lifetime }}
 max_upload_size: {{ synapse_max_upload_size | human_to_bytes }}
 
 url_preview_enabled: true

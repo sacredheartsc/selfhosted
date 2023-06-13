@@ -56,6 +56,8 @@ Variable                             | Default                                  
 `synapse_auto_join_rooms`            | `[]`                                         | Local rooms to join automatically
 `synapse_url_preview_blacklist`      | see [defaults](defaults/main.yml)            | List of CIDRs to block from URL previews
 `synapse_url_preview_whitelist`      | `[]`                                         | List of CIDRs to allow for URL previews
+`synapse_local_media_lifetime`       | `365d`                                       | Time to retain local media files
+`synapse_remote_media_lifetime`      | `90d`                                        | Time to retain remote media files
 
 This role **exports** the following variables:
 
