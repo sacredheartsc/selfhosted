@@ -1,0 +1,8 @@
+- name: create access group
+  ipagroup:
+    ipaadmin_principal: '{{ ipa_user }}'
+    ipaadmin_password: '{{ ipa_pass }}'
+    name: '{{ mastodon_access_group }}'
+    nonposix: yes
+    state: present
+  run_once: yes

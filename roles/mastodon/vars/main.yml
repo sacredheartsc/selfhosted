@@ -1,0 +1,58 @@
+mastodon_packages:
+  - nodejs
+  - yarnpkg
+  - gcc
+  - g++
+  - libicu-devel
+  - zlib-devel
+  - openssl-devel
+  - libidn-devel
+  - ruby-devel
+  - libpq-devel
+  - git
+  - ruby
+  - ImageMagick
+  - ffmpeg
+
+mastodon_keytab: /var/lib/gssproxy/clients/{{ mastodon_user }}.keytab
+mastodon_home: /opt/mastodon
+mastodon_user: mastodon
+mastodon_install_dir: '{{ mastodon_home }}/mastodon'
+mastodon_webroot: '{{ mastodon_install_dir }}/public'
+mastodon_git_repo: https://github.com/mastodon/mastodon
+
+mastodon_apache_config: |
+  {% if mastodon_login_cidrs %}
+  <Location /auth/sign_in>
+  {% for cidr in mastodon_login_cidrs %}
+    Require ip {{ cidr }}
+  {% endfor %}
+  </Location>
+  {% endif %}
+
+  <LocationMatch "^/(assets|avatars|emoji|headers|packs|sounds|system)">
+    Header always set Cache-Control "public, max-age=31536000, immutable"
+    Require all granted
+  </LocationMatch>
+
+  ProxyPass /500.html !
+  ProxyPass /sw.js !
+  ProxyPass /robots.txt !
+  ProxyPass /manifest.json !
+  ProxyPass /browserconfig.xml !
+  ProxyPass /mask-icon.svg !
+  ProxyPass /inert.css !
+  ProxyPassMatch ^(/.*\.(png|ico)$) !
+  ProxyPassMatch ^/(assets|avatars|emoji|headers|packs|sounds|system) !
+
+  {{ apache_proxy_config }}
+  ProxyPass        /api/v1/streaming  ws://127.0.0.1:{{ mastodon_streaming_port }}
+  ProxyPassReverse /api/v1/streaming  ws://127.0.0.1:{{ mastodon_streaming_port }}
+  ProxyPass        /                  http://127.0.0.1:{{ mastodon_web_port }}/
+  ProxyPassReverse /                  http://127.0.0.1:{{ mastodon_web_port }}/
+
+  ErrorDocument 500 /500.html
+  ErrorDocument 501 /500.html
+  ErrorDocument 502 /500.html
+  ErrorDocument 503 /500.html
+  ErrorDocument 504 /500.html

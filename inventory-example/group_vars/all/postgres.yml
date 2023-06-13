@@ -2,3 +2,4 @@ postgresql_host: postgres.{{ domain }}
 postgresql_inventory_host: "{{ postgresql_host.split('.')[0] }}"
 postgresql_password_users:
   - '{{ invidious_db_user }}'
+  - '{{ mastodon_db_user }}'

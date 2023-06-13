@@ -1,0 +1,121 @@
+- name: install packages
+  dnf:
+    name: '{{ mastodon_packages }}'
+    state: present
+
+- name: add local user
+  user:
+    name: '{{ mastodon_user }}'
+    system: yes
+    home: '{{ mastodon_home }}'
+    shell: /sbin/nologin
+    create_home: no
+
+- import_tasks: freeipa.yml
+
+- name: create home directory
+  file:
+    path: '{{ mastodon_home }}'
+    owner: '{{ mastodon_user }}'
+    group: '{{ mastodon_user }}'
+    mode: 0755
+    state: directory
+
+- name: clone repo
+  git:
+    repo: '{{ mastodon_git_repo }}'
+    dest: '{{ mastodon_install_dir }}'
+    version: 'v{{ mastodon_version }}'
+    update: yes
+    force: yes
+  become: yes
+  become_user: '{{ mastodon_user }}'
+  register: mastodon_git
+
+- name: set selinux context on writeable directories
+  sefcontext:
+    target: '{{ mastodon_webroot }}(/.*)?'
+    setype: httpd_sys_content_t
+    state: present
+  register: mastodon_webroot_sefcontext
+  tags: selinux
+
+- name: apply selinux context to writeable directories
+  command: 'restorecon -R {{ mastodon_webroot }}'
+  when: mastodon_webroot_sefcontext.changed
+  tags: selinux
+
+- name: build mastodon
+  command:
+    chdir: '{{ mastodon_install_dir }}'
+    cmd: '{{ item }}'
+  loop:
+    - "bundle config deployment 'true'"
+    - "bundle config without 'development test'"
+    - 'bundle install -j{{ ansible_processor_vcpus }}'
+    - yarn install --pure-lockfile
+  become: yes
+  become_user: '{{ mastodon_user }}'
+  notify: restart mastodon
+  when: mastodon_git.changed
+
+- name: generate .env.production
+  template:
+    src: '{{ mastodon_install_dir[1:] }}/.env.production.j2'
+    dest: '{{ mastodon_install_dir }}/.env.production'
+    owner: '{{ mastodon_user }}'
+    group: '{{ mastodon_user }}'
+    mode: 0600
+  notify: restart mastodon
+
+- import_tasks: database.yml
+
+- name: precompile assets
+  command:
+    chdir: '{{ mastodon_install_dir }}'
+    cmd: 'bundle exec rake assets:precompile'
+  environment:
+    NODE_OPTIONS: --openssl-legacy-provider
+    RAILS_ENV: production
+  become: yes
+  become_user: '{{ mastodon_user }}'
+  when: mastodon_git.changed
+
+- name: create systemd units
+  template:
+    src: etc/systemd/system/{{ item }}.j2
+    dest: /etc/systemd/system/{{ item }}
+  loop:
+    - mastodon-sidekiq.service
+    - mastodon-streaming.service
+    - mastodon-web.service
+    - mastodon-cleanup.service
+    - mastodon-cleanup.timer
+  register: mastodon_systemd_units
+  notify: restart mastodon
+
+- name: reload systemd daemons
+  systemd:
+    daemon_reload: yes
+  when: mastodon_systemd_units.changed
+
+- name: start mastodon
+  systemd:
+    name: '{{ item }}'
+    enabled: yes
+    state: started
+  loop:
+    - mastodon-sidekiq.service
+    - mastodon-streaming.service
+    - mastodon-web.service
+    - mastodon-cleanup.timer
+
+- name: configure registrations
+  command:
+    chdir: '{{ mastodon_install_dir }}'
+    cmd: './bin/tootctl settings registrations {{ mastodon_registrations }}'
+  environment:
+    RAILS_ENV: production
+  become: yes
+  become_user: '{{ mastodon_user }}'
+  changed_when: no

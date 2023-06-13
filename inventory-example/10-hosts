@@ -36,6 +36,7 @@ dmz-xmpp1       ip=10.10.19.5   cname=xmpp
 dmz-turn1       ip=10.10.19.6   cname=turn
 dmz-git1        ip=10.10.19.13
 dmz-matrix1     ip=10.10.19.14                   cores=4  ram=8g   disk=256g
+dmz-mastodon1   ip=10.10.19.15                   cores=4  ram=4g   disk=256g
 dmz-asterisk1   ip=10.10.14.10  cname=asterisk   cores=4
 
 [unmanaged]

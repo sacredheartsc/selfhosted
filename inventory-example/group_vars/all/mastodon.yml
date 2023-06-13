@@ -1,0 +1,13 @@
+mastodon_domain: example.com
+mastodon_web_domain: mastodon.example.com
+mastodon_db_name: mastodon
+mastodon_db_user: s-mastodon
+mastodon_db_password: '{{ vault_mastodon_db_password }}'
+mastodon_sysaccount_password: '{{ vault_mastodon_sysaccount_password }}'
+mastodon_login_cidrs:
+  - '{{ vlans.trusted.cidr }}'
+
+mastodon_secret_key_base: '{{ vault_mastodon_secret_key_base }}'
+mastodon_otp_secret: '{{ vault_mastodon_otp_secret }}'
+mastodon_vapid_private_key: '{{ vault_mastodon_vapid_private_key }}'
+mastodon_vapid_public_key: changeme

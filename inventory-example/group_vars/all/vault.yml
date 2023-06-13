@@ -65,6 +65,13 @@ vault_invidious_hmac_key: changeme
 vault_jellyfin_sysaccount_password: changeme
 
 
+# mastodon
+vault_mastodon_sysaccount_password: changeme
+vault_mastodon_secret_key_base: changeme
+vault_mastodon_otp_secret: changeme
+vault_mastodon_vapid_private_key: changeme
+
+
 # mediawiki
 vault_mediawiki_admin_password: changeme
 vault_mediawiki_upgrade_key: changeme

@@ -1,0 +1,23 @@
+- name: create database user
+  postgresql_user:
+    name: '{{ mastodon_db_user }}'
+    password: '{{ mastodon_db_password }}'
+    role_attr_flags: CREATEDB
+    state: present
+  environment:
+    PGOPTIONS: "-c password_encryption=scram-sha-256"
+  delegate_to: "{{ postgresql_inventory_host }}"
+  become: yes
+  become_user: postgres
+  register: mastodon_db_user
+
+- name: create database schema
+  command:
+    chdir: '{{ mastodon_install_dir }}'
+    cmd: 'bundle exec rake db:setup'
+  environment:
+    RAILS_ENV: production
+    SAFETY_ASSURED: 1
+  become: yes
+  become_user: '{{ mastodon_user }}'
+  when: mastodon_db_user.changed

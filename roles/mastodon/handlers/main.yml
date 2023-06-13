@@ -1,0 +1,8 @@
+- name: restart mastodon
+  systemd:
+    name: '{{ item }}'
+    state: restarted
+  loop:
+    - mastodon-web
+    - mastodon-streaming
+    - mastodon-sidekiq

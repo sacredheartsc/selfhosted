@@ -49,6 +49,8 @@ firefox_managed_bookmarks:
     url: 'https://invidious.{{ domain }}'
   - name: Jellyfin
     url: 'https://jellyfin.{{ domain }}'
+  - name: Mastodon
+    url: 'https://mastodon.{{ domain }}'
   - name: Matrix
     url: 'https://matrix.{{ domain }}'
   - name: Nagios

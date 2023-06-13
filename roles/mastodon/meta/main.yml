@@ -1,0 +1,14 @@
+dependencies:
+  - role: yum
+    yum_repositories:
+      - epel
+      - rpmfusion-free
+    tags: yum
+
+  - role: freeipa_system_account
+    system_account_username: '{{ mastodon_sysaccount_username }}'
+    system_account_password: '{{ mastodon_sysaccount_password }}'
+
+  - role: redis
+    redis_port: '{{ mastodon_redis_port }}'
+    tags: redis

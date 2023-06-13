@@ -11,6 +11,7 @@
   loop:
     - jid
     - matrix
+    - mastodon
 
 
 # begin JIDObject schema
@@ -109,6 +110,54 @@
   when: matrixusername_index.changed
 # end matrixUser schema
 
+# begin mastodonUser schema
+- name: check if mastodonUser exists in schema
+  shell: ldapsearch -QLLL -s base -b cn=schema objectclasses | grep -q mastodonUser
+  changed_when: no
+  failed_when: no
+  register: ldapsearch_mastodonuser
+
+- block:
+    - name: extend freeipa schema for mastodon usernames
+      command: ipa-ldap-updater --schema-file '{{ freeipa_custom_schema_dir }}/mastodon.ldif'
+
+    - name: restart httpd
+      systemd:
+        name: httpd
+        state: restarted
+  when: ldapsearch_mastodonuser.rc != 0
+
+- name: add index to mastodonUsername attribute
+  ldap_entry:
+    dn: 'cn=mastodonUsername,cn=index,cn=userRoot,cn=ldbm database,cn=plugins,cn=config'
+    objectClass:
+      - top
+      - nsIndex
+    attributes:
+      cn: mastodonUsername
+      nsSystemIndex: false
+      nsIndexType: eq
+    bind_dn: cn=Directory Manager
+    bind_pw: '{{ freeipa_ds_password }}'
+    server_uri: ldaps://{{ ipa_host }}
+  register: mastodonusername_index
+
+- name: regenerate indexes for mastodonUsername attribute
+  ldap_entry:
+    dn: cn=mastodonusernameindex,cn=index,cn=tasks,cn=config
+    objectClass:
+      - top
+      - extensibleObject
+    attributes:
+      cn: mastodonusernameindex
+      nsInstance: userRoot
+      nsIndexAttribute: 'mastodonUsername:eq'
+    bind_dn: cn=Directory Manager
+    bind_pw: '{{ freeipa_ds_password }}'
+    server_uri: ldaps://{{ ipa_host }}
+  when: mastodonusername_index.changed
+# end mastodonUser schema
+
 - name: add default user object classes
   ldap_attrs:
     dn: cn=ipaConfig,cn=etc,{{ freeipa_basedn }}
@@ -117,6 +166,7 @@
         - mailRecipient
         - JIDObject
         - matrixUser
+        - mastodonUser
     state: present
     bind_dn: cn=Directory Manager
     bind_pw: '{{ freeipa_ds_password }}'
@@ -142,6 +192,7 @@
       - mailAlternateAddress
       - jid
       - matrixUsername
+      - mastodonUsername
     action: member
     state: present
 

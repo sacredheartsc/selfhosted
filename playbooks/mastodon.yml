@@ -1,0 +1,17 @@
+- name: configure mastodon servers
+  hosts: mastodon_servers
+  roles:
+    - role: common
+      tags: common
+
+    - role: mastodon
+      tags: mastodon
+
+    - role: apache_vhost
+      apache_server_name: '{{ mastodon_web_domain }}'
+      apache_server_aliases: []
+      apache_letsencrypt: yes
+      apache_redirect_to_https: yes
+      apache_document_root: '{{ mastodon_webroot }}'
+      apache_config: '{{ mastodon_apache_config }}'
+      tags: apache

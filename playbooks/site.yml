@@ -36,3 +36,4 @@
 - import_playbook: xmpp.yml
 - import_playbook: asterisk.yml
 - import_playbook: matrix.yml
+- import_playbook: mastodon.yml

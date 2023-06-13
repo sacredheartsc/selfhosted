@@ -131,6 +131,9 @@ freeipa_groups:
   - name: role-matrix-access
     group: doefamily
 
+  - name: role-mastodon-access
+    group: doefamily
+
 freeipa_hbac_rules:
   - name: sysadmins_ssh_and_console_to_all
     description: allow sysadmins to ssh to all hosts

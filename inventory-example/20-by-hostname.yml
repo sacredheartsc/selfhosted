@@ -42,3 +42,4 @@ groups:
   turn_servers:              inventory_hostname is match('(dmz-)?turn[0-9]')
   asterisk_servers:          inventory_hostname is match('(dmz-)?asterisk[0-9]')
   matrix_servers:            inventory_hostname is match('(dmz-)?matrix[0-9]')
+  mastodon_servers:          inventory_hostname is match('(dmz-)?mastodon[0-9]')

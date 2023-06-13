@@ -35,6 +35,7 @@ nsd_zones:
       turn1       IN  A      203.0.113.58
       pbx1        IN  A      203.0.113.59
       matrix      IN  A      203.0.113.60
+      mastodon    IN  A      203.0.113.61
       www         IN  CNAME  www1
       xmpp        IN  CNAME  xmpp1
       conference  IN  CNAME  xmpp1

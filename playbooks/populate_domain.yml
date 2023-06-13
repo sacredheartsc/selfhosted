@@ -24,6 +24,8 @@
         attributes:
           mailAlternateAddress: '{{ item.mail_aliases | default([]) }}'
           jid: '{{ item.jid | default([]) }}'
+          mastodonUsername: '{{ item.mastodon_id | default([]) }}'
+          matrixUsername: '{{ item.mxid | default([]) }}'
         bind_dn: uid={{ ipa_user }},{{ freeipa_user_basedn }}
         bind_pw: '{{ ipa_pass }}'
         server_uri: ldaps://{{ ipa_host }}

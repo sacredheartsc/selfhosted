@@ -11,6 +11,7 @@
       apache_letsencrypt: yes
       apache_document_root: /var/www/www.example.com
       apache_config: |
+        Redirect permanent /.well-known/webfinger https://mastodon.example.com/.well-known/webfinger
         Alias /.well-known/matrix /var/www/well-known/example.com/matrix
       tags: apache
 
