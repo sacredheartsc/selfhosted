@@ -37,7 +37,7 @@ Variable                       | Default                               | Descrip
 `mastodon_db_password`         | &nbsp;                                | PostgreSQL password
 `mastodon_db_host`             | `{{ postgresql_host }}`               | PostgreSQL host
 `mastodon_db_name`             | `mastodon`                            | PostgreSQL database name
-`mastodon_ldap_host`           | `{{ freeipa_hosts | first }}`         | LDAP server for user authentication
+`mastodon_ldap_host`           | `{{ freeipa_hosts \| first }}`        | LDAP server for user authentication
 `mastodon_access_group`        | `role-mastodon-access`                | FreeIPA group for Mastodon users (will be created)
 `mastodon_email_from`          | `mastodon-noreply@{{ email_domain }}` | Email `From` address
 `mastodon_default_locale`      | `en`                                  | Default locale
