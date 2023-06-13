@@ -15,3 +15,9 @@
       apache_document_root: '{{ mastodon_webroot }}'
       apache_config: '{{ mastodon_apache_config }}'
       tags: apache
+
+    - role: archive_job
+      archive_name: mastodon
+      archive_user: '{{ mastodon_user }}'
+      archive_shell: '{{ mastodon_archive_shell }}'
+      tags: archive

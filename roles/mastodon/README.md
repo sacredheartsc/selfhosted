@@ -60,6 +60,7 @@ Variable                 | Description
 -------------------------|------------
 `mastodon_webroot`       | Path to Mastodon public web directory
 `mastodon_apache_config` | Apache config block for reverse proxy
+`mastodon_archive_shell` | Shell command for generating tarball of Mastodon media files
 
 
 Usage

@@ -19,6 +19,7 @@ mastodon_home: /opt/mastodon
 mastodon_user: mastodon
 mastodon_install_dir: '{{ mastodon_home }}/mastodon'
 mastodon_webroot: '{{ mastodon_install_dir }}/public'
+mastodon_media_dir: '{{ mastodon_install_dir }}/public/system'
 mastodon_git_repo: https://github.com/mastodon/mastodon
 
 mastodon_apache_config: |
@@ -56,3 +57,8 @@ mastodon_apache_config: |
   ErrorDocument 502 /500.html
   ErrorDocument 503 /500.html
   ErrorDocument 504 /500.html
+
+mastodon_archive_shell: >-
+  TIMESTAMP=$(date +%Y%m%d%H%M%S);
+  tar czf "mastodon-${TIMESTAMP}.tar.gz"
+  --transform "s|^\.|mastodon-${TIMESTAMP}|" -C {{ mastodon_media_dir }} .
