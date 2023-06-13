@@ -73,12 +73,16 @@
 - name: precompile assets
   command:
     chdir: '{{ mastodon_install_dir }}'
-    cmd: 'bundle exec rake assets:precompile'
+    cmd: '{{ item }}'
+  loop:
+    - 'bundle exec rake db:migrate'
+    - 'bundle exec rake assets:precompile'
   environment:
     NODE_OPTIONS: --openssl-legacy-provider
     RAILS_ENV: production
   become: yes
   become_user: '{{ mastodon_user }}'
+  notify: restart mastodon
   when: mastodon_git.changed
 
 - name: create systemd units
