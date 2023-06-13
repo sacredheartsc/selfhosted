@@ -23,6 +23,7 @@ synapse_pip_packages:
   - systemd-python
 
 synapse_home: /var/lib/synapse
+synapse_media_dir: '{{ synapse_home }}/media_store'
 synapse_keytab: /var/lib/gssproxy/clients/{{ synapse_user }}.keytab
 synapse_venv: '{{ synapse_home }}/venv'
 synapse_runtime_dir: /run/synapse
@@ -45,3 +46,8 @@ synapse_apache_federation_config: |
     ProxyPass        http://127.0.0.1:{{ synapse_local_federation_port }}/ nocanon
     ProxyPassReverse http://127.0.0.1:{{ synapse_local_federation_port }}/
   </Location>
+
+synapse_archive_shell: >-
+  TIMESTAMP=$(date +%Y%m%d%H%M%S);
+  tar czf "synapse-${TIMESTAMP}.tar.gz"
+  --transform "s|^\.|synapse-${TIMESTAMP}|" -C {{ synapse_media_dir }} .

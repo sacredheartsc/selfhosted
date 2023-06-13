@@ -35,3 +35,9 @@
       apache_document_root: '{{ synapse_element_webroot }}'
       apache_config_name: '{{ synapse_server_name }}-element'
       tags: apache
+
+    - role: archive_job
+      archive_name: synapse
+      archive_user: '{{ synapse_user }}'
+      archive_shell: '{{ synapse_archive_shell }}'
+      tags: archive

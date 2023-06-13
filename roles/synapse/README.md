@@ -64,6 +64,7 @@ Variable                           | Description
 `synapse_element_webroot`          | Path to [element-web](https://github.com/vector-im/element-web) directory
 `synapse_apache_client_config`     | Apache config block for client reverse proxy
 `synapse_apache_federation_config` | Apache config block for federation reverse proxy
+`synapse_archive_shell`            | Shell command for generating tarball of media files
 
 
 Usage
