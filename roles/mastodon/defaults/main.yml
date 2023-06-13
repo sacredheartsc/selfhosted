@@ -1,14 +1,15 @@
 mastodon_version: 4.1.2
 
-mastodon_access_group: role-mastodon-access
-mastodon_db_user: s-mastodon
-# mastodon_db_password
-mastodon_db_host: '{{ postgresql_host }}'
-mastodon_db_name: mastodon
-mastodon_ldap_host: '{{ freeipa_hosts | first }}'
-
 mastodon_domain: '{{ email_domain }}'
 mastodon_web_domain: '{{ ansible_fqdn }}'
+mastodon_access_group: role-mastodon-access
+
+mastodon_db_user: s-mastodon
+mastodon_db_host: '{{ postgresql_host }}'
+mastodon_db_name: mastodon
+
+mastodon_ldap_host: '{{ freeipa_hosts | first }}'
+
 mastodon_email_from: 'mastodon-noreply@{{ email_domain }}'
 
 mastodon_default_locale: en
@@ -20,4 +21,5 @@ mastodon_web_port: 8008
 mastodon_streaming_port: 8009
 
 mastodon_sysaccount_username: mastodon
-#mastodon_sysaccount_password
+
+mastodon_login_cidrs: []
