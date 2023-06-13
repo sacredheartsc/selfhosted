@@ -31,18 +31,20 @@
     dest: '{{ synapse_home }}/{{ item }}'
     owner: '{{ synapse_user }}'
     group: '{{ synapse_user }}'
-    mode: 0600
+    mode: 0644
   notify: restart synapse
   loop:
     - homeserver.yaml
     - logging.config
 
 - name: generate signing key
-  shell:
-    cmd: >-
-      source {{ synapse_venv }}/bin/activate &&
-      python -m synapse.app.homeserver --config-path {{ synapse_home }}/homeserver.yaml --generate-keys
-    creates: '{{ synapse_home }}/{{ synapse_domain }}.signing.key'
+  copy:
+    content: |
+      {{ synapse_signing_key }}
+    dest: '{{ synapse_home }}/{{ synapse_domain }}.signing.key'
+    owner: '{{ synapse_user }}'
+    group: '{{ synapse_user }}'
+    mode: 0644
   become: yes
   become_user: '{{ synapse_user }}'
 

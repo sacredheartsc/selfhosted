@@ -18,6 +18,8 @@ If your Matrix domain differs from the public hostname of your synapse server
 in order to federate with other instances. See the [sample webserver playbook](../../playbooks/webserver_public_example.yml)
 for an example of how to do this.
 
+The secrets can be generated using `python -m synapse.app.homeserver --generate-config`.
+
 
 Variables
 ---------
@@ -44,6 +46,7 @@ Variable                             | Default                                  
 `synapse_registration_shared_secret` | &nbsp;                                       | Secret passphrase to allow registration even when disabled (optional)
 `synapse_macaroon_secret_key`        | &nbsp;                                       | Secret signing key for various tokens (required)
 `synapse_form_secret`                | &nbsp;                                       | Secret key for various form HMACs (required)
+`synapse_signing_key`                | &nbsp;                                       | Signing key (required)
 `synapse_turn_host`                  | `{{ coturn_realm }}`                         | TURN server hostname
 `synapse_turn_secret`                | `{{ coturn_auth_secret }}`                   | TURN server shared secret
 `synapse_enable_email_notifications` | yes                                          | Enable email notifications
