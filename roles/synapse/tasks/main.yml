@@ -23,6 +23,7 @@
     state: latest
   become: yes
   become_user: '{{ synapse_user }}'
+  notify: restart synapse
 
 - name: generate synapse configuration
   template:
@@ -49,11 +50,13 @@
   template:
     src: etc/systemd/system/synapse.service.j2
     dest: /etc/systemd/system/synapse.service
+  register: synapse_systemd_unit
   notify: restart synapse
 
 - name: reload systemd daemons
   systemd:
     daemon_reload: yes
+  when: synapse_systemd_unit.changed
 
 - import_tasks: database.yml
 
