@@ -120,6 +120,12 @@ nagios_http_status = 401
 apache_can_network_connect = True
 nagios_https_vhosts = '["{{ prosody_http_host | default(ansible_fqdn) }}"]'
 
+[mastodon_servers:vars]
+nagios_https_vhosts = '["{{ mastodon_web_domain }}"]'
+
+[synapse_servers:vars]
+nagios_https_vhosts = '["{{ synapse_server_name }}"]'
+
 
 # Nagios hostgroups
 # =================
@@ -172,5 +178,7 @@ photostructure_servers
 rspamd_servers
 unifi_controllers
 xmpp_servers
+mastodon_servers
+synapse_servers
 
 # vi: ft=dosini
