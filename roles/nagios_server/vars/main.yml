@@ -55,11 +55,11 @@ nagios_selinux_policy_te: |
   require {
     type nagios_spool_t;
     type httpd_t;
-    class file open;
+    class file { open getattr read };
   }
 
   #============= httpd_t ==============
-  allow httpd_t nagios_spool_t:file open;
+  allow httpd_t nagios_spool_t:file { open getattr read };
 
 nagios_apache_config: |
   <Location />

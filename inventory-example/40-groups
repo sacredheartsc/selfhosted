@@ -4,7 +4,6 @@
 [el8:children]
 asterisk_servers
 imap_servers
-nagios_servers
 rspamd_servers
 unifi_controllers
 xmpp_servers
