@@ -123,7 +123,7 @@ nagios_https_vhosts = '["{{ prosody_http_host | default(ansible_fqdn) }}"]'
 [mastodon_servers:vars]
 nagios_https_vhosts = '["{{ mastodon_web_domain }}"]'
 
-[synapse_servers:vars]
+[matrix_servers:vars]
 nagios_https_vhosts = '["{{ synapse_server_name }}"]'
 
 
@@ -179,6 +179,6 @@ rspamd_servers
 unifi_controllers
 xmpp_servers
 mastodon_servers
-synapse_servers
+matrix_servers
 
 # vi: ft=dosini
