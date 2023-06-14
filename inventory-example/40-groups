@@ -1,11 +1,24 @@
 # Required Groups
 # ===============
+
 # Hosts that aren't ready for Rocky 9 yet.
 [el8:children]
+# libstrp is broken: https://community.asterisk.org/t/erro-loading-srtp-on-asterisk-20-and-centos-9/95766
+# Might be worth building our own, locally?
 asterisk_servers
+
+# Rspamd not yet available for EL9: https://github.com/rspamd/rspamd/issues/4215
 imap_servers
 rspamd_servers
+
+# Unifi controller depends on MongoDB 3.6 (though I'm running 4.4 without any
+# issues on Rocky 8). Unfortunately, only MongoDB 6.0 is currently packaged
+# for EL9: https://repo.mongodb.org/yum/redhat/9/mongodb-org/ 
 unifi_controllers
+
+# Prosody needs lua-ldap. There's no package for EL9 and it appears to be
+# abandoned: https://src.fedoraproject.org/rpms/lua-ldap
+# Apparently lua-ldap can be installed from luarocks. Should investigate that.
 xmpp_servers
 
 
