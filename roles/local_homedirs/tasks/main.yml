@@ -31,10 +31,10 @@
     src: etc/profile.d/local-homedirs.sh
     dest: /etc/profile.d/local-homedirs.sh
 
-- name: copy pam_env for XDG variables
+- name: configure pam_env for XDG environment variables
   copy:
-    src: '{{ local_homedir_pam_env_path[1:] }}'
-    dest: '{{ local_homedir_pam_env_path }}'
+    src: etc/security/pam_env_xdg.conf
+    dest: /etc/security/pam_env_xdg.conf
 
 - name: get fcontext equivalencies
   command: semanage fcontext -l -C

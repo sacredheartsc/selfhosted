@@ -15,6 +15,8 @@ if (( UID >= 1000 )); then
   ln -sfn "/opt/flatpak/${USER}" "${HOME}/.var"
 
   # kwallet
+  # The kwallet PAM modules hard-codes ~/.local/share/kwalletd, but kwallet
+  # itself honors XDG_DATA_HOME. Gross.
   if [ -f "${HOME}/.local/share/kwalletd/kdewallet.salt" ]; then
     mkdir -p "/usr/local/home/${USER}/.local/share/kwalletd"
     ln -sfn "${HOME}/.local/share/kwalletd/kdewallet.salt" "/usr/local/home/${USER}/.local/share/kwalletd/kdewallet.salt"
