@@ -33,8 +33,8 @@
 
 - name: configure pam_env for XDG environment variables
   copy:
-    src: etc/security/pam_env_xdg.conf
-    dest: /etc/security/pam_env_xdg.conf
+    src: '{{ local_homedir_pam_env_path[1:] }}'
+    dest: '{{ local_homedir_pam_env_path }}'
 
 - name: get fcontext equivalencies
   command: semanage fcontext -l -C

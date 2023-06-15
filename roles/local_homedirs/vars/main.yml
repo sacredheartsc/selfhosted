@@ -1,2 +1,3 @@
 local_homedir_script_sddm: /usr/local/sbin/create-local-homedir-gdm.sh
 local_homedir_script_ssh: /usr/local/sbin/create-local-homedir-ssh.sh
+local_homedir_pam_env_path: /etc/security/pam_env_xdg.conf
