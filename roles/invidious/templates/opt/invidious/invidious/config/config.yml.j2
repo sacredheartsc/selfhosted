@@ -5,9 +5,7 @@ channel_threads: {{ invidious_channel_threads }}
 feed_threads: {{ invidious_channel_threads }}
 database_url: postgres://{{ invidious_db_user }}:{{ invidious_db_password}}@{{ invidious_db_host }}/{{ invidious_db_name }}?sslmode=verify-full
 use_pubsub_feeds: {{ invidious_use_pubsub_feeds }}
-{% if invidious_use_pubsub_feeds %}
 hmac_key: {{ invidious_hmac_key }}
-{% endif %}
 https_only: true
 registration_enabled: {{ invidious_registration_enabled }}
 port: {{ invidious_port }}
