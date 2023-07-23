@@ -1,4 +1,4 @@
-mastodon_version: 4.1.4
+mastodon_version: 4.1.5
 
 mastodon_domain: '{{ email_domain }}'
 mastodon_web_domain: '{{ ansible_fqdn }}'
