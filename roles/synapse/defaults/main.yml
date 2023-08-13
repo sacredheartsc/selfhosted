@@ -1,6 +1,6 @@
-synapse_version: 1.88.0
+synapse_version: 1.89.0
 synapse_ldap_version: 0.2.2
-synapse_element_version: 1.11.36
+synapse_element_version: 1.11.38
 synapse_local_client_port: 8008
 synapse_local_federation_port: 8009
 synapse_client_port: 8443
