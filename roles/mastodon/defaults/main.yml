@@ -23,3 +23,7 @@ mastodon_streaming_port: 8009
 mastodon_sysaccount_username: mastodon
 
 mastodon_login_cidrs: []
+
+# Leaving anonymous access *disabled* by default until this issue is resolved:
+# https://github.com/mastodon/mastodon/issues/22620
+mastodon_disallow_unauthenticated_api_access: yes
