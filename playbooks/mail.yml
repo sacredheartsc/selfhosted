@@ -34,5 +34,6 @@
 
     - role: archive_job
       archive_name: dovecot
+      archive_group: '{{ dovecot_vmail_user }}'
       archive_command: '{{ dovecot_archive_script }}'
       tags: archive

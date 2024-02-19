@@ -8,8 +8,10 @@ TMPDIR=$(mktemp -d .dovecot-XXXXXX)
 trap 'rm -rf -- "$TMPDIR"' EXIT
 
 chown "$VMAIL_USER" "$TMPDIR"
+chgrp "$VMAIL_USER" "$TMPDIR"
+chmod 770 "$TMPDIR"
 
-doveadm user '*' | xargs -r -I{} doveadm -o plugin/quota= backup -n inbox -f -u {} "mdbox:${TMPDIR}/{}/mdbox:LAYOUT=fs"
+doveadm user '*' | xargs -r -I{} doveadm -o plugin/quota= backup -n inbox -f -u {} "mdbox:$(readlink -f "$TMPDIR")/{}/mdbox:LAYOUT=fs"
 
 TIMESTAMP=$(date +%Y%m%d%H%M%S)
 
